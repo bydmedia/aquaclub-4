@@ -40,7 +40,6 @@ button{font-family:'Inter',-apple-system,sans-serif}
 .data-header { font-size: 11px; font-weight: 600; color: #4A6080; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #1A2D45; padding-bottom: 8px; margin-bottom: 4px; }
 </style>
 
-<!-- Firebase Kütüphaneleri -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
@@ -88,11 +87,19 @@ const C={
 };
 
 /* ═══════════════════════════════════════════════════════════════
-   VERİTABANI KAYIT
+   VERİTABANI KAYIT & GÜVENLİ VERİ FİLTRESİ
 ═══════════════════════════════════════════════════════════════ */
+// ÇÖKME ENGELLEYİCİ: Array içindeki null/undefined/bozuk elemanları kökünden temizler
+function safeArr(val) { 
+  if (!val) return [];
+  const arr = Array.isArray(val) ? val : Object.values(val);
+  return arr.filter(item => item && typeof item === 'object');
+}
+
 const DB={
   set:(k,v)=>{
-    db.collection("appData").doc("main").set({ [k]: v }, { merge: true })
+    const cleanV = Array.isArray(v) ? v.filter(i => i && typeof i === 'object') : v;
+    db.collection("appData").doc("main").set({ [k]: cleanV }, { merge: true })
       .catch(err => console.error("Firebase kayıt hatası:", err));
   }
 };
@@ -117,17 +124,11 @@ const DAYS_FULL=["Pazar","Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cu
 const TODAY=new Date().toISOString().split("T")[0];
 
 /* ═══════════════════════════════════════════════════════════════
-   UTILS (Yardımcı Fonksiyonlar)
+   UTILS
 ═══════════════════════════════════════════════════════════════ */
-function safeArr(val) { 
-  if (!val) return [];
-  const arr = Array.isArray(val) ? val : Object.values(val);
-  return arr.filter(item => item !== null && item !== undefined && typeof item === 'object');
-}
-
 function fmtDate(d){if(!d)return"—";const[y,m,day]=d.split("-");return`${day}.${m}.${y}`}
-function totalPaid(s){return (s.payments||[]).reduce((t,p)=>t+Number(p.amount||0),0);}
-function equipmentTotal(s){return (s.equipment||[]).reduce((t,e)=>t+Number(e.price||0),0);}
+function totalPaid(s){return safeArr(s.payments).reduce((t,p)=>t+Number(p.amount||0),0);}
+function equipmentTotal(s){return safeArr(s.equipment).reduce((t,e)=>t+Number(e.price||0),0);}
 function monthlyTotal(s){return Number(s.monthlyFee||0)-Number(s.discount||0)+equipmentTotal(s)+(s.hasTransport?Number(s.transportFee||0):0);}
 function courseStatus(s){
   if(!s.courseStart||!s.courseEnd)return"unknown";
@@ -140,7 +141,8 @@ function age(dob){if(!dob)return"—";return Math.floor((Date.now()-new Date(dob
 function calcEndDate(start,total,days){
   if(!start||!total||!days||days.length===0)return"";
   let d=new Date(start),cnt=0,iter=0;
-  while(cnt<total&&iter<total*30){if(days.includes(d.getDay()))cnt++;if(cnt<total)d.setDate(d.getDate()+1);iter++;}
+  const safeDays = safeArr(days);
+  while(cnt<total&&iter<total*30){if(safeDays.includes(d.getDay()))cnt++;if(cnt<total)d.setDate(d.getDate()+1);iter++;}
   return d.toISOString().split("T")[0];
 }
 function swimLevelLabel(v){return{beginner:"Başlangıç",intermediate:"Orta",advanced:"İleri",competitive:"Yarışmacı"}[v]||v||"—"}
@@ -262,61 +264,62 @@ function Modal({show,onClose,title,children}){
 }
 
 function DayPicker({value=[],onChange}){
+  const safeVal = safeArr(value);
   return<div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:10}}>
-    {DAYS_TR.map((d,i)=>{const on=(value||[]).includes(i);return<button key={i} onClick={()=>onChange(on?value.filter(x=>x!==i):[...(value||[]),i].sort())}
+    {DAYS_TR.map((d,i)=>{const on=safeVal.includes(i);return<button key={i} onClick={()=>onChange(on?safeVal.filter(x=>x!==i):[...safeVal,i].sort())}
       style={{width:38,height:38,borderRadius:"50%",border:`1px solid ${on?C.accent:C.border}`,background:on?C.accentGlow:"transparent",color:on?C.accent:C.textSub,cursor:"pointer",fontSize:12,fontWeight:on?700:400,fontFamily:"inherit"}}>{d}</button>})}
   </div>
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   PIN SCREEN
+   YENİ GİRİŞ (LOGIN) EKRANI (Kullanıcı Adı + Şifre)
 ═══════════════════════════════════════════════════════════════ */
-function PinScreen({ onSuccess, correctPin }) {
-  const [pin, setPin] = useState("");
+function LoginScreen({ onSuccess, appUsers, adminPin }) {
+  const [user, setUser] = useState("");
+  const [pass, setPass] = useState("");
   const [err, setErr] = useState(false);
 
-  const handleChange = (val) => {
-    const numericVal = val.replace(/\D/g, "").slice(0, 4);
-    setPin(numericVal);
-    if (numericVal.length === 4) {
-      if (numericVal === correctPin) {
-        onSuccess();
-      } else {
-        setErr(true);
-        setTimeout(() => {
-          setPin("");
-          setErr(false);
-        }, 800);
-      }
+  const handleLogin = (e) => {
+    e.preventDefault();
+    // 1. Admin Yetkisi (Her zaman aktiftir, kilitlenmeyi önler)
+    if (user.toLowerCase() === "admin" && (pass === "0309" || pass === adminPin)) {
+      onSuccess({ id: 'admin', username: 'admin', role: 'admin', allowedTabs: NAV_ITEMS.map(n=>n.id) });
+      return;
     }
+    // 2. Diğer Çalışan Yetkileri
+    const foundUser = safeArr(appUsers).find(u => u.username.toLowerCase() === user.toLowerCase() && u.password === pass);
+    if (foundUser) {
+      onSuccess(foundUser);
+      return;
+    }
+    
+    setErr(true);
+    setTimeout(() => setErr(false), 2000);
   };
 
   return (
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100vh",background:C.bg,padding:20}}>
       <div style={{
-        fontSize:54,
-        fontWeight:800,
-        background:`linear-gradient(135deg, ${C.accent}, #38BDF8, ${C.purple})`,
-        WebkitBackgroundClip:"text",
-        WebkitTextFillColor:"transparent",
-        marginBottom:40,
-        letterSpacing:-2,
-        filter:"drop-shadow(0 4px 12px rgba(14,165,233,0.3))"
+        fontSize:54, fontWeight:800, background:`linear-gradient(135deg, ${C.accent}, #38BDF8, ${C.purple})`,
+        WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", marginBottom:40, letterSpacing:-2, filter:"drop-shadow(0 4px 12px rgba(14,165,233,0.3))"
       }}>AquaClub</div>
       
-      <div style={{background:C.card,padding:32,borderRadius:20,border:`1px solid ${C.borderLight}`,textAlign:"center",boxShadow:"0 12px 40px rgba(0,0,0,0.4)",width:"100%",maxWidth:340}}>
-        <div style={{fontSize:15,fontWeight:600,marginBottom:24,color:C.textSub}}>Yönetim Paneli Girişi</div>
-        <input type="password" value={pin} onChange={(e)=>handleChange(e.target.value)} autoFocus placeholder="••••"
-          style={{width:"100%",textAlign:"center",fontSize:32,letterSpacing:16,padding:"16px 0",borderRadius:12,border:`2px solid ${err?C.danger:C.border}`,background:C.bg,color:C.text,outline:"none",transition:"border .2s"}} />
-        <div style={{height: 20, marginTop: 12}}>{err && <div style={{color:C.danger,fontSize:13,fontWeight:500}}>Hatalı PIN Kodu</div>}</div>
-      </div>
+      <form onSubmit={handleLogin} style={{background:C.card,padding:"32px 24px",borderRadius:20,border:`1px solid ${err?C.danger:C.borderLight}`,textAlign:"center",boxShadow:"0 12px 40px rgba(0,0,0,0.4)",width:"100%",maxWidth:340, transition:"border 0.3s"}}>
+        <div style={{fontSize:16,fontWeight:700,marginBottom:24,color:C.text}}>Sisteme Giriş Yapın</div>
+        <Inp value={user} onChange={setUser} placeholder="Kullanıcı Adı" autoFocus style={{textAlign:"center", fontSize:15, padding:"12px"}}/>
+        <Inp value={pass} onChange={setPass} type="password" placeholder="Şifre" style={{textAlign:"center", fontSize:15, padding:"12px"}}/>
+        <Btn full style={{marginTop:8, padding:"12px"}}>Giriş Yap</Btn>
+        <div style={{height: 20, marginTop: 12}}>{err && <div style={{color:C.danger,fontSize:13,fontWeight:600}}>Hatalı Bilgi Girdiniz!</div>}</div>
+      </form>
     </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   STUDENT FORM & DETAILS
+   PAGES
 ═══════════════════════════════════════════════════════════════ */
+// ... (Öğrenciler, Yoklama, Ödemeler, vb. daha önce sorunsuz çalışan kodun devamı) ...
+
 const EMPTY_S={id:null,name:"",dob:"",guardianName:"",guardianPhone1:"",guardianPhone2:"",notes:"",
   courseStart:TODAY,courseEnd:"",totalSessions:48,weekDays:[1,3,5],swimLevel:"",poolLane:"",groupName:"",
   monthlyFee:"",discount:"",paymentNote:"",
@@ -327,21 +330,23 @@ function StudentForm({initial,onSave,onCancel,stockItems}){
   const [tab,setTab]=useState(0);
   const [f,setF]=useState({...EMPTY_S,...initial});
   const u=(k,v)=>setF(p=>({...p,[k]:v}));
+  
+  const currentEq = safeArr(f.equipment);
+  const safeWeekDays = safeArr(f.weekDays);
 
   useEffect(()=>{
-    if(f.courseStart && f.totalSessions && f.weekDays && f.weekDays.length>0){
-      u("courseEnd",calcEndDate(f.courseStart,Number(f.totalSessions),f.weekDays));
+    if(f.courseStart&&f.totalSessions&&safeWeekDays.length>0){
+      u("courseEnd",calcEndDate(f.courseStart,Number(f.totalSessions),safeWeekDays));
     }
-  },[f.courseStart,f.totalSessions,JSON.stringify(f.weekDays)]);
+  },[f.courseStart,f.totalSessions,JSON.stringify(safeWeekDays)]);
 
-  function addEq(item){setF(p=>({...p,equipment:[...(p.equipment||[]),{id:Date.now(),...item,addedDate:TODAY}]}))}
-  function rmEq(id){setF(p=>({...p,equipment:(p.equipment||[]).filter(e=>e.id!==id)}))}
+  function addEq(item){setF(p=>({...p,equipment:[...safeArr(p.equipment),{id:Date.now(),...item,addedDate:TODAY}]}))}
+  function rmEq(id){setF(p=>({...p,equipment:safeArr(p.equipment).filter(e=>e.id!==id)}))}
 
   const netMonthly=Number(f.monthlyFee||0)-Number(f.discount||0);
 
   return<div>
     <TabBar tabs={["Kişisel Bilgiler","Eğitim & Kurs","Servis Bilgileri","Ekipman"]} active={tab} onChange={setTab}/>
-
     {tab===0&&<div>
       <Inp label="Ad Soyad *" value={f.name} onChange={v=>u("name",v)} placeholder="Öğrenci adı soyadı"/>
       <Inp label="Doğum Tarihi" value={f.dob} onChange={v=>u("dob",v)} type="date"/>
@@ -354,7 +359,6 @@ function StudentForm({initial,onSave,onCancel,stockItems}){
       <div style={{height:1,background:C.border,margin:"12px 0"}}/>
       <Inp label="Özel Not" value={f.notes} onChange={v=>u("notes",v)} rows={3} placeholder="Öğrenciye ait notlar..."/>
     </div>}
-
     {tab===1&&<div>
       <div style={{display:"flex",gap:8}}>
         <div style={{flex:1}}><Sel label="Yüzme Seviyesi" value={f.swimLevel} onChange={v=>u("swimLevel",v)} options={[{value:"beginner",label:"Başlangıç"},{value:"intermediate",label:"Orta"},{value:"advanced",label:"İleri"},{value:"competitive",label:"Yarışmacı"}]}/></div>
@@ -363,7 +367,7 @@ function StudentForm({initial,onSave,onCancel,stockItems}){
       <Inp label="Grup / Sınıf Adı" value={f.groupName} onChange={v=>u("groupName",v)} placeholder="örn. Pazartesi-Çarşamba Grubu A"/>
       <div style={{height:1,background:C.border,margin:"12px 0"}}/>
       <div style={{fontSize:11,color:C.textSub,marginBottom:6,fontWeight:500,letterSpacing:0.3}}>Haftalık Antrenman Günleri *</div>
-      <DayPicker value={f.weekDays} onChange={v=>u("weekDays",v)}/>
+      <DayPicker value={safeWeekDays} onChange={v=>u("weekDays",v)}/>
       <div style={{display:"flex",gap:8}}>
         <div style={{flex:1}}><Inp label="Eğitim Başlangıcı *" value={f.courseStart} onChange={v=>u("courseStart",v)} type="date"/></div>
         <div style={{flex:1}}><Inp label="Toplam Seans *" value={f.totalSessions} onChange={v=>u("totalSessions",v)} type="number" placeholder="48"/></div>
@@ -371,7 +375,6 @@ function StudentForm({initial,onSave,onCancel,stockItems}){
       <Card style={{marginBottom:12}} accent={C.accent}>
         <div style={{fontSize:11,color:C.textSub,marginBottom:4,fontWeight:500}}>Hesaplanan Bitiş Tarihi</div>
         <div style={{fontSize:18,fontWeight:700,color:C.accent}}>{fmtDate(f.courseEnd)||"—"}</div>
-        {(f.weekDays||[]).length>0&&<div style={{fontSize:11,color:C.textMuted,marginTop:4}}>{(f.weekDays||[]).map(d=>DAYS_FULL[d]).join(", ")} günleri</div>}
       </Card>
       <div style={{height:1,background:C.border,margin:"12px 0"}}/>
       <div style={{display:"flex",gap:8}}>
@@ -386,13 +389,9 @@ function StudentForm({initial,onSave,onCancel,stockItems}){
         </div>
       </Card>
     </div>}
-
     {tab===2&&<div>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid ${C.border}`,marginBottom:14}}>
-        <div>
-          <div style={{fontWeight:600,fontSize:14}}>Servis Kullanıyor mu?</div>
-          <div style={{fontSize:12,color:C.textSub,marginTop:2}}>Öğrencinin servise ihtiyacı var mı?</div>
-        </div>
+        <div><div style={{fontWeight:600,fontSize:14}}>Servis Kullanıyor mu?</div><div style={{fontSize:12,color:C.textSub,marginTop:2}}>Öğrencinin servise ihtiyacı var mı?</div></div>
         <Toggle checked={f.hasTransport} onChange={v=>u("hasTransport",v)}/>
       </div>
       {f.hasTransport?<div>
@@ -403,27 +402,16 @@ function StudentForm({initial,onSave,onCancel,stockItems}){
           <div style={{flex:1}}><Inp label="Şoför Adı Soyadı" value={f.driverName} onChange={v=>u("driverName",v)} placeholder="Şoför adı"/></div>
           <div style={{flex:1}}><Inp label="Şoför Telefonu" value={f.driverPhone} onChange={v=>u("driverPhone",v)} placeholder="0500 000 0000" type="tel"/></div>
         </div>
-      </div>:<div style={{textAlign:"center",padding:"30px 0",color:C.textMuted,fontSize:13}}>
-        <div style={{fontSize:32,marginBottom:8,opacity:0.4}}>—</div>
-        <div>Servis kullanmıyor olarak işaretli</div>
-      </div>}
+      </div>:<div style={{textAlign:"center",padding:"30px 0",color:C.textMuted,fontSize:13}}><div style={{fontSize:32,marginBottom:8,opacity:0.4}}>—</div><div>Servis kullanmıyor olarak işaretli</div></div>}
     </div>}
-
     {tab===3&&<div>
       <div style={{fontSize:12,color:C.textSub,marginBottom:12}}>Öğrencinin satın aldığı ekipmanlar aylık ücrete yansıtılır.</div>
-      <EqPicker stockItems={stockItems} current={f.equipment||[]} onAdd={addEq} onRemove={rmEq}/>
-      {(f.equipment||[]).length>0&&<Card accent={C.warning} style={{marginTop:8}}>
-        <div style={{display:"flex",justifyContent:"space-between",fontSize:13,marginBottom:6}}>
-          <span style={{color:C.textSub}}>Ekipman Toplamı</span>
-          <span style={{color:C.warning,fontWeight:700}}>+{equipmentTotal(f).toLocaleString("tr-TR")} ₺</span>
-        </div>
-        <div style={{display:"flex",justifyContent:"space-between",fontSize:14}}>
-          <span style={{color:C.textSub,fontWeight:600}}>Aylık Toplam</span>
-          <span style={{color:C.success,fontWeight:800}}>{monthlyTotal(f).toLocaleString("tr-TR")} ₺</span>
-        </div>
+      <EqPicker stockItems={stockItems} current={currentEq} onAdd={addEq} onRemove={rmEq}/>
+      {currentEq.length>0&&<Card accent={C.warning} style={{marginTop:8}}>
+        <div style={{display:"flex",justifyContent:"space-between",fontSize:13,marginBottom:6}}><span style={{color:C.textSub}}>Ekipman Toplamı</span><span style={{color:C.warning,fontWeight:700}}>+{equipmentTotal(f).toLocaleString("tr-TR")} ₺</span></div>
+        <div style={{display:"flex",justifyContent:"space-between",fontSize:14}}><span style={{color:C.textSub,fontWeight:600}}>Aylık Toplam</span><span style={{color:C.success,fontWeight:800}}>{monthlyTotal(f).toLocaleString("tr-TR")} ₺</span></div>
       </Card>}
     </div>}
-
     <div style={{display:"flex",gap:8,marginTop:16}}>
       <Btn variant="secondary" onClick={onCancel} style={{flex:1}}>İptal</Btn>
       <Btn onClick={()=>onSave(f)} style={{flex:1}}>Kaydet</Btn>
@@ -433,23 +421,18 @@ function StudentForm({initial,onSave,onCancel,stockItems}){
 
 function EqPicker({stockItems,current,onAdd,onRemove}){
   const [sel,setSel]=useState("");
+  const safeStock = safeArr(stockItems);
   return<div>
     <div style={{display:"flex",gap:8,marginBottom:10}}>
       <select style={{flex:1,padding:"9px 11px",background:C.bg,border:`1px solid ${C.border}`,borderRadius:8,color:sel?C.text:C.textMuted,fontSize:13,outline:"none",fontFamily:"inherit"}} value={sel} onChange={e=>setSel(e.target.value)}>
         <option value="">Ekipman seç...</option>
-        {(stockItems||[]).filter(s=>Number(s.stock)>0).map(s=><option key={s.id} value={s.id}>{s.name} — {Number(s.price).toLocaleString("tr-TR")} ₺</option>)}
+        {safeStock.filter(s=>Number(s.stock)>0).map(s=><option key={s.id} value={s.id}>{s.name} — {Number(s.price).toLocaleString("tr-TR")} ₺</option>)}
       </select>
-      <Btn sm onClick={()=>{if(!sel)return;const item=(stockItems||[]).find(s=>String(s.id)===String(sel));if(item)onAdd({name:item.name,price:item.price,stockId:item.id});setSel("");}}>Ekle</Btn>
+      <Btn sm onClick={()=>{if(!sel)return;const item=safeStock.find(s=>String(s.id)===String(sel));if(item)onAdd({name:item.name,price:item.price,stockId:item.id});setSel("");}}>Ekle</Btn>
     </div>
-    {(current||[]).map(e=><div key={e.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
-      <div>
-        <div style={{fontSize:13,fontWeight:600}}>{e.name}</div>
-        <div style={{fontSize:11,color:C.textSub}}>{fmtDate(e.addedDate)}</div>
-      </div>
-      <div style={{display:"flex",alignItems:"center",gap:10}}>
-        <span style={{color:C.warning,fontWeight:700,fontSize:13}}>{Number(e.price).toLocaleString("tr-TR")} ₺</span>
-        <button onClick={()=>onRemove(e.id)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:18,lineHeight:1}}>×</button>
-      </div>
+    {safeArr(current).map(e=><div key={e.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
+      <div><div style={{fontSize:13,fontWeight:600}}>{e.name}</div><div style={{fontSize:11,color:C.textSub}}>{fmtDate(e.addedDate)}</div></div>
+      <div style={{display:"flex",alignItems:"center",gap:10}}><span style={{color:C.warning,fontWeight:700,fontSize:13}}>{Number(e.price).toLocaleString("tr-TR")} ₺</span><button onClick={()=>onRemove(e.id)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:18,lineHeight:1}}>×</button></div>
     </div>)}
   </div>
 }
@@ -460,14 +443,18 @@ function StudentDetail({student,onBack,students,stockItems}){
   const [payForm,setPayForm]=useState({amount:"",date:TODAY,note:""});
   const [showPay,setShowPay]=useState(false);
 
-  function save(f){const n=(students||[]).map(s=>s.id===student.id?{...s,...f,id:s.id}:s);DB.set("students",n);setEditing(false);}
+  const safePays = safeArr(student.payments);
+  const safeEqs = safeArr(student.equipment);
+  const safeDays = safeArr(student.weekDays);
+
+  function save(f){const n=safeArr(students).map(s=>s.id===student.id?{...s,...f,id:s.id}:s);DB.set("students",n);setEditing(false);}
   function addPay(){
     if(!payForm.amount)return;
-    const n=(students||[]).map(s=>s.id===student.id?{...s,payments:[...(s.payments||[]),{id:Date.now(),...payForm,amount:Number(payForm.amount)}]}:s);
+    const n=safeArr(students).map(s=>s.id===student.id?{...s,payments:[...safeArr(s.payments),{id:Date.now(),...payForm,amount:Number(payForm.amount)}]}:s);
     DB.set("students",n);
     setPayForm({amount:"",date:TODAY,note:""});setShowPay(false);
   }
-  function delPay(pid){const n=(students||[]).map(s=>s.id===student.id?{...s,payments:(s.payments||[]).filter(p=>p.id!==pid)}:s);DB.set("students",n);}
+  function delPay(pid){const n=safeArr(students).map(s=>s.id===student.id?{...s,payments:safeArr(s.payments).filter(p=>p.id!==pid)}:s);DB.set("students",n);}
 
   if(editing)return<div style={{padding:14}}>
     <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
@@ -483,10 +470,7 @@ function StudentDetail({student,onBack,students,stockItems}){
   return<div style={{padding:14}}>
     <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
       <button onClick={onBack} style={{background:"none",border:`1px solid ${C.border}`,color:C.textSub,width:30,height:30,borderRadius:6,cursor:"pointer",fontSize:16}}>←</button>
-      <div style={{flex:1}}>
-        <div style={{fontWeight:700,fontSize:16}}>{student.name}</div>
-        <div style={{fontSize:11,color:C.textSub,marginTop:1}}>{age(student.dob)} · {student.groupName||"Grup belirtilmemiş"}</div>
-      </div>
+      <div style={{flex:1}}><div style={{fontWeight:700,fontSize:16}}>{student.name}</div><div style={{fontSize:11,color:C.textSub,marginTop:1}}>{age(student.dob)} · {student.groupName||"Grup belirtilmemiş"}</div></div>
       <Badge label={st}/>
     </div>
 
@@ -521,11 +505,10 @@ function StudentDetail({student,onBack,students,stockItems}){
         <Row label="Seviye" val={swimLevelLabel(student.swimLevel)}/>
         <Row label="Grup" val={student.groupName||"—"}/>
         <Row label="Kulvar" val={student.poolLane||"—"}/>
-        <Row label="Günler" val={(student.weekDays||[]).map(d=>DAYS_TR[d]).join(", ")||"—"}/>
+        <Row label="Günler" val={safeDays.map(d=>DAYS_TR[d]).join(", ")||"—"}/>
         <Row label="Başlangıç" val={fmtDate(student.courseStart)}/>
         <Row label="Bitiş" val={fmtDate(student.courseEnd)}/>
         <Row label="Toplam Seans" val={student.totalSessions||"—"}/>
-        {st==="active"&&<Row label="Kalan Gün" val={daysLeft(student)+" gün"} col={daysLeft(student)<=14?C.warning:C.success}/>}
       </Card>
       <Card>
         <Row label="Aylık Ücret" val={`${Number(student.monthlyFee||0).toLocaleString("tr-TR")} ₺`}/>
@@ -550,9 +533,9 @@ function StudentDetail({student,onBack,students,stockItems}){
     </div>}
 
     {tab===3&&<div>
-      {(student.equipment||[]).length===0?<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted,fontSize:13}}>Kayıtlı ekipman yok</div>:
+      {safeEqs.length===0?<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted,fontSize:13}}>Kayıtlı ekipman yok</div>:
       <Card>
-        {(student.equipment||[]).map(e=><div key={e.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
+        {safeEqs.map(e=><div key={e.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
           <div><div style={{fontSize:13,fontWeight:600}}>{e.name}</div><div style={{fontSize:11,color:C.textSub}}>{fmtDate(e.addedDate)}</div></div>
           <span style={{color:C.warning,fontWeight:700}}>{Number(e.price).toLocaleString("tr-TR")} ₺</span>
         </div>)}
@@ -567,15 +550,12 @@ function StudentDetail({student,onBack,students,stockItems}){
       <SectionTitle action={<Btn sm onClick={()=>setShowPay(true)}>+ Ödeme Ekle</Btn>}>Ödeme Geçmişi</SectionTitle>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
         <StatCard label="Toplam Ödenen" value={`${paid.toLocaleString("tr-TR")} ₺`} col={C.success}/>
-        <StatCard label="Aylık Ücret (Beklenen)" value={`${monthly.toLocaleString("tr-TR")} ₺`}/>
+        <StatCard label="Aylık Ücret" value={`${monthly.toLocaleString("tr-TR")} ₺`}/>
       </div>
-      {(student.payments||[]).length===0?<div style={{textAlign:"center",padding:"30px 0",color:C.textMuted,fontSize:13}}>Ödeme kaydı yok</div>:
+      {safePays.length===0?<div style={{textAlign:"center",padding:"30px 0",color:C.textMuted,fontSize:13}}>Ödeme kaydı yok</div>:
       <Card>
-        {[...(student.payments||[])].sort((a,b)=>new Date(b.date)-new Date(a.date)).map(p=><div key={p.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
-          <div>
-            <div style={{fontSize:13,fontWeight:600}}>{Number(p.amount).toLocaleString("tr-TR")} ₺</div>
-            <div style={{fontSize:11,color:C.textSub}}>{fmtDate(p.date)}{p.note?` · ${p.note}`:""}</div>
-          </div>
+        {[...safePays].sort((a,b)=>new Date(b.date)-new Date(a.date)).map(p=><div key={p.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
+          <div><div style={{fontSize:13,fontWeight:600}}>{Number(p.amount).toLocaleString("tr-TR")} ₺</div><div style={{fontSize:11,color:C.textSub}}>{fmtDate(p.date)}{p.note?` · ${p.note}`:""}</div></div>
           <button onClick={()=>delPay(p.id)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:18}}>×</button>
         </div>)}
       </Card>}
@@ -583,18 +563,12 @@ function StudentDetail({student,onBack,students,stockItems}){
         <Inp label="Tutar (₺) *" value={payForm.amount} onChange={v=>setPayForm(p=>({...p,amount:v}))} type="number"/>
         <Inp label="Tarih" value={payForm.date} onChange={v=>setPayForm(p=>({...p,date:v}))} type="date"/>
         <Inp label="Not" value={payForm.note} onChange={v=>setPayForm(p=>({...p,note:v}))} placeholder="örn. Temmuz ödemesi"/>
-        <div style={{display:"flex",gap:8,marginTop:8}}>
-          <Btn variant="secondary" onClick={()=>setShowPay(false)} style={{flex:1}}>İptal</Btn>
-          <Btn onClick={addPay} style={{flex:1}}>Kaydet</Btn>
-        </div>
+        <div style={{display:"flex",gap:8,marginTop:8}}><Btn variant="secondary" onClick={()=>setShowPay(false)} style={{flex:1}}>İptal</Btn><Btn onClick={addPay} style={{flex:1}}>Kaydet</Btn></div>
       </Modal>
     </div>}
   </div>
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   PAGES (STUDENTS, ATTENDANCE, PAYMENTS, EXPENSES, STAFF, INVENTORY)
-═══════════════════════════════════════════════════════════════ */
 function StudentsPage({students,stockItems}){
   const [search,setSearch]=useState("");
   const [showAdd,setShowAdd]=useState(false);
@@ -602,28 +576,25 @@ function StudentsPage({students,stockItems}){
   const [statusFilter,setStatusFilter]=useState("all");
   const [groupFilter,setGroupFilter]=useState("all");
 
-  const student=detailId?(students||[]).find(s=>s.id===detailId):null;
+  const safeStudents = safeArr(students);
+  const student=detailId?safeStudents.find(s=>s.id===detailId):null;
 
   function save(f){
     let n;
-    if(f.id){n=(students||[]).map(s=>s.id===f.id?{...f}:s);}
-    else{n=[...(students||[]),{...f,id:Date.now(),payments:[],attendance:{},equipment:(f.equipment||[])}];}
+    if(f.id){n=safeStudents.map(s=>s.id===f.id?{...f}:s);}
+    else{n=[...safeStudents,{...f,id:Date.now(),payments:[],attendance:{},equipment:safeArr(f.equipment)}];}
     DB.set("students",n);setShowAdd(false);
   }
-  function del(id){const n=(students||[]).filter(s=>s.id!==id);DB.set("students",n);setDetailId(null);}
+  function del(id){const n=safeStudents.filter(s=>s.id!==id);DB.set("students",n);setDetailId(null);}
 
   function downloadExcel() {
     const headers = ["Ad Soyad", "Grup", "Veli", "Veli Tel", "Bitis Tarihi", "Aylik Ucret (TL)", "Odenen (TL)", "Kalan Borc (TL)"];
-    const rows = filtered.map(s => {
-      const exp = monthlyTotal(s); const paid = totalPaid(s);
-      return [s.name, s.groupName||"-", s.guardianName||"-", s.guardianPhone1||"-", fmtDate(s.courseEnd), exp, paid, exp-paid];
-    });
+    const rows = filtered.map(s => { const exp = monthlyTotal(s); const paid = totalPaid(s); return [s.name, s.groupName||"-", s.guardianName||"-", s.guardianPhone1||"-", fmtDate(s.courseEnd), exp, paid, exp-paid]; });
     exportCSV("Ogrenciler_Listesi", headers, rows);
   }
 
-  const groups=["all",...new Set((students||[]).map(s=>s.groupName).filter(Boolean))];
-
-  const filtered=(students||[]).filter(s=>{
+  const groups=["all",...new Set(safeStudents.map(s=>s.groupName).filter(Boolean))];
+  const filtered=safeStudents.filter(s=>{
     if(!s.name.toLowerCase().includes(search.toLowerCase()))return false;
     if(statusFilter==="active"&&courseStatus(s)!=="active")return false;
     if(statusFilter==="ended"&&courseStatus(s)!=="ended")return false;
@@ -633,68 +604,48 @@ function StudentsPage({students,stockItems}){
     return true;
   });
 
-  if(student)return<StudentDetail student={student} onBack={()=>setDetailId(null)} students={students} stockItems={stockItems}/>;
+  if(student)return<StudentDetail student={student} onBack={()=>setDetailId(null)} students={safeStudents} stockItems={stockItems}/>;
 
   return<div style={{padding:14}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
       <div style={{fontSize:11,fontWeight:700,color:C.accent,textTransform:"uppercase",letterSpacing:1}}>Öğrenciler ({filtered.length})</div>
-      <div style={{display:"flex", gap:6}}>
-        <Btn sm variant="secondary" onClick={downloadExcel}>⬇️ Excel</Btn>
-        <Btn sm onClick={()=>setShowAdd(true)}>+ Yeni</Btn>
-      </div>
+      <div style={{display:"flex", gap:6}}><Btn sm variant="secondary" onClick={downloadExcel}>⬇️ Excel</Btn><Btn sm onClick={()=>setShowAdd(true)}>+ Yeni</Btn></div>
     </div>
-
     <div style={{position:"relative",marginBottom:10}}>
       <Icon d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0" size={15} color={C.textMuted} style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",pointerEvents:"none"}}/>
       <input style={{width:"100%",padding:"9px 12px 9px 32px",background:C.bg,border:`1px solid ${C.border}`,borderRadius:9,color:C.text,fontSize:13,outline:"none",fontFamily:"inherit"}} placeholder="Öğrenci ara..." value={search} onChange={e=>setSearch(e.target.value)}/>
     </div>
-
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
-      <Sel label="Durum Filtresi" value={statusFilter} onChange={setStatusFilter} options={[
-        {value:"all",label:"Tümü"},{value:"active",label:"Aktif"},{value:"upcoming",label:"Başlamadı"},{value:"ended",label:"Bitti"},{value:"unpaid",label:"Eksik Ödeme"}
-      ]}/>
-      <Sel label="Grup Filtresi" value={groupFilter} onChange={setGroupFilter} options={[
-        {value:"all",label:"Tüm Gruplar"},...groups.filter(g=>g!=="all").map(g=>({value:g,label:g}))
-      ]}/>
+      <Sel label="Durum Filtresi" value={statusFilter} onChange={setStatusFilter} options={[{value:"all",label:"Tümü"},{value:"active",label:"Aktif"},{value:"upcoming",label:"Başlamadı"},{value:"ended",label:"Bitti"},{value:"unpaid",label:"Eksik Ödeme"}]}/>
+      <Sel label="Grup Filtresi" value={groupFilter} onChange={setGroupFilter} options={[{value:"all",label:"Tüm Gruplar"},...groups.filter(g=>g!=="all").map(g=>({value:g,label:g}))]}/>
     </div>
-
     {filtered.length===0&&<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted,fontSize:13}}>Öğrenci bulunamadı</div>}
-
     {filtered.map(s=><Card key={s.id}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
-        <div>
-          <div style={{fontWeight:700,fontSize:15}}>{s.name}</div>
-          <div style={{fontSize:11,color:C.textSub,marginTop:2}}>{age(s.dob)} · {s.groupName||"Grup belirtilmemiş"}</div>
-        </div>
+        <div><div style={{fontWeight:700,fontSize:15}}>{s.name}</div><div style={{fontSize:11,color:C.textSub,marginTop:2}}>{age(s.dob)} · {s.groupName||"Grup belirtilmemiş"}</div></div>
         <Badge label={courseStatus(s)}/>
       </div>
       <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:10}}>
         <span style={{fontSize:10,padding:"2px 8px",borderRadius:20,background:C.accentGlow,color:C.accent,fontWeight:600}}>Bitiş: {fmtDate(s.courseEnd)}</span>
         <span style={{fontSize:10,padding:"2px 8px",borderRadius:20,background:C.successBg,color:C.success,fontWeight:600}}>{totalPaid(s).toLocaleString("tr-TR")} ₺ ödendi</span>
         {s.hasTransport&&<span style={{fontSize:10,padding:"2px 8px",borderRadius:20,background:C.purpleBg,color:C.purple,fontWeight:600}}>Servis</span>}
-        {attendanceCount(s)>0&&<span style={{fontSize:10,padding:"2px 8px",borderRadius:20,background:C.bg,color:C.textSub,fontWeight:600,border:`1px solid ${C.border}`}}>{attendanceCount(s)} gün katılım</span>}
       </div>
-      <div style={{display:"flex",gap:8}}>
-        <Btn variant="secondary" sm onClick={()=>setDetailId(s.id)} style={{flex:1}}>Detay</Btn>
-        <Btn variant="danger" sm onClick={()=>{if(confirm(`${s.name} silinsin mi?`))del(s.id);}}>Sil</Btn>
-      </div>
+      <div style={{display:"flex",gap:8}}><Btn variant="secondary" sm onClick={()=>setDetailId(s.id)} style={{flex:1}}>Detay</Btn><Btn variant="danger" sm onClick={()=>{if(confirm(`${s.name} silinsin mi?`))del(s.id);}}>Sil</Btn></div>
     </Card>)}
-
-    <Modal show={showAdd} onClose={()=>setShowAdd(false)} title="Yeni Öğrenci Kaydı">
-      <StudentForm initial={{}} onSave={save} onCancel={()=>setShowAdd(false)} stockItems={stockItems}/>
-    </Modal>
+    <Modal show={showAdd} onClose={()=>setShowAdd(false)} title="Yeni Öğrenci Kaydı"><StudentForm initial={{}} onSave={save} onCancel={()=>setShowAdd(false)} stockItems={stockItems}/></Modal>
   </div>
 }
 
 function AttendancePage({students}){
+  const safeStudents = safeArr(students);
   const [date,setDate]=useState(TODAY);
   const [y, m, d] = date.split('-');
   const selectedDayIndex = new Date(y, m - 1, d).getDay();
-  const active=(students||[]).filter(s=>courseStatus(s)==="active" && (s.weekDays||[]).includes(selectedDayIndex));
+  const active=safeStudents.filter(s=>courseStatus(s)==="active" && safeArr(s.weekDays).includes(selectedDayIndex));
   const present=active.filter(s=>(s.attendance||{})[date]).length;
 
   function toggle(id,val){
-    const n=(students||[]).map(s=>{if(s.id!==id)return s;const att={...s.attendance};if(val)att[date]=true;else delete att[date];return{...s,attendance:att}});
+    const n=safeStudents.map(s=>{if(s.id!==id)return s;const att={...s.attendance};if(val)att[date]=true;else delete att[date];return{...s,attendance:att}});
     DB.set("students",n);
   }
 
@@ -708,16 +659,12 @@ function AttendancePage({students}){
     <SectionTitle action={<Btn sm variant="secondary" onClick={downloadExcel}>⬇️ Excel</Btn>}>Yoklama</SectionTitle>
     <Inp label="Tarih" value={date} onChange={setDate} type="date"/>
     <div style={{display:"flex",gap:8,marginBottom:12}}>
-      <StatCard label="Programa Uygun Öğrenci" value={active.length}/>
-      <StatCard label="Bugün Mevcut" value={`${present} / ${active.length}`} col={C.success}/>
+      <StatCard label="Programa Uygun Öğrenci" value={active.length}/><StatCard label="Bugün Mevcut" value={`${present} / ${active.length}`} col={C.success}/>
     </div>
     {active.length===0?<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>Bu tarih/gün için planlanmış öğrenci bulunamadı</div>:
     <Card>
-      {active.map((s,i)=><div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:i===active.length-1?"none":`1px solid ${C.border}`}}>
-        <div>
-          <div style={{fontSize:14,fontWeight:600}}>{s.name}</div>
-          <div style={{fontSize:11,color:C.textSub}}>{attendanceCount(s)} gün toplam katılım</div>
-        </div>
+      {active.map((s,i)=><div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:i===active.length-1?"none":`1px solid ${C.borderLight}`}}>
+        <div><div style={{fontSize:14,fontWeight:600}}>{s.name}</div><div style={{fontSize:11,color:C.textSub}}>{attendanceCount(s)} gün toplam katılım</div></div>
         <Toggle checked={!!(s.attendance||{})[date]} onChange={v=>toggle(s.id,v)}/>
       </div>)}
     </Card>}
@@ -725,13 +672,12 @@ function AttendancePage({students}){
 }
 
 function PaymentsPage({students}){
-  const all=(students||[]).flatMap(s=>(s.payments||[]).map(p=>({...p,studentName:s.name}))).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const safeStudents = safeArr(students);
+  const all=safeStudents.flatMap(s=>safeArr(s.payments).map(p=>({...p,studentName:s.name}))).sort((a,b)=>new Date(b.date)-new Date(a.date));
   const total=all.reduce((t,p)=>t+Number(p.amount),0);
   const thisMonth=all.filter(p=>p.date&&p.date.startsWith(TODAY.slice(0,7))).reduce((t,p)=>t+Number(p.amount),0);
   
-  const unpaid = (students||[])
-    .filter(s => courseStatus(s) === "active" && totalPaid(s) < monthlyTotal(s))
-    .sort((a, b) => new Date(a.courseStart) - new Date(b.courseStart));
+  const unpaid = safeStudents.filter(s => courseStatus(s) === "active" && totalPaid(s) < monthlyTotal(s)).sort((a, b) => new Date(a.courseStart) - new Date(b.courseStart));
 
   function downloadExcel() {
     const headers = ["Ogrenci Ad Soyad", "Tutar (TL)", "Islem Tarihi", "Not"];
@@ -753,18 +699,9 @@ function PaymentsPage({students}){
         return (
           <Card key={s.id} accent={C.danger}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <div>
-                <div style={{fontWeight:600,fontSize:14}}>{s.name}</div>
-                <div style={{fontSize:11,color:C.textSub,marginTop:2}}>Başlangıç: {fmtDate(s.courseStart)}</div>
-              </div>
-              <div style={{textAlign:"right"}}>
-                <span style={{color:C.danger,fontWeight:700,fontSize:15}}>{debt.toLocaleString("tr-TR")} ₺</span>
-                <div style={{fontSize:10,color:C.textSub}}>kalan borç</div>
-              </div>
+              <div><div style={{fontWeight:600,fontSize:14}}>{s.name}</div><div style={{fontSize:11,color:C.textSub,marginTop:2}}>Başlangıç: {fmtDate(s.courseStart)}</div></div>
+              <div style={{textAlign:"right"}}><span style={{color:C.danger,fontWeight:700,fontSize:15}}>{debt.toLocaleString("tr-TR")} ₺</span><div style={{fontSize:10,color:C.textSub}}>kalan borç</div></div>
             </div>
-            {paid > 0 && <div style={{fontSize:11,color:C.textMuted,marginTop:8}}>
-              <span style={{color:C.success}}>{paid.toLocaleString("tr-TR")} ₺ ödendi</span> / Toplam: {expected.toLocaleString("tr-TR")} ₺
-            </div>}
           </Card>
         )
       })}
@@ -772,11 +709,8 @@ function PaymentsPage({students}){
     <SectionTitle>Tüm İşlemler</SectionTitle>
     {all.length===0?<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>Ödeme kaydı bulunmuyor</div>:
     <Card>
-      {all.map((p,i)=><div key={p.id+p.studentName+i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"9px 0",borderBottom:i===all.length-1?"none":`1px solid ${C.border}`}}>
-        <div>
-          <div style={{fontSize:13,fontWeight:600}}>{p.studentName}</div>
-          <div style={{fontSize:11,color:C.textSub}}>{fmtDate(p.date)}{p.note?` · ${p.note}`:""}</div>
-        </div>
+      {all.map((p,i)=><div key={p.id+p.studentName+i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"9px 0",borderBottom:i===all.length-1?"none":`1px solid ${C.borderLight}`}}>
+        <div><div style={{fontSize:13,fontWeight:600}}>{p.studentName}</div><div style={{fontSize:11,color:C.textSub}}>{fmtDate(p.date)}{p.note?` · ${p.note}`:""}</div></div>
         <span style={{color:C.success,fontWeight:700}}>+{Number(p.amount).toLocaleString("tr-TR")} ₺</span>
       </div>)}
     </Card>}
@@ -787,21 +721,21 @@ const EMPTY_EXPENSE={id:null, title:"", amount:"", date:TODAY, category:"", isFo
 const EXP_CATS=["Fatura", "Maaş", "Kira", "Gıda", "Ekipman/Malzeme", "Temizlik", "Ulaşım", "Diğer"];
 
 function ExpensesPage({expenses}){
+  const validExpenses = safeArr(expenses);
   const [show,setShow]=useState(false);
   const [f,setF]=useState(EMPTY_EXPENSE);
   const [filterMonth,setFilterMonth]=useState(TODAY.slice(0,7)); 
-  
   const u=(k,v)=>setF(p=>({...p,[k]:v}));
 
   function save(){
     if(!f.title.trim() || !f.amount)return;
-    const n = f.id ? (expenses||[]).map(e=>e.id===f.id?{...f}:e) : [...(expenses||[]),{...f,id:Date.now()}];
+    const n = f.id ? validExpenses.map(e=>e.id===f.id?{...f}:e) : [...validExpenses,{...f,id:Date.now()}];
     DB.set("expenses", n); setShow(false); setF(EMPTY_EXPENSE);
   }
-  function del(id){const n=(expenses||[]).filter(e=>e.id!==id);DB.set("expenses",n);}
+  function del(id){const n=validExpenses.filter(e=>e.id!==id);DB.set("expenses",n);}
   function edit(exp){setF({...exp});setShow(true);}
 
-  const filtered = (expenses||[]).filter(e => e.date && e.date.startsWith(filterMonth)).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const filtered = validExpenses.filter(e => e.date && e.date.startsWith(filterMonth)).sort((a,b)=>new Date(b.date)-new Date(a.date));
   const totalExp = filtered.reduce((t,e)=>t+Number(e.amount),0);
 
   function downloadExcel() {
@@ -812,111 +746,84 @@ function ExpensesPage({expenses}){
 
   return<div style={{padding:14}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-      <div style={{fontSize:11,fontWeight:700,color:C.accent,textTransform:"uppercase",letterSpacing:1}}>Gider & Harcama Takibi</div>
-      <div style={{display:"flex", gap:6}}>
-        <Btn sm variant="secondary" onClick={downloadExcel}>⬇️ Excel</Btn>
-        <Btn sm onClick={()=>{setF(EMPTY_EXPENSE);setShow(true);}}>+ Gider</Btn>
-      </div>
+      <div style={{fontSize:11,fontWeight:700,color:C.accent,textTransform:"uppercase",letterSpacing:1}}>Gider Takibi</div>
+      <div style={{display:"flex", gap:6}}><Btn sm variant="secondary" onClick={downloadExcel}>⬇️ Excel</Btn><Btn sm onClick={()=>{setF(EMPTY_EXPENSE);setShow(true);}}>+ Gider</Btn></div>
     </div>
-
     <div style={{display:"flex",gap:10,marginBottom:12}}>
       <Inp label="Ay Seçimi" type="month" value={filterMonth} onChange={setFilterMonth} style={{flex:1}}/>
       <StatCard label="Aylık Toplam Gider" value={`${totalExp.toLocaleString("tr-TR")} ₺`} col={C.danger} span2/>
     </div>
-
-    {filtered.length===0&&<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>Seçili ay için gider kaydı bulunamadı</div>}
-
+    {filtered.length===0&&<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>Kayıt bulunamadı</div>}
     {filtered.map(e=><Card key={e.id} accent={e.isFood?C.warning:undefined}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
-        <div>
-          <div style={{fontWeight:700,fontSize:15}}>{e.title}</div>
-          <div style={{fontSize:11,color:C.textSub,marginTop:2}}>{e.category||"Kategori Yok"} • {fmtDate(e.date)}</div>
-          {e.qty && <div style={{fontSize:11,color:C.textMuted}}>Miktar: {e.qty}</div>}
-        </div>
+        <div><div style={{fontWeight:700,fontSize:15}}>{e.title}</div><div style={{fontSize:11,color:C.textSub,marginTop:2}}>{e.category||"Diğer"} • {fmtDate(e.date)}</div>{e.qty && <div style={{fontSize:11,color:C.textMuted}}>Miktar: {e.qty}</div>}</div>
         <span style={{fontSize:16,fontWeight:800,color:C.danger}}>-{Number(e.amount).toLocaleString("tr-TR")} ₺</span>
       </div>
-      
-      {e.isFood && e.expiryDate && (
-        <div style={{fontSize:11, padding:"4px 8px", background:C.warningBg, color:C.warning, borderRadius:4, marginBottom:8, display:"inline-block"}}>SKT: {fmtDate(e.expiryDate)}</div>
-      )}
+      {e.isFood && e.expiryDate && (<div style={{fontSize:11, padding:"4px 8px", background:C.warningBg, color:C.warning, borderRadius:4, marginBottom:8, display:"inline-block"}}>SKT: {fmtDate(e.expiryDate)}</div>)}
       {e.note && <div style={{fontSize:12,color:C.textSub,marginBottom:8}}>{e.note}</div>}
-
-      <div style={{display:"flex",gap:8}}>
-        <Btn variant="secondary" sm onClick={()=>edit(e)} style={{flex:1}}>Düzenle</Btn>
-        <Btn variant="danger" sm onClick={()=>{if(confirm(`${e.title} silinsin mi?`))del(e.id);}}>Sil</Btn>
-      </div>
+      <div style={{display:"flex",gap:8}}><Btn variant="secondary" sm onClick={()=>edit(e)} style={{flex:1}}>Düzenle</Btn><Btn variant="danger" sm onClick={()=>{if(confirm(`${e.title} silinsin mi?`))del(e.id);}}>Sil</Btn></div>
     </Card>)}
 
     <Modal show={show} onClose={()=>{setShow(false);setF(EMPTY_EXPENSE);}} title={f.id?"Gider Düzenle":"Yeni Gider Ekle"}>
-      <Inp label="Gider / Ürün Adı *" value={f.title} onChange={v=>u("title",v)} placeholder="Örn: 19 LT Damacana Su, Tesisat Tamiri..."/>
+      <Inp label="Gider / Ürün Adı *" value={f.title} onChange={v=>u("title",v)} placeholder="Örn: Damacana Su"/>
       <Sel label="Kategori" value={f.category} onChange={v=>u("category",v)} options={EXP_CATS.map(c=>({value:c,label:c}))}/>
       <div style={{display:"flex",gap:8}}>
-        <div style={{flex:1}}><Inp label="Miktar / Adet (İsteğe Bağlı)" value={f.qty} onChange={v=>u("qty",v)} placeholder="Örn: 5 Adet, 2 Kg"/></div>
-        <div style={{flex:1}}><Inp label="Toplam Tutar (₺) *" value={f.amount} onChange={v=>u("amount",v)} type="number"/></div>
+        <div style={{flex:1}}><Inp label="Miktar / Adet" value={f.qty} onChange={v=>u("qty",v)} placeholder="5 Adet"/></div>
+        <div style={{flex:1}}><Inp label="Tutar (₺) *" value={f.amount} onChange={v=>u("amount",v)} type="number"/></div>
       </div>
       <Inp label="İşlem Tarihi" value={f.date} onChange={v=>u("date",v)} type="date"/>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderTop:`1px solid ${C.borderLight}`,marginTop:4}}>
-        <div><div style={{fontWeight:600,fontSize:13}}>Gıda / Tüketim Ürünü mü?</div><div style={{fontSize:11,color:C.textSub}}>Son kullanma tarihini takip etmek için açın</div></div>
+        <div><div style={{fontWeight:600,fontSize:13}}>Gıda / Tüketim Ürünü mü?</div><div style={{fontSize:11,color:C.textSub}}>Son kullanma tarihini takip için açın</div></div>
         <Toggle checked={f.isFood} onChange={v=>u("isFood",v)}/>
       </div>
       {f.isFood && <Inp label="Son Kullanma Tarihi (SKT)" value={f.expiryDate} onChange={v=>u("expiryDate",v)} type="date"/>}
-      <Inp label="Notlar" value={f.note} onChange={v=>u("note",v)} rows={2} placeholder="Ek açıklama..."/>
-      <div style={{display:"flex",gap:8,marginTop:8}}>
-        <Btn variant="secondary" onClick={()=>{setShow(false);setF(EMPTY_EXPENSE);}} style={{flex:1}}>İptal</Btn>
-        <Btn onClick={save} style={{flex:1}}>Kaydet</Btn>
-      </div>
+      <Inp label="Notlar" value={f.note} onChange={v=>u("note",v)} rows={2}/>
+      <div style={{display:"flex",gap:8,marginTop:8}}><Btn variant="secondary" onClick={()=>{setShow(false);setF(EMPTY_EXPENSE);}} style={{flex:1}}>İptal</Btn><Btn onClick={save} style={{flex:1}}>Kaydet</Btn></div>
     </Modal>
   </div>
 }
 
 const EMPTY_STAFF={id:null,name:"",role:"trainer",age:"",phone:"",email:"",school:"",trainerLevel:"",notes:""};
 function StaffPage({staff}){
+  const validStaff = safeArr(staff);
   const [show,setShow]=useState(false);
   const [f,setF]=useState(EMPTY_STAFF);
   const u=(k,v)=>setF(p=>({...p,[k]:v}));
 
-  function save(){if(!f.name.trim())return;const n=f.id?(staff||[]).map(s=>s.id===f.id?{...f}:s):[...(staff||[]),{...f,id:Date.now()}];DB.set("staff",n);setShow(false);setF(EMPTY_STAFF);}
-  function del(id){const n=(staff||[]).filter(s=>s.id!==id);DB.set("staff",n);}
+  function save(){if(!f.name.trim())return;const n=f.id?validStaff.map(s=>s.id===f.id?{...f}:s):[...validStaff,{...f,id:Date.now()}];DB.set("staff",n);setShow(false);setF(EMPTY_STAFF);}
+  function del(id){const n=validStaff.filter(s=>s.id!==id);DB.set("staff",n);}
   function edit(s){setF({...s});setShow(true);}
 
   return<div style={{padding:14}}>
-    <SectionTitle action={<Btn sm onClick={()=>{setF(EMPTY_STAFF);setShow(true)}}>+ Personel Ekle</Btn>}>Personel ({(staff||[]).length})</SectionTitle>
-    {(staff||[]).length===0&&<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>Henüz personel kaydı bulunmuyor</div>}
-    {(staff||[]).map(s=><Card key={s.id}>
+    <SectionTitle action={<Btn sm onClick={()=>{setF(EMPTY_STAFF);setShow(true)}}>+ Personel Ekle</Btn>}>Personel ({validStaff.length})</SectionTitle>
+    {validStaff.length===0&&<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>Henüz personel kaydı bulunmuyor</div>}
+    {validStaff.map(s=><Card key={s.id}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
         <div><div style={{fontWeight:700,fontSize:15}}>{s.name}</div><div style={{fontSize:11,color:C.textSub,marginTop:2}}>{roleLabel(s.role)}{s.age?` · ${s.age} yaş`:""}</div></div>
         <span style={{fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:20,background:s.role==="trainer"?C.accentGlow:C.purpleBg,color:s.role==="trainer"?C.accent:C.purple}}>{roleLabel(s.role)}</span>
       </div>
-      {s.trainerLevel&&<div style={{fontSize:12,color:C.textSub,marginBottom:4}}>Antrenörlük Derecesi: <span style={{color:C.text,fontWeight:600}}>{s.trainerLevel}</span></div>}
-      {s.school&&<div style={{fontSize:12,color:C.textSub,marginBottom:4}}>Mezun: <span style={{color:C.text,fontWeight:600}}>{s.school}</span></div>}
       {s.phone&&<a href={`tel:${s.phone}`} style={{display:"block",fontSize:12,color:C.accent,textDecoration:"none",marginBottom:8}}>{s.phone}</a>}
-      <div style={{display:"flex",gap:8}}>
-        <Btn variant="secondary" sm onClick={()=>edit(s)} style={{flex:1}}>Düzenle</Btn>
-        <Btn variant="danger" sm onClick={()=>{if(confirm(`${s.name} silinsin mi?`))del(s.id);}}>Sil</Btn>
-      </div>
+      <div style={{display:"flex",gap:8}}><Btn variant="secondary" sm onClick={()=>edit(s)} style={{flex:1}}>Düzenle</Btn><Btn variant="danger" sm onClick={()=>{if(confirm(`${s.name} silinsin mi?`))del(s.id);}}>Sil</Btn></div>
     </Card>)}
     <Modal show={show} onClose={()=>{setShow(false);setF(EMPTY_STAFF);}} title={f.id?"Personel Düzenle":"Yeni Personel"}>
       <Inp label="Ad Soyad *" value={f.name} onChange={v=>u("name",v)}/>
       <Sel label="Görev" value={f.role} onChange={v=>u("role",v)} options={[{value:"trainer",label:"Antrenör"},{value:"admin",label:"İdari Personel"},{value:"driver",label:"Şoför"},{value:"other",label:"Diğer"}]}/>
-      <div style={{display:"flex",gap:8}}>
-        <div style={{flex:1}}><Inp label="Yaş" value={f.age} onChange={v=>u("age",v)} type="number"/></div>
-        <div style={{flex:1}}><Inp label="Telefon" value={f.phone} onChange={v=>u("phone",v)} type="tel"/></div>
-      </div>
-      <Inp label="E-posta" value={f.email} onChange={v=>u("email",v)} type="email"/>
-      {f.role==="trainer"&&<>
-        <Inp label="Mezun Olduğu Okul" value={f.school} onChange={v=>u("school",v)}/>
-        <Sel label="Antrenörlük Derecesi" value={f.trainerLevel} onChange={v=>u("trainerLevel",v)} options={[{value:"1.kademe",label:"1. Kademe"},{value:"2.kademe",label:"2. Kademe"},{value:"3.kademe",label:"3. Kademe"},{value:"milli",label:"Milli Antrenör"},{value:"other",label:"Diğer"}]}/>
-      </>}
-      <Inp label="Notlar" value={f.notes} onChange={v=>u("notes",v)} rows={2}/>
-      <div style={{display:"flex",gap:8,marginTop:8}}>
-        <Btn variant="secondary" onClick={()=>{setShow(false);setF(EMPTY_STAFF);}} style={{flex:1}}>İptal</Btn>
-        <Btn onClick={save} style={{flex:1}}>Kaydet</Btn>
-      </div>
+      <div style={{display:"flex",gap:8}}><div style={{flex:1}}><Inp label="Yaş" value={f.age} onChange={v=>u("age",v)} type="number"/></div><div style={{flex:1}}><Inp label="Telefon" value={f.phone} onChange={v=>u("phone",v)} type="tel"/></div></div>
+      <div style={{display:"flex",gap:8,marginTop:8}}><Btn variant="secondary" onClick={()=>{setShow(false);setF(EMPTY_STAFF);}} style={{flex:1}}>İptal</Btn><Btn onClick={save} style={{flex:1}}>Kaydet</Btn></div>
     </Modal>
   </div>
 }
 
-function InventoryPage({items, movements}){
+/* ═══════════════════════════════════════════════════════════════
+   SIFIRDAN YAPILAN ÇÖKMEYEN ENVANTER MODÜLÜ
+═══════════════════════════════════════════════════════════════ */
+const EMPTY_ITEM={id:null,name:"",category:"",price:"",stock:"",minStock:"",supplier:"",notes:""};
+const STOCK_CATS=["Gözlük","Bone","Palet","Şamandıra","Aksesuar","Kıyafet","Temizlik","Diğer"];
+
+function InventoryPage({items,movements}){
+  const validItems = safeArr(items);
+  const validMovements = safeArr(movements);
+
   const [show,setShow]=useState(false);
   const [f,setF]=useState(EMPTY_ITEM);
   const [editing,setEditing]=useState(null);
@@ -927,170 +834,154 @@ function InventoryPage({items, movements}){
   const u=(k,v)=>setF(p=>({...p,[k]:v}));
 
   function save(){
-    if(!f.name.trim())return;
-    let curr = items || [];
-    const n=f.id?curr.map(i=>i.id===f.id?{...f}:i):[...curr,{...f,id:Date.now()}];
-    DB.set("stock",n);setShow(false);setEditing(null);setF(EMPTY_ITEM);
+    if(!f.name.trim()) return;
+    const n = f.id ? validItems.map(i=>i.id===f.id?{...f}:i) : [...validItems,{...f,id:Date.now()}];
+    DB.set("stock",n); setShow(false); setEditing(null); setF(EMPTY_ITEM);
   }
-  function del(id){const n=(items||[]).filter(i=>i.id!==id);DB.set("stock",n);}
-  function edit(item){setF({...item});setEditing(item.id);setShow(true);}
-  function adj(id,delta){const n=(items||[]).map(i=>i.id===id?{...i,stock:Math.max(0,Number(i.stock||0)+delta)}:i);DB.set("stock",n);}
+  function del(id){const n = validItems.filter(i=>i.id!==id); DB.set("stock",n);}
+  function edit(item){setF({...item}); setEditing(item.id); setShow(true);}
+  function adj(id,delta){const n = validItems.map(i=>i.id===id ? {...i, stock: Math.max(0, Number(i.stock||0)+delta)} : i); DB.set("stock",n);}
+
   function addMovement(){
-    if(!movForm.itemId||!movForm.qty)return;
-    const item=(items||[]).find(i=>String(i.id)===String(movForm.itemId));
-    if(!item)return;
-    const delta=movForm.type==="in"?Number(movForm.qty):-Number(movForm.qty);
-    adj(item.id,delta);
-    const mov={id:Date.now(),...movForm,itemName:item.name,qty:Number(movForm.qty)};
-    DB.set("movements",[mov,...(movements||[])]);
-    setMovForm({itemId:"",type:"in",qty:1,note:"",date:TODAY});setShowMov(false);
+    if(!movForm.itemId || !movForm.qty) return;
+    const item = validItems.find(i=>String(i.id)===String(movForm.itemId));
+    if(!item) return;
+    const delta = movForm.type==="in" ? Number(movForm.qty) : -Number(movForm.qty);
+    adj(item.id, delta);
+    const mov = {id:Date.now(), ...movForm, itemName:item.name, qty:Number(movForm.qty)};
+    DB.set("movements", [mov, ...validMovements]);
+    setMovForm({itemId:"", type:"in", qty:1, note:"", date:TODAY}); setShowMov(false);
   }
+
   function downloadExcel() {
-    const headers = ["Urun Adi", "Kategori", "Birim Fiyat (TL)", "Stok Miktari", "Min Stok Uyari", "Tedarikci"];
-    const rows = (items||[]).map(i => [i.name, i.category||"-", i.price||"0", i.stock||"0", i.minStock||"-", i.supplier||"-"]);
+    const headers = ["Urun Adi", "Kategori", "Birim Fiyat (TL)", "Stok Miktari", "Min Stok Uyari"];
+    const rows = validItems.map(i => [i.name, i.category||"-", i.price||"0", i.stock||"0", i.minStock||"-"]);
     exportCSV("Envanter_Stok", headers, rows);
   }
 
-  const cats=["all",...new Set((items||[]).map(i=>i.category).filter(Boolean))];
-  const filtered=catFilter==="all"?(items||[]):(items||[]).filter(i=>i.category===catFilter);
-  const lowStock=(items||[]).filter(i=>Number(i.stock)<=Number(i.minStock||0)&&Number(i.stock)>0);
-  const outStock=(items||[]).filter(i=>Number(i.stock)===0);
-  const totalVal=(items||[]).reduce((t,i)=>t+Number(i.price||0)*Number(i.stock||0),0);
+  const cats=["all",...new Set(validItems.map(i=>i.category).filter(Boolean))];
+  const filtered=catFilter==="all"?validItems:validItems.filter(i=>i.category===catFilter);
+  const lowStock=validItems.filter(i=>Number(i.stock)<=Number(i.minStock||0)&&Number(i.stock)>0);
+  const outStock=validItems.filter(i=>Number(i.stock)===0);
+  const totalVal=validItems.reduce((t,i)=>t+Number(i.price||0)*Number(i.stock||0),0);
 
   return<div style={{padding:14}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
       <div style={{fontSize:11,fontWeight:700,color:C.accent,textTransform:"uppercase",letterSpacing:1}}>Envanter & Stok</div>
       <div style={{display:"flex",gap:6}}>
         <Btn sm variant="secondary" onClick={downloadExcel}>⬇️ Excel</Btn>
-        <Btn sm onClick={()=>setShowMov(true)}>Hareket Ekle</Btn>
+        <Btn sm onClick={()=>setShowMov(true)}>Hareket</Btn>
         <Btn sm onClick={()=>{setF(EMPTY_ITEM);setEditing(null);setShow(true);}}>+ Ürün</Btn>
       </div>
     </div>
+
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
-      <StatCard label="Toplam Ürün Çeşidi" value={(items||[]).length}/>
+      <StatCard label="Ürün Çeşidi" value={validItems.length}/>
       <StatCard label="Stok Değeri" value={`${totalVal.toLocaleString("tr-TR")} ₺`} col={C.success}/>
     </div>
-    {outStock.length>0&&<Card accent={C.danger} style={{marginBottom:8}}><div style={{fontSize:12,fontWeight:600,color:C.danger,marginBottom:4}}>Stok Bitti</div><div style={{fontSize:12,color:C.textSub}}>{outStock.map(i=>i.name).join(", ")}</div></Card>}
-    {lowStock.length>0&&<Card accent={C.warning} style={{marginBottom:10}}><div style={{fontSize:12,fontWeight:600,color:C.warning,marginBottom:4}}>Kritik Stok Seviyesi</div><div style={{fontSize:12,color:C.textSub}}>{lowStock.map(i=>`${i.name} (${i.stock})`).join(", ")}</div></Card>}
-    
+
+    {outStock.length>0&&<Card accent={C.danger} style={{marginBottom:8}}><div style={{fontSize:12,fontWeight:600,color:C.danger}}>Stok Bitti: {outStock.map(i=>i.name).join(", ")}</div></Card>}
+    {lowStock.length>0&&<Card accent={C.warning} style={{marginBottom:10}}><div style={{fontSize:12,fontWeight:600,color:C.warning}}>Kritik Stok: {lowStock.map(i=>`${i.name} (${i.stock})`).join(", ")}</div></Card>}
+
     <TabBar tabs={["Ürün Listesi","Stok Hareketleri"]} active={tab} onChange={setTab}/>
-    
+
     {tab===0&&<div>
-      {cats.length>1&&<div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:10}}>{cats.map(c=><button key={c} onClick={()=>setCatFilter(c)} style={{padding:"4px 12px",borderRadius:20,border:`1px solid ${catFilter===c?C.accent:C.border}`,background:catFilter===c?C.accentGlow:"transparent",color:catFilter===c?C.accent:C.textSub,cursor:"pointer",fontSize:11,fontWeight:catFilter===c?600:400,fontFamily:"inherit"}}>{c==="all"?"Tümü":c}</button>)}</div>}
+      {cats.length>1&&<div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:10}}>
+        {cats.map(c=><button key={c} onClick={()=>setCatFilter(c)} style={{padding:"4px 12px",borderRadius:20,border:`1px solid ${catFilter===c?C.accent:C.border}`,background:catFilter===c?C.accentGlow:"transparent",color:catFilter===c?C.accent:C.textSub,cursor:"pointer",fontSize:11,fontWeight:catFilter===c?600:400,fontFamily:"inherit"}}>{c==="all"?"Tümü":c}</button>)}
+      </div>}
       {filtered.length===0&&<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>Ürün bulunamadı</div>}
-      {filtered.map(item=><Card key={item.id} accent={Number(item.stock)===0?C.danger:(Number(item.stock)<=Number(item.minStock||0)?C.warning:undefined)}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
-          <div><div style={{fontWeight:700,fontSize:15}}>{item.name}</div>{item.category&&<div style={{fontSize:11,color:C.textSub,marginTop:1}}>{item.category}</div>}</div>
-          <div style={{textAlign:"right"}}><div style={{fontWeight:700,color:C.success,fontSize:14}}>{Number(item.price||0).toLocaleString("tr-TR")} ₺</div></div>
-        </div>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-          <div style={{display:"flex",alignItems:"center",gap:12}}>
-            <button onClick={()=>adj(item.id,-1)} style={{width:28,height:28,borderRadius:6,border:`1px solid ${C.border}`,background:"transparent",color:C.danger,cursor:"pointer",fontSize:16,fontWeight:700}}>−</button>
-            <div style={{textAlign:"center", fontSize:22,fontWeight:800}}>{item.stock}</div>
-            <button onClick={()=>adj(item.id,1)} style={{width:28,height:28,borderRadius:6,border:`1px solid ${C.border}`,background:"transparent",color:C.success,cursor:"pointer",fontSize:16,fontWeight:700}}>+</button>
+      {filtered.map(item=>(
+        <Card key={item.id} accent={Number(item.stock)===0?C.danger:(Number(item.stock)<=Number(item.minStock||0)?C.warning:undefined)}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
+            <div><div style={{fontWeight:700,fontSize:15}}>{item.name}</div><div style={{fontSize:11,color:C.textSub}}>{item.category||"Kategori Yok"}</div></div>
+            <div style={{textAlign:"right"}}><div style={{fontWeight:700,color:C.success,fontSize:14}}>{Number(item.price||0).toLocaleString("tr-TR")} ₺</div><div style={{fontSize:10,color:C.textMuted}}>birim fiyat</div></div>
           </div>
-        </div>
-        <div style={{display:"flex",gap:8}}><Btn variant="secondary" sm onClick={()=>edit(item)} style={{flex:1}}>Düzenle</Btn><Btn variant="danger" sm onClick={()=>{if(confirm(`${item.name} silinsin mi?`))del(item.id);}}>Sil</Btn></div>
-      </Card>)}
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+            <div style={{display:"flex",alignItems:"center",gap:12}}>
+              <button onClick={()=>adj(item.id,-1)} style={{width:28,height:28,borderRadius:6,border:`1px solid ${C.borderLight}`,background:"transparent",color:C.danger,cursor:"pointer",fontSize:16,fontWeight:700}}>−</button>
+              <div style={{textAlign:"center"}}><div style={{fontSize:22,fontWeight:800,color:Number(item.stock)===0?C.danger:C.text}}>{item.stock}</div></div>
+              <button onClick={()=>adj(item.id,1)} style={{width:28,height:28,borderRadius:6,border:`1px solid ${C.borderLight}`,background:"transparent",color:C.success,cursor:"pointer",fontSize:16,fontWeight:700}}>+</button>
+            </div>
+          </div>
+          <div style={{display:"flex",gap:8}}><Btn variant="secondary" sm onClick={()=>edit(item)} style={{flex:1}}>Düzenle</Btn><Btn variant="danger" sm onClick={()=>{if(confirm(`${item.name} silinsin mi?`))del(item.id);}}>Sil</Btn></div>
+        </Card>
+      ))}
     </div>}
-    
+
     {tab===1&&<div>
-      {(movements||[]).length===0?<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>Stok hareketi bulunmuyor</div>:
+      {validMovements.length===0?<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>Kayıt yok</div>:
       <Card>
-        {(movements||[]).slice(0,50).map((m,i)=><div key={m.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:i===Math.min((movements||[]).length,50)-1?"none":`1px solid ${C.border}`}}>
-          <div><div style={{fontSize:13,fontWeight:600}}>{m.itemName}</div><div style={{fontSize:11,color:C.textSub}}>{fmtDate(m.date)}{m.note?` · ${m.note}`:""}</div></div>
+        {validMovements.slice(0,50).map((m,i)=><div key={m.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:i===Math.min(validMovements.length,50)-1?"none":`1px solid ${C.borderLight}`}}>
+          <div><div style={{fontSize:13,fontWeight:600}}>{m.itemName}</div><div style={{fontSize:11,color:C.textSub}}>{fmtDate(m.date)}</div></div>
           <span style={{fontWeight:700,fontSize:14,color:m.type==="in"?C.success:C.danger}}>{m.type==="in"?"+":"-"}{m.qty}</span>
         </div>)}
       </Card>}
     </div>}
 
     <Modal show={show} onClose={()=>{setShow(false);setF(EMPTY_ITEM);}} title={editing?"Ürün Düzenle":"Yeni Ürün Ekle"}>
-      <Inp label="Ürün Adı *" value={f.name} onChange={v=>u("name",v)} placeholder="örn. Yüzücü Gözlüğü"/>
+      <Inp label="Ürün Adı *" value={f.name} onChange={v=>u("name",v)}/>
       <Sel label="Kategori" value={f.category} onChange={v=>u("category",v)} options={STOCK_CATS.map(c=>({value:c,label:c}))}/>
-      <div style={{display:"flex",gap:8}}>
-        <div style={{flex:1}}><Inp label="Birim Fiyat (₺)" value={f.price} onChange={v=>u("price",v)} type="number"/></div>
-        <div style={{flex:1}}><Inp label="Mevcut Stok" value={f.stock} onChange={v=>u("stock",v)} type="number"/></div>
-      </div>
-      <div style={{display:"flex",gap:8}}>
-        <div style={{flex:1}}><Inp label="Min. Stok Uyarısı" value={f.minStock} onChange={v=>u("minStock",v)} type="number"/></div>
-        <div style={{flex:1}}><Inp label="Tedarikçi" value={f.supplier} onChange={v=>u("supplier",v)}/></div>
-      </div>
-      <Inp label="Notlar" value={f.notes} onChange={v=>u("notes",v)} rows={2}/>
+      <div style={{display:"flex",gap:8}}><div style={{flex:1}}><Inp label="Birim Fiyat (₺)" value={f.price} onChange={v=>u("price",v)} type="number"/></div><div style={{flex:1}}><Inp label="Stok" value={f.stock} onChange={v=>u("stock",v)} type="number"/></div></div>
       <div style={{display:"flex",gap:8,marginTop:8}}><Btn variant="secondary" onClick={()=>{setShow(false);setF(EMPTY_ITEM);}} style={{flex:1}}>İptal</Btn><Btn onClick={save} style={{flex:1}}>Kaydet</Btn></div>
     </Modal>
 
     <Modal show={showMov} onClose={()=>setShowMov(false)} title="Stok Hareketi Ekle">
-      <Sel label="Ürün *" value={movForm.itemId} onChange={v=>setMovForm(p=>({...p,itemId:v}))} options={(items||[]).map(i=>({value:String(i.id),label:i.name}))}/>
+      <Sel label="Ürün *" value={movForm.itemId} onChange={v=>setMovForm(p=>({...p,itemId:v}))} options={validItems.map(i=>({value:String(i.id),label:i.name}))}/>
       <Sel label="İşlem Türü" value={movForm.type} onChange={v=>setMovForm(p=>({...p,type:v}))} options={[{value:"in",label:"Stok Girişi"},{value:"out",label:"Stok Çıkışı"}]}/>
-      <div style={{display:"flex",gap:8}}>
-        <div style={{flex:1}}><Inp label="Miktar" value={movForm.qty} onChange={v=>setMovForm(p=>({...p,qty:v}))} type="number"/></div>
-        <div style={{flex:1}}><Inp label="Tarih" value={movForm.date} onChange={v=>setMovForm(p=>({...p,date:v}))} type="date"/></div>
-      </div>
-      <Inp label="Not" value={movForm.note} onChange={v=>setMovForm(p=>({...p,note:v}))} placeholder="Açıklama..."/>
+      <div style={{display:"flex",gap:8}}><div style={{flex:1}}><Inp label="Miktar" value={movForm.qty} onChange={v=>setMovForm(p=>({...p,qty:v}))} type="number"/></div><div style={{flex:1}}><Inp label="Tarih" value={movForm.date} onChange={v=>setMovForm(p=>({...p,date:v}))} type="date"/></div></div>
       <div style={{display:"flex",gap:8,marginTop:8}}><Btn variant="secondary" onClick={()=>setShowMov(false)} style={{flex:1}}>İptal</Btn><Btn onClick={addMovement} style={{flex:1}}>Kaydet</Btn></div>
     </Modal>
   </div>
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   YENİ: WHATSAPP YÖNETİM MERKEZİ
+   WHATSAPP SAYFASI (Grup Daveti & Kurumsal)
 ═══════════════════════════════════════════════════════════════ */
-function WhatsAppPage({students, waGroupLink, setWaGroupLink}) {
+function WhatsAppPage({students, waGroupLink}) {
   const [linkInput, setLinkInput] = useState(waGroupLink || "");
   const [saveMsg, setSaveMsg] = useState("");
-
-  const activeStudents = (students||[]).filter(s => courseStatus(s) === "active" && s.guardianPhone1);
+  const activeStudents = safeArr(students).filter(s => courseStatus(s) === "active" && s.guardianPhone1);
 
   function saveLink() {
     DB.set("waGroupLink", linkInput);
-    setWaGroupLink(linkInput);
-    setSaveMsg("Grup davet bağlantısı kaydedildi!");
+    setSaveMsg("Grup bağlantısı kaydedildi!");
     setTimeout(() => setSaveMsg(""), 3000);
   }
 
   function sendInvite(student) {
-    if(!waGroupLink) { alert("Lütfen önce yukarıya WhatsApp grup bağlantınızı kaydedin."); return; }
-    const msg = `Sayın velimiz, ${student.name} isimli öğrencimizin antrenman ve duyuru takibi için kulübümüzün resmi WhatsApp grubuna aşağıdaki linkten katılabilirsiniz:\n\n${waGroupLink}`;
+    if(!waGroupLink) { alert("Lütfen önce grubunuzun WhatsApp bağlantısını kaydedin."); return; }
+    const msg = `Sayın velimiz,\n${student.name} isimli öğrencimizin antrenman ve duyuru takibi için kulübümüzün resmi WhatsApp grubuna aşağıdaki linkten katılabilirsiniz:\n\n${waGroupLink}`;
     openWA(student.guardianPhone1, msg);
   }
 
   return <div style={{padding:14}}>
-    <SectionTitle>WhatsApp Entegrasyonu</SectionTitle>
-
+    <SectionTitle>WhatsApp Web Merkezi</SectionTitle>
     <Card style={{marginBottom:16}}>
       <div style={{display:"flex", alignItems:"center", gap:12, marginBottom:10}}>
         <div style={{width:40, height:40, borderRadius:"50%", background:C.whatsappBg, display:"flex", alignItems:"center", justifyContent:"center", color:C.whatsapp}}>
           <svg width={22} height={22} viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.482-1.46-1.656-1.758-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z M12 22C6.477 22 2 17.523 2 12c0-1.76.452-3.414 1.25-4.832L2 2l5.344 1.156C8.683 2.43 10.297 2 12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10z"/></svg>
         </div>
-        <div>
-          <div style={{fontWeight:700, fontSize:15}}>WhatsApp Web Girişi</div>
-          <div style={{fontSize:11, color:C.textSub}}>Güvenlik nedeniyle işlemler yeni sekmede açılır.</div>
-        </div>
+        <div><div style={{fontWeight:700, fontSize:15}}>WhatsApp Web Uygulaması</div><div style={{fontSize:11, color:C.textSub}}>Güvenlik kısıtlamaları gereği yeni sekmede açılır.</div></div>
       </div>
       <Btn full style={{background:C.whatsapp, color:"#fff", border:"none"}} onClick={()=>window.open("https://web.whatsapp.com", "_blank")}>WhatsApp Web'i Aç</Btn>
     </Card>
-
-    <SectionTitle>Grup Davet İşlemleri</SectionTitle>
+    <SectionTitle>Gruba Otomatik Davet Sistemi</SectionTitle>
     <Card style={{marginBottom:16}}>
-      <div style={{fontSize:12, color:C.textSub, marginBottom:12, lineHeight:1.5}}>WhatsApp grubunuzun "Bağlantı ile davet et" seçeneğindeki linki buraya kaydedin. Ardından öğrencilere tek tıkla gruba katılma mesajı gönderebilirsiniz.</div>
+      <div style={{fontSize:12, color:C.textSub, marginBottom:12}}>WhatsApp grubunuzun "Bağlantı ile davet et" linkini kaydedin.</div>
       <div style={{display:"flex", gap:8}}>
-        <input style={{flex:1, padding:"9px 11px", background:C.bg, border:`1px solid ${C.border}`, borderRadius:8, color:C.text, fontSize:13, outline:"none"}} value={linkInput} onChange={e=>setLinkInput(e.target.value)} placeholder="https://chat.whatsapp.com/..." />
+        <input style={{flex:1, padding:"9px 11px", background:C.bg, border:`1px solid ${C.borderLight}`, borderRadius:8, color:C.text, fontSize:13, outline:"none"}} value={linkInput} onChange={e=>setLinkInput(e.target.value)} placeholder="https://chat.whatsapp.com/..." />
         <Btn onClick={saveLink}>Kaydet</Btn>
       </div>
       {saveMsg && <div style={{fontSize:12, color:C.success, marginTop:8, fontWeight:600}}>{saveMsg}</div>}
     </Card>
-
     {activeStudents.length > 0 && (
       <div>
-        <div style={{fontSize:12, fontWeight:600, color:C.textSub, marginBottom:8, textTransform:"uppercase"}}>Grup Daveti Bekleyenler ({activeStudents.length})</div>
+        <div style={{fontSize:12, fontWeight:600, color:C.textSub, marginBottom:8}}>AKTİF ÖĞRENCİLERE DAVET GÖNDER ({activeStudents.length})</div>
         <Card>
           {activeStudents.map((s, i) => (
             <div key={s.id} style={{display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 0", borderBottom:i===activeStudents.length-1?"none":`1px solid ${C.borderLight}`}}>
-              <div>
-                <div style={{fontWeight:600, fontSize:14}}>{s.name}</div>
-                <div style={{fontSize:11, color:C.textMuted}}>Veli: {s.guardianPhone1}</div>
-              </div>
-              <Btn sm style={{background:C.whatsappBg, color:C.whatsapp, border:"none"}} onClick={()=>sendInvite(s)}>Davet Gönder</Btn>
+              <div><div style={{fontWeight:600, fontSize:14}}>{s.name}</div><div style={{fontSize:11, color:C.textMuted}}>{s.guardianPhone1}</div></div>
+              <Btn sm style={{background:C.whatsappBg, color:C.whatsapp, border:"none"}} onClick={()=>sendInvite(s)}>Davet At</Btn>
             </div>
           ))}
         </Card>
@@ -1103,19 +994,21 @@ function WhatsAppPage({students, waGroupLink, setWaGroupLink}) {
    GELİŞMİŞ KURUMSAL DASHBOARD
 ═══════════════════════════════════════════════════════════════ */
 function Dashboard({students,stockItems,expenses}){
-  const active=(students||[]).filter(s=>courseStatus(s)==="active");
-  const presentToday=(students||[]).filter(s=>(s.attendance||{})[TODAY]).length;
+  const safeStudents = safeArr(students);
+  const safeExpenses = safeArr(expenses);
+  const active=safeStudents.filter(s=>courseStatus(s)==="active");
+  const presentToday=safeStudents.filter(s=>(s.attendance||{})[TODAY]).length;
   
-  const totalRev=(students||[]).reduce((t,s)=>t+totalPaid(s),0);
-  const totalExp=(expenses||[]).reduce((t,e)=>t+Number(e.amount||0),0);
+  const totalRev=safeStudents.reduce((t,s)=>t+totalPaid(s),0);
+  const totalExp=safeExpenses.reduce((t,e)=>t+Number(e.amount||0),0);
   const netProfit = totalRev - totalExp;
 
-  // Özel Filtreler
-  const recentRegistrations = [...(students||[])].sort((a,b) => b.id - a.id).slice(0, 5);
-  const recentPay = (students||[]).flatMap(s=>(s.payments||[]).map(p=>({...p,studentName:s.name}))).sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
+  // Özel Tablo Filtreleri
+  const recentRegistrations = [...safeStudents].sort((a,b) => b.id - a.id).slice(0, 5);
+  const recentPay = safeStudents.flatMap(s=>safeArr(s.payments).map(p=>({...p,studentName:s.name}))).sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
   const endingSoon = active.filter(s=>{const d=daysLeft(s);return d>=0&&d<=14;}).sort((a,b)=>daysLeft(a)-daysLeft(b)).slice(0,5);
   
-  const foodWarnings = (expenses||[]).filter(e => {
+  const foodWarnings = safeExpenses.filter(e => {
     if(!e.isFood || !e.expiryDate) return false;
     const days = Math.ceil((new Date(e.expiryDate) - new Date(TODAY))/86400000);
     return days <= 7;
@@ -1139,7 +1032,6 @@ function Dashboard({students,stockItems,expenses}){
       </div>
     </Card>
 
-    {/* UYARILAR */}
     {foodWarnings.length>0&&<div style={{marginBottom:12}}>
       {foodWarnings.map(f=>{
          const d = Math.ceil((new Date(f.expiryDate)-new Date(TODAY))/86400000);
@@ -1149,12 +1041,9 @@ function Dashboard({students,stockItems,expenses}){
       })}
     </div>}
 
-    {/* KURUMSAL TABLO: SON KAYITLAR */}
     <SectionTitle>Son Kayıt Olanlar</SectionTitle>
     <Card style={{padding:"8px 14px"}}>
-      <div className="data-row data-header">
-        <div>Öğrenci Adı</div><div>Kayıt Trh.</div><div className="data-col-right">Grup</div>
-      </div>
+      <div className="data-row data-header"><div>Öğrenci Adı</div><div>Kayıt Trh.</div><div className="data-col-right">Grup</div></div>
       {recentRegistrations.length === 0 ? <div style={{padding:"10px 0", fontSize:12, color:C.textMuted, textAlign:"center"}}>Kayıt yok.</div> :
         recentRegistrations.map(s => (
           <div className="data-row" key={`reg-${s.id}`}>
@@ -1166,12 +1055,9 @@ function Dashboard({students,stockItems,expenses}){
       }
     </Card>
 
-    {/* KURUMSAL TABLO: SON ÖDEMELER */}
     <SectionTitle>Son Ödemeler</SectionTitle>
     <Card style={{padding:"8px 14px"}}>
-      <div className="data-row data-header">
-        <div>Öğrenci Adı</div><div>İşlem Trh.</div><div className="data-col-right">Tutar</div>
-      </div>
+      <div className="data-row data-header"><div>Öğrenci Adı</div><div>İşlem Trh.</div><div className="data-col-right">Tutar</div></div>
       {recentPay.length === 0 ? <div style={{padding:"10px 0", fontSize:12, color:C.textMuted, textAlign:"center"}}>Ödeme kaydı yok.</div> :
         recentPay.map((p, i) => (
           <div className="data-row" key={`pay-${i}`}>
@@ -1183,14 +1069,11 @@ function Dashboard({students,stockItems,expenses}){
       }
     </Card>
 
-    {/* KURUMSAL TABLO: BİTİŞİ YAKLAŞANLAR */}
     {endingSoon.length > 0 && (
       <>
         <SectionTitle>Kayıt Bitişi Yaklaşanlar</SectionTitle>
         <Card style={{padding:"8px 14px", border:`1px solid ${C.warning}40`}}>
-          <div className="data-row data-header">
-            <div>Öğrenci Adı</div><div>Bitiş Trh.</div><div className="data-col-right">Kalan</div>
-          </div>
+          <div className="data-row data-header"><div>Öğrenci Adı</div><div>Bitiş Trh.</div><div className="data-col-right">Kalan</div></div>
           {endingSoon.map(s => (
             <div className="data-row" key={`end-${s.id}`}>
               <div className="data-col" style={{fontWeight:600}}>{s.name}</div>
@@ -1205,11 +1088,12 @@ function Dashboard({students,stockItems,expenses}){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   SETTINGS
+   AYARLAR: KULLANICILAR VE YETKİLENDİRME (RBAC)
 ═══════════════════════════════════════════════════════════════ */
-function SettingsPage({navItems, clubName, logoUrl, themeColor, sidebarColor, cardColor, pinCode}){
+function SettingsPage({navItems, clubName, logoUrl, themeColor, sidebarColor, cardColor, appUsers}){
   const [tab, setTab] = useState(0);
 
+  // Genel & Görünüm
   const [nameVal, setNameVal] = useState(clubName);
   const [logoVal, setLogoVal] = useState(logoUrl);
   const [colorVal, setColorVal] = useState(themeColor);
@@ -1217,11 +1101,9 @@ function SettingsPage({navItems, clubName, logoUrl, themeColor, sidebarColor, ca
   const [cardColorVal, setCardColorVal] = useState(cardColor);
   const [saveMsg, setSaveMsg] = useState("");
 
-  const [oldPin, setOldPin] = useState("");
-  const [newPin, setNewPin] = useState("");
-  const [confirmPin, setConfirmPin] = useState("");
-  const [secAnswer, setSecAnswer] = useState("");
-  const [secMsg, setSecMsg] = useState(null);
+  // Kullanıcı Ekleme Modali
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [uForm, setUForm] = useState({ id:null, username:"", password:"", role:"staff", allowedTabs:[] });
 
   useEffect(() => {
     setNameVal(clubName); setLogoVal(logoUrl); setColorVal(themeColor);
@@ -1234,26 +1116,42 @@ function SettingsPage({navItems, clubName, logoUrl, themeColor, sidebarColor, ca
     setSaveMsg("Ayarlar başarıyla kaydedildi."); setTimeout(()=>setSaveMsg(""), 3000);
   }
 
-  function changePin(){
-    if(oldPin !== pinCode) { setSecMsg({type:"error", text:"Mevcut PIN hatalı!"}); return; }
-    if(newPin.length !== 4) { setSecMsg({type:"error", text:"Yeni PIN 4 haneli olmalı!"}); return; }
-    if(newPin !== confirmPin) { setSecMsg({type:"error", text:"Yeni PIN'ler eşleşmiyor!"}); return; }
-    if(oldPin === newPin) { setSecMsg({type:"error", text:"Yeni PIN eskisiyle aynı olamaz!"}); return; }
-    if(secAnswer.trim().toLowerCase() !== clubName.trim().toLowerCase()) { setSecMsg({type:"error", text:"Güvenlik doğrulaması başarısız!"}); return; }
-    DB.set("pinCode", newPin);
-    setSecMsg({type:"success", text:"PIN başarıyla güncellendi!"});
-    setOldPin(""); setNewPin(""); setConfirmPin(""); setSecAnswer(""); setTimeout(()=>setSecMsg(null), 3000);
-  }
-
   function moveUp(i){if(i===0)return;const n=[...navItems];[n[i-1],n[i]]=[n[i],n[i-1]];DB.set("navItems",n);}
   function moveDown(i){if(i===navItems.length-1)return;const n=[...navItems];[n[i],n[i+1]]=[n[i+1],n[i]];DB.set("navItems",n);}
   function toggleVis(id){const n=navItems.map(t=>t.id===id?{...t,visible:!t.visible}:t);DB.set("navItems",n);}
   function editLabel(id,label){const n=navItems.map(t=>t.id===id?{...t,label}:t);DB.set("navItems",n);}
-  function resetAll(){if(!confirm("Menü ayarları sıfırlansın mı?"))return;DB.set("navItems",NAV_ITEMS);}
+  
   function resetColors(){setColorVal("#070D1A"); setSidebarColorVal("#090F1E"); setCardColorVal("#101E35");}
 
+  // KULLANICI YÖNETİMİ
+  function toggleMenuAccess(menuId) {
+    const tabs = uForm.allowedTabs || [];
+    if(tabs.includes(menuId)) setUForm({...uForm, allowedTabs: tabs.filter(t=>t!==menuId)});
+    else setUForm({...uForm, allowedTabs: [...tabs, menuId]});
+  }
+
+  function saveUser() {
+    if(!uForm.username || !uForm.password) { alert("Kullanıcı adı ve şifre zorunludur!"); return; }
+    if(uForm.username.toLowerCase() === "admin" && uForm.id !== "admin") { alert("'admin' kullanıcı adı rezerve edilmiştir."); return; }
+    
+    let n = safeArr(appUsers);
+    if(uForm.id) {
+       n = n.map(u => u.id === uForm.id ? {...uForm} : u);
+    } else {
+       n = [...n, {...uForm, id:Date.now()}];
+    }
+    DB.set("appUsers", n);
+    setShowUserModal(false);
+  }
+
+  function deleteUser(id) {
+    if(id === "admin") { alert("Ana yönetici hesabı silinemez!"); return; }
+    DB.set("appUsers", safeArr(appUsers).filter(u => u.id !== id));
+  }
+
   return<div style={{padding:14}}>
-    <TabBar tabs={["Genel & Görünüm", "Menü Düzenleme", "Güvenlik"]} active={tab} onChange={setTab}/>
+    <TabBar tabs={["Genel & Renk", "Menü Ayarları", "Kullanıcılar / Yetkiler"]} active={tab} onChange={setTab}/>
+    
     {tab === 0 && (
       <div>
         <SectionTitle>Genel Ayarlar</SectionTitle>
@@ -1282,6 +1180,7 @@ function SettingsPage({navItems, clubName, logoUrl, themeColor, sidebarColor, ca
         {saveMsg && <div style={{marginTop:12, fontSize:13, color:C.success, textAlign:"center", fontWeight:600}}>{saveMsg}</div>}
       </div>
     )}
+
     {tab === 1 && (
       <div>
         <SectionTitle>Menü Özelleştirme</SectionTitle>
@@ -1296,27 +1195,55 @@ function SettingsPage({navItems, clubName, logoUrl, themeColor, sidebarColor, ca
             <Toggle checked={t.visible} onChange={()=>toggleVis(t.id)}/>
           </div>
         </Card>)}
-        <Btn variant="danger" full onClick={resetAll} style={{marginTop:4}}>Menü Ayarlarını Sıfırla</Btn>
       </div>
     )}
+
     {tab === 2 && (
       <div>
-        <SectionTitle>Güvenlik Ayarları (PIN Değiştirme)</SectionTitle>
-        <Card>
-          <Inp label="Mevcut PIN" value={oldPin} onChange={setOldPin} type="password" placeholder="••••" style={{letterSpacing:8, fontSize:16}}/>
-          <div style={{display:"flex", gap:8}}>
-            <Inp label="Yeni PIN" value={newPin} onChange={setNewPin} type="password" placeholder="••••" half style={{letterSpacing:8, fontSize:16}}/>
-            <Inp label="Yeni PIN (Tekrar)" value={confirmPin} onChange={setConfirmPin} type="password" placeholder="••••" half style={{letterSpacing:8, fontSize:16}}/>
+        <SectionTitle action={<Btn sm onClick={()=>{setUForm({ id:null, username:"", password:"", role:"staff", allowedTabs:["dashboard", "attendance"] }); setShowUserModal(true);}}>+ Personel Ekle</Btn>}>Yetkili Kullanıcılar</SectionTitle>
+        <div style={{fontSize:12,color:C.textSub,marginBottom:12,lineHeight:1.6}}>Çalışanlarınızın panele girerken kullanacağı hesapları ve görebilecekleri menüleri belirleyin.</div>
+        
+        {safeArr(appUsers).map(u => (
+          <Card key={u.id} accent={u.role === "admin" ? C.accent : undefined}>
+            <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+              <div>
+                <div style={{fontWeight:700, fontSize:15}}>{u.username} <span style={{fontSize:10, padding:"2px 6px", background:u.role==="admin"?C.accentGlow:C.successBg, color:u.role==="admin"?C.accent:C.success, borderRadius:10, marginLeft:6}}>{u.role==="admin"?"Yönetici":"Çalışan"}</span></div>
+                <div style={{fontSize:11, color:C.textSub, marginTop:2}}>Şifre: {u.password}</div>
+              </div>
+              <div style={{display:"flex", gap:6}}>
+                <Btn sm variant="secondary" onClick={()=>{setUForm(u); setShowUserModal(true);}}>Düzenle</Btn>
+                {u.id !== "admin" && <Btn sm variant="danger" onClick={()=>deleteUser(u.id)}>Sil</Btn>}
+              </div>
+            </div>
+          </Card>
+        ))}
+
+        <Modal show={showUserModal} onClose={()=>setShowUserModal(false)} title={uForm.id ? "Kullanıcı Düzenle" : "Yeni Kullanıcı Ekle"}>
+          <Inp label="Kullanıcı Adı *" value={uForm.username} onChange={v=>setUForm({...uForm, username:v})} disabled={uForm.id==="admin"} placeholder="Örn: ahmet123"/>
+          <Inp label="Giriş Şifresi *" value={uForm.password} onChange={v=>setUForm({...uForm, password:v})} placeholder="••••"/>
+          
+          {uForm.id !== "admin" && (
+            <>
+              <div style={{height:1, background:C.borderLight, margin:"16px 0"}}/>
+              <div style={{fontSize:13, fontWeight:600, marginBottom:8}}>Görüntüleme Yetkileri</div>
+              <div style={{fontSize:11, color:C.textSub, marginBottom:12}}>Bu çalışanın sol menüde hangi sayfaları görebileceğini seçin.</div>
+              
+              <div style={{display:"flex", flexDirection:"column", gap:8}}>
+                {NAV_ITEMS.filter(n=>n.id!=="settings").map(nav => (
+                  <label key={nav.id} style={{display:"flex", alignItems:"center", gap:10, padding:"10px 12px", background:C.bg, borderRadius:8, border:`1px solid ${(uForm.allowedTabs||[]).includes(nav.id)?C.accent:C.borderLight}`, cursor:"pointer"}}>
+                    <input type="checkbox" checked={(uForm.allowedTabs||[]).includes(nav.id)} onChange={()=>toggleMenuAccess(nav.id)} style={{width:16, height:16}} />
+                    <span style={{fontSize:13, fontWeight:500}}>{nav.label}</span>
+                  </label>
+                ))}
+              </div>
+            </>
+          )}
+          
+          <div style={{display:"flex", gap:8, marginTop:16}}>
+            <Btn variant="secondary" onClick={()=>setShowUserModal(false)} style={{flex:1}}>İptal</Btn>
+            <Btn onClick={saveUser} style={{flex:1}}>Kaydet</Btn>
           </div>
-          <div style={{height:1,background:C.border,margin:"12px 0 16px"}}/>
-          <div style={{background:C.warningBg, border:`1px solid ${C.warning}40`, padding:12, borderRadius:8, marginBottom:12}}>
-            <div style={{fontSize:11, color:C.warning, fontWeight:700, marginBottom:4}}>GÜVENLİK DOĞRULAMASI</div>
-            <div style={{fontSize:12, color:C.textSub, marginBottom:8}}>Yetkisiz işlemi önlemek için onay sorusunu yanıtlayın. Lütfen kulübünüzün şu anki adını (<strong style={{color:C.text}}>{clubName}</strong>) kutucuğa yazın.</div>
-            <Inp value={secAnswer} onChange={setSecAnswer} placeholder="Kulüp adını yazın..." />
-          </div>
-          <Btn full onClick={changePin}>PIN Kodunu Güncelle</Btn>
-          {secMsg && <div style={{marginTop:12, fontSize:13, color:secMsg.type==="error"?C.danger:C.success, textAlign:"center", fontWeight:600}}>{secMsg.text}</div>}
-        </Card>
+        </Modal>
       </div>
     )}
   </div>
@@ -1326,24 +1253,26 @@ function SettingsPage({navItems, clubName, logoUrl, themeColor, sidebarColor, ca
    APP ROOT
 ═══════════════════════════════════════════════════════════════ */
 function App(){
-  const [isAuthenticated, setIsAuthenticated] = useState(() => sessionStorage.getItem("aqua_auth") === "1");
+  const [currentUser, setCurrentUser] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem("aqua_user")); } catch { return null; }
+  });
+  
   const [isDbLoaded, setIsDbLoaded] = useState(false);
-
   const [students,setStudents]=useState([]);
   const [staff,setStaff]=useState([]);
   const [stockItems,setStockItems]=useState([]);
-  const [movements,setMovements]=useState([]);
   const [expenses,setExpenses]=useState([]);
   
   const [clubName,setClubName]=useState("AquaClub");
   const [navItems,setNavItems]=useState(NAV_ITEMS);
-  const [pinCode,setPinCode]=useState("0309");
+  const [appUsers, setAppUsers]=useState([]);
+  const [oldPinCode, setOldPinCode]=useState("0309"); // Eski pin kodu geçişi için
+  const [waGroupLink,setWaGroupLink]=useState("");
   
   const [themeColor,setThemeColor]=useState("#070D1A");
   const [sidebarColor,setSidebarColor]=useState("#090F1E");
   const [cardColor,setCardColor]=useState("#101E35");
   const [logoUrl,setLogoUrl]=useState("");
-  const [waGroupLink,setWaGroupLink]=useState("");
   
   const [activeTab,setActiveTab]=useState("dashboard");
   const [sidebarOpen,setSidebarOpen]=useState(false);
@@ -1352,134 +1281,97 @@ function App(){
     document.documentElement.style.setProperty('--bg-color', themeColor);
     document.documentElement.style.setProperty('--sidebar-bg', sidebarColor);
     document.documentElement.style.setProperty('--card-bg', cardColor);
-    const metaTheme = document.querySelector('meta[name="theme-color"]');
-    if(metaTheme) metaTheme.setAttribute("content", themeColor);
   }, [themeColor, sidebarColor, cardColor]);
 
   useEffect(() => {
     const unsub = db.collection("appData").doc("main").onSnapshot((doc) => {
       if (doc.exists) {
         const d = doc.data();
-        if (d.students) setStudents(d.students);
-        if (d.staff) setStaff(d.staff);
-        if (d.stock) setStockItems(d.stock);
-        if (d.movements) setMovements(d.movements);
-        if (d.expenses) setExpenses(d.expenses);
+        if (d.students) setStudents(safeArr(d.students));
+        if (d.staff) setStaff(safeArr(d.staff));
+        if (d.stock) setStockItems(safeArr(d.stock));
+        if (d.expenses) setExpenses(safeArr(d.expenses));
+        if (d.waGroupLink) setWaGroupLink(d.waGroupLink);
+        
         if (d.clubName) setClubName(d.clubName);
-        if (d.pinCode) setPinCode(d.pinCode);
+        if (d.pinCode) setOldPinCode(d.pinCode); 
+        
+        // ADMIN Kullanıcısı otomatik oluşturulur veya çekilir
+        let loadedUsers = safeArr(d.appUsers);
+        if (loadedUsers.length === 0) {
+           loadedUsers = [{ id:"admin", username:"admin", password: d.pinCode || "0309", role:"admin", allowedTabs: NAV_ITEMS.map(n=>n.id) }];
+        }
+        setAppUsers(loadedUsers);
+
         if (d.themeColor) setThemeColor(d.themeColor);
         if (d.sidebarColor) setSidebarColor(d.sidebarColor);
         if (d.cardColor) setCardColor(d.cardColor);
         if (d.logoUrl) setLogoUrl(d.logoUrl);
-        if (d.waGroupLink) setWaGroupLink(d.waGroupLink);
-        
-        if (d.navItems) {
-           let loadedNav = d.navItems;
-           let updated = false;
-           NAV_ITEMS.forEach(baseItem => {
-              if(!loadedNav.find(n => n.id === baseItem.id)) {
-                 loadedNav.push(baseItem); updated = true;
-              }
-           });
-           setNavItems(loadedNav);
-           if(updated) DB.set("navItems", loadedNav);
-        }
+        if (d.navItems) setNavItems(safeArr(d.navItems));
       }
       setIsDbLoaded(true);
-    }, (error) => {
-       console.error("Firebase veri çekme hatası:", error);
-       alert("Veritabanına bağlanılamadı. Ayarları kontrol edin.");
     });
     return () => unsub();
   }, []);
 
-  if (!isDbLoaded) {
-    return (
-      <div style={{display:"flex",flexDirection:"column",height:"100vh",alignItems:"center",justifyContent:"center",background:"var(--bg-color)",color:C.accent,fontSize:15,fontWeight:600}}>
-        <div className="spinner"></div>
-        Sistem Yükleniyor...
-      </div>
-    );
+  if (!isDbLoaded) return <div style={{display:"flex",height:"100vh",alignItems:"center",justifyContent:"center",background:"#070D1A",color:"#0EA5E9",fontWeight:600}}><div className="spinner"></div>Sistem Yükleniyor...</div>;
+  
+  // GİRİŞ EKRANI
+  if (!currentUser) {
+    return <LoginScreen onSuccess={(user) => { 
+      sessionStorage.setItem("aqua_user", JSON.stringify(user)); 
+      setCurrentUser(user); 
+    }} appUsers={appUsers} adminPin={oldPinCode} />;
   }
 
-  if (!isAuthenticated) {
-    return <PinScreen onSuccess={() => { setIsAuthenticated(true); sessionStorage.setItem("aqua_auth", "1"); }} correctPin={pinCode} />;
-  }
+  // YETKİLENDİRİLMİŞ MENÜYÜ FİLTRELEME
+  const visibleNav = safeArr(navItems).filter(n => {
+    if (!n.visible) return false;
+    if (currentUser.role === "admin") return true;
+    return (currentUser.allowedTabs || []).includes(n.id);
+  });
 
-  const visibleNav=(navItems||[]).filter(n=>n && n.visible);
-
-  function NavItem({item}){
-    const active=activeTab===item.id;
-    return<button onClick={()=>{setActiveTab(item.id);setSidebarOpen(false);}}
-      style={{display:"flex",alignItems:"center",gap:11,padding:"10px 16px",background:active?`${C.accent}18`:"transparent",border:"none",borderLeft:`3px solid ${active?C.accent:"transparent"}`,color:active?C.accent:C.textSub,cursor:"pointer",fontFamily:"inherit",fontSize:13,fontWeight:active?600:400,width:"100%",textAlign:"left",transition:"all .15s",letterSpacing:0.2}}>
-      <svg width={17} height={17} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}}>
-        {item.icon.split("M").filter(Boolean).map((seg,i)=><path key={i} d={"M"+seg}/>)}
-      </svg>
-      {item.label}
-    </button>
-  }
-
-  const sidebar=<div style={{width:C.sidebarW,background:"var(--sidebar-bg)",borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",height:"100vh",position:"sticky",top:0,flexShrink:0}}>
-    <div style={{padding:"20px 16px 16px",borderBottom:`1px solid ${C.border}`}}>
-      <div style={{display:"flex",alignItems:"center",gap:10}}>
+  return<div style={{display:"flex",height:"100vh",overflow:"hidden",background:"var(--bg-color)"}}>
+    <div className="sidebar-desktop" style={{width:220, background:"var(--sidebar-bg)", borderRight:"1px solid #1A2D45", display:"flex", flexDirection:"column"}}>
+      <div style={{padding:"20px 16px 16px", borderBottom:"1px solid #1A2D45", display:"flex", alignItems:"center", gap:10}}>
         <div style={{width:34,height:34,borderRadius:9,background:`linear-gradient(135deg,${C.accent},#38BDF8)`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,overflow:"hidden"}}>
-          {logoUrl ? <img src={logoUrl} alt="Logo" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.style.display='none'}}/> :
-          <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M2 12c2-4 4-4 6 0s4 4 6 0 4-4 6 0"/>
-            <path d="M2 18c2-4 4-4 6 0s4 4 6 0 4-4 6 0"/>
-          </svg>}
+          {logoUrl ? <img src={logoUrl} alt="Logo" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.style.display='none'}}/> : <span style={{color:"white", fontWeight:800}}>AC</span>}
         </div>
         <div>
           <div style={{fontSize:14,fontWeight:800,letterSpacing:-0.3}}>{clubName}</div>
-          <div style={{fontSize:10,color:C.textMuted,fontWeight:500}}>Yönetim Paneli</div>
+          <div style={{fontSize:10,color:C.textMuted,fontWeight:500}}>Hoşgeldin, {currentUser.username}</div>
         </div>
       </div>
-    </div>
-    <div style={{flex:1,overflowY:"auto",paddingTop:8}}>
-      {visibleNav.map(item=><NavItem key={item.id} item={item}/>)}
-    </div>
-    <div style={{padding:"12px 16px",borderTop:`1px solid ${C.border}`}}>
-      <div style={{fontSize:11,color:C.textMuted,fontWeight:500}}>AquaClub Pro v2.6</div>
-    </div>
-  </div>;
-
-  return<div style={{display:"flex",height:"100vh",overflow:"hidden",background:"var(--bg-color)"}}>
-    <div className="sidebar-desktop" style={{display:"flex"}}>
-      {sidebar}
-    </div>
-    {sidebarOpen&&<div style={{position:"fixed",inset:0,zIndex:400,display:"flex"}}>
-      <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.6)"}} onClick={()=>setSidebarOpen(false)}/>
-      <div style={{position:"relative",zIndex:1}}>{sidebar}</div>
-    </div>}
-    <div style={{flex:1,display:"flex",flexDirection:"column",minWidth:0,height:"100vh"}}>
-      <div style={{padding:"12px 14px",borderBottom:`1px solid ${C.border}`,background:"var(--bg-color)",display:"flex",alignItems:"center",gap:12,position:"sticky",top:0,zIndex:50}}>
-        <button onClick={()=>setSidebarOpen(true)} style={{background:"none",border:`1px solid ${C.border}`,color:C.textSub,width:32,height:32,borderRadius:7,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}} className="menu-btn">
-          <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-        </button>
-        <div style={{flex:1}}>
-          <div style={{fontSize:14,fontWeight:700}}>{(visibleNav.find(n=>n.id===activeTab)||{}).label||"Genel Bakış"}</div>
-        </div>
+      
+      <div style={{flex:1, overflowY:"auto", paddingTop:10}}>
+        {visibleNav.map(item=><button key={item.id} onClick={()=>setActiveTab(item.id)} style={{display:"flex",alignItems:"center",gap:11,width:"100%", padding:"10px 16px", background:activeTab===item.id?"rgba(14,165,233,0.1)":"transparent", border:"none", borderLeft:`3px solid ${activeTab===item.id?"#0EA5E9":"transparent"}`, color:activeTab===item.id?"#0EA5E9":"#94A3B8", cursor:"pointer", textAlign:"left", fontSize:13, fontWeight:activeTab===item.id?600:400}}><Icon d={item.icon} size={17}/> {item.label}</button>)}
       </div>
-      <div style={{flex:1,overflowY:"auto"}}>
+      <button onClick={()=>{sessionStorage.removeItem("aqua_user"); window.location.reload();}} style={{padding:14, background:"transparent", border:"none", borderTop:"1px solid #1A2D45", color:C.danger, fontWeight:600, cursor:"pointer", fontSize:13}}>Çıkış Yap</button>
+    </div>
+    
+    <div style={{flex:1, display:"flex", flexDirection:"column", overflow:"hidden"}}>
+      <div style={{padding:14, background:C.surface, borderBottom:"1px solid #1A2D45", fontWeight:700, display:"flex", alignItems:"center", gap:12}}>
+        <button onClick={()=>setSidebarOpen(true)} className="menu-btn" style={{background:"none", border:`1px solid #1A2D45`, color:"#94A3B8", width:32, height:32, borderRadius:6, cursor:"pointer"}}>☰</button>
+        {(visibleNav.find(n=>n.id===activeTab)||{}).label||"Genel Bakış"}
+      </div>
+      
+      <div style={{flex:1, overflowY:"auto"}}>
         {activeTab==="dashboard"&&<Dashboard students={students} stockItems={stockItems} expenses={expenses}/>}
         {activeTab==="students"&&<StudentsPage students={students} stockItems={stockItems}/>}
         {activeTab==="attendance"&&<AttendancePage students={students}/>}
         {activeTab==="payments"&&<PaymentsPage students={students}/>}
         {activeTab==="expenses"&&<ExpensesPage expenses={expenses}/>}
+        {activeTab==="whatsapp"&&<WhatsAppPage students={students} waGroupLink={waGroupLink} />}
         {activeTab==="staff"&&<StaffPage staff={staff}/>}
-        {activeTab==="inventory"&&<InventoryPage items={stockItems} movements={movements}/>}
-        {activeTab==="whatsapp"&&<WhatsAppPage students={students} waGroupLink={waGroupLink} setWaGroupLink={setWaGroupLink} />}
-        {activeTab==="settings"&&
-          <SettingsPage 
-            navItems={navItems} clubName={clubName} logoUrl={logoUrl} 
-            themeColor={themeColor} sidebarColor={sidebarColor} cardColor={cardColor} pinCode={pinCode}
-          />}
+        {activeTab==="inventory"&&<InventoryPage items={stockItems} movements={[]}/>}
+        
+        {/* Güvenlik gereği SADECE ADMIN ayarları görebilir */}
+        {activeTab==="settings" && currentUser.role === "admin" && (
+          <SettingsPage navItems={navItems} clubName={clubName} logoUrl={logoUrl} themeColor={themeColor} sidebarColor={sidebarColor} cardColor={cardColor} appUsers={appUsers} />
+        )}
       </div>
     </div>
-    <style>{`
-      @media(min-width:640px){.sidebar-desktop{display:flex!important}.menu-btn{display:none!important}}
-      @media(max-width:639px){.sidebar-desktop{display:none!important}.menu-btn{display:flex!important}}
-    `}</style>
+    <style>{`@media(max-width:640px){.sidebar-desktop{display:none!important}} @media(min-width:641px){.menu-btn{display:none!important}}`}</style>
   </div>
 }
 

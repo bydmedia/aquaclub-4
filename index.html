@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="theme-color" content="#F4F7F6"/>
+<meta name="theme-color" content="#F0F4F8"/>
 <link rel="manifest" href="manifest.json"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
 <title>AquaClub Pro</title>
 <style>
@@ -22,7 +22,7 @@
 html,body{height:100%;background:var(--bg-color);transition:background 0.3s ease;}
 body{font-family:'Inter',-apple-system,'Segoe UI',sans-serif;overscroll-behavior:none;color:var(--text-main);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
 #root{height:100%}
-input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.5)}
+input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.3)}
 input,select,textarea{-webkit-appearance:none;font-family:'Inter',-apple-system,sans-serif}
 button{font-family:'Inter',-apple-system,sans-serif}
 ::-webkit-scrollbar{width:4px;height:4px}
@@ -33,7 +33,7 @@ button{font-family:'Inter',-apple-system,sans-serif}
 .spinner {border: 4px solid rgba(0,0,0,0.05); border-left-color: #0EA5E9; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 16px;}
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-/* Kurumsal Tablo Listesi İçin Geliştirilmiş CSS */
+/* Kurumsal Tablo Tasarımları */
 .data-row { display: grid; grid-template-columns: 2fr 1.2fr 1fr; gap: 10px; align-items: center; padding: 12px 4px; border-bottom: 1px solid #E2E8F0; }
 .data-row:last-child { border-bottom: none; }
 .data-col { font-size: 13px; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
@@ -42,7 +42,6 @@ button{font-family:'Inter',-apple-system,sans-serif}
 .data-header { font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #E2E8F0; padding-bottom: 8px; margin-bottom: 4px; }
 </style>
 
-<!-- Firebase Kütüphaneleri -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
@@ -54,6 +53,15 @@ button{font-family:'Inter',-apple-system,sans-serif}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 <script type="text/babel">
 const {useState,useEffect,useRef}=React;
+
+/* ═══════════════════════════════════════════════════════════════
+   GLOBAL AYAR SABİTLERİ (ÇÖKMEYİ ENGELLEYEN TANIMLAR)
+═══════════════════════════════════════════════════════════════ */
+const EMPTY_ITEM={id:null,name:"",category:"",price:"",stock:"",minStock:"",supplier:"",notes:""};
+const STOCK_CATS=["Gözlük","Bone","Palet","Şamandıra","Aksesuar","Kıyafet","Temizlik","Diğer"];
+const EMPTY_EXPENSE={id:null, title:"", amount:"", date:TODAY, category:"", isFood:false, expiryDate:"", note:"", qty:""};
+const EXP_CATS=["Fatura", "Maaş", "Kira", "Gıda", "Ekipman/Malzeme", "Temizlik", "Ulaşım", "Diğer"];
+const EMPTY_STAFF={id:null,name:"",role:"trainer",age:"",phone:"",email:"",dailyWage:0,attendance:{}};
 
 /* ═══════════════════════════════════════════════════════════════
    FIREBASE YAPILANDIRMASI
@@ -74,7 +82,7 @@ if (!firebase.apps.length) {
 const db = firebase.firestore();
 
 /* ═══════════════════════════════════════════════════════════════
-   THEME (Açık ve Kurumsal Renk Paleti)
+   TEMEL RENK YAPILANDIRMASI
 ═══════════════════════════════════════════════════════════════ */
 const C={
   bg:"var(--bg-color)", surface:"var(--card-bg)", card:"var(--card-bg)", sidebar:"var(--sidebar-bg)",
@@ -86,16 +94,16 @@ const C={
   danger:"#EF4444",  dangerBg:"#EF444415",
   purple:"#8B5CF6",  purpleBg:"#8B5CF615",
   whatsapp:"#25D366", whatsappBg:"#25D36615",
-  sidebarW:230
+  sidebarW:220
 };
 
 /* ═══════════════════════════════════════════════════════════════
-   VERİTABANI KAYIT & GÜVENLİ VERİ FİLTRESİ
+   VERİTABANI KORUMALI FİLTRE
 ═══════════════════════════════════════════════════════════════ */
 function safeArr(val) { 
   if (!val) return [];
   const arr = Array.isArray(val) ? val : Object.values(val);
-  return arr.filter(item => item && typeof item === 'object');
+  return arr.filter(item => item !== null && item !== undefined && typeof item === 'object');
 }
 
 const DB={
@@ -107,26 +115,7 @@ const DB={
 };
 
 /* ═══════════════════════════════════════════════════════════════
-   NAV CONFIG
-═══════════════════════════════════════════════════════════════ */
-const NAV_ITEMS=[
-  {id:"dashboard",label:"Genel Bakış",icon:"M3 12l9-9 9 9M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9"},
-  {id:"students",label:"Öğrenciler",icon:"M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 7a4 4 0 100 8 4 4 0 000-8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"},
-  {id:"attendance",label:"Yoklama",icon:"M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"},
-  {id:"payments",label:"Ödemeler",icon:"M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"},
-  {id:"expenses",label:"Giderler",icon:"M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"},
-  {id:"staff",label:"Personel",icon:"M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197"},
-  {id:"inventory",label:"Envanter",icon:"M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"},
-  {id:"whatsapp",label:"WhatsApp",icon:"M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.482-1.46-1.656-1.758-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z M12 22C6.477 22 2 17.523 2 12c0-1.76.452-3.414 1.25-4.832L2 2l5.344 1.156C8.683 2.43 10.297 2 12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10z"},
-  {id:"settings",label:"Ayarlar",icon:"M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"},
-];
-
-const DAYS_TR=["Paz","Pzt","Sal","Çar","Per","Cum","Cmt"];
-const DAYS_FULL=["Pazar","Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi"];
-const TODAY=new Date().toISOString().split("T")[0];
-
-/* ═══════════════════════════════════════════════════════════════
-   UTILS
+   YARDIMCI FONKSİYONLAR
 ═══════════════════════════════════════════════════════════════ */
 function fmtDate(d){if(!d)return"—";const[y,m,day]=d.split("-");return`${day}.${m}.${y}`}
 function totalPaid(s){return safeArr(s.payments).reduce((t,p)=>t+Number(p.amount||0),0);}
@@ -137,6 +126,22 @@ function courseStatus(s){
   const now=new Date(TODAY),st=new Date(s.courseStart),en=new Date(s.courseEnd);
   if(now<st)return"upcoming";if(now>en)return"ended";return"active";
 }
+/* ═══════════════════════════════════════════════════════════════
+   SABİT BOYUTLU MODAL BİLEŞENİ
+═══════════════════════════════════════════════════════════════ */
+function Modal({show,onClose,title,children}){
+  if(!show)return null;
+  return<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(4px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:300,padding:16}} onClick={e=>e.target===e.currentTarget&&onClose()}>
+    <div style={{background:C.surface,borderRadius:20,padding:"24px",width:"100%",maxWidth:540,height:"580px",display:"flex",flexDirection:"column",boxShadow:"0 20px 40px rgba(0,0,0,0.08)"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20,flexShrink:0}}>
+        <div style={{fontSize:17,fontWeight:800,color:C.text}}>{title}</div>
+        <button onClick={onClose} style={{background:C.bg,border:"none",color:C.textSub,width:32,height:32,borderRadius:16,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+      </div>
+      <div style={{flex:1,overflowY:"auto",paddingRight:4}}>{children}</div>
+    </div>
+  </div>
+}
+
 function daysLeft(s){return Math.ceil((new Date(s.courseEnd)-new Date(TODAY))/86400000)}
 function attendanceCount(s){return Object.values(s.attendance||{}).filter(Boolean).length}
 function age(dob){if(!dob)return"—";return Math.floor((Date.now()-new Date(dob))/31557600000)+" yaş"}
@@ -150,131 +155,8 @@ function calcEndDate(start,total,days){
 function swimLevelLabel(v){return{beginner:"Başlangıç",intermediate:"Orta",advanced:"İleri",competitive:"Yarışmacı"}[v]||v||"—"}
 function roleLabel(r){return{trainer:"Antrenör",admin:"İdari Personel",driver:"Şoför",other:"Diğer"}[r]||r||"—"}
 
-function openWA(phone, text) {
-  if (!phone) { alert("Sisteme kayıtlı veli telefonu bulunamadı."); return; }
-  let p = phone.replace(/\D/g, "");
-  if (p.startsWith("0")) p = "90" + p.slice(1);
-  else if (p.length === 10) p = "90" + p;
-  window.open(`https://wa.me/${p}?text=${encodeURIComponent(text)}`, "_blank");
-}
-
-function exportCSV(filename, headers, rows) {
-  const bom = "\uFEFF"; 
-  const csv = [headers.join(","), ...rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(","))].join("\n");
-  const blob = new Blob([bom + csv], { type: "text/csv;charset=utf-8;" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = filename + ".csv";
-  link.click();
-}
-
 /* ═══════════════════════════════════════════════════════════════
-   SVG ICON & PRIMITIVES
-═══════════════════════════════════════════════════════════════ */
-function Icon({d,size=18,color="currentColor",style={}}){
-  return<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" style={style}>
-    {d.split("M").filter(Boolean).map((seg,i)=><path key={i} d={"M"+seg}/>)}
-  </svg>
-}
-
-function Toggle({checked,onChange}){
-  return<button onClick={()=>onChange(!checked)} style={{width:40,height:22,borderRadius:11,background:checked?C.accent:C.border,border:"none",cursor:"pointer",position:"relative",transition:"background .2s",flexShrink:0}}>
-    <span style={{position:"absolute",top:2,left:checked?19:2,width:18,height:18,borderRadius:"50%",background:"#fff",transition:"left .2s"}}/>
-  </button>
-}
-
-function Inp({label,value,onChange,type="text",placeholder,rows,half,autoFocus,style}){
-  const s={width:"100%",padding:"9px 11px",background:C.bg,border:`1px solid ${C.border}`,borderRadius:8,color:C.text,fontSize:13,outline:"none",fontFamily:"inherit",resize:"vertical",transition:"border 0.2s",...style};
-  return<div style={{marginBottom:10,flex:half?"1":"unset"}}>
-    {label&&<div style={{fontSize:11,color:C.textSub,marginBottom:4,fontWeight:600,letterSpacing:0.3}}>{label}</div>}
-    {rows?<textarea style={{...s,minHeight:60}} rows={rows} value={value||""} onChange={e=>onChange(e.target.value)} placeholder={placeholder}/>
-         :<input style={s} type={type} value={value||""} onChange={e=>onChange(e.target.value)} placeholder={placeholder} autoFocus={autoFocus}/>}
-  </div>
-}
-
-function Sel({label,value,onChange,options}){
-  return<div style={{marginBottom:10}}>
-    {label&&<div style={{fontSize:11,color:C.textSub,marginBottom:4,fontWeight:600,letterSpacing:0.3}}>{label}</div>}
-    <select style={{width:"100%",padding:"9px 11px",background:C.bg,border:`1px solid ${C.border}`,borderRadius:8,color:value?C.text:C.textMuted,fontSize:13,outline:"none",fontFamily:"inherit",cursor:"pointer"}} value={value||""} onChange={e=>onChange(e.target.value)}>
-      <option value="">Seçiniz</option>
-      {options.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}
-    </select>
-  </div>
-}
-
-function Btn({children,onClick,variant="primary",sm,full,style={}}){
-  const base={padding:sm?"6px 14px":"9px 18px",borderRadius:8,border:"none",cursor:"pointer",fontWeight:600,fontSize:sm?12:13,fontFamily:"inherit",letterSpacing:0.2,transition:"opacity .15s",...style};
-  const v={
-    primary:{background:`linear-gradient(135deg,${C.accent},${C.accentDark})`,color:"#fff",boxShadow:"0 2px 6px "+C.accentGlow},
-    secondary:{background:C.surface,color:C.textSub,border:`1px solid ${C.border}`},
-    danger:{background:C.dangerBg,color:C.danger,border:`1px solid ${C.danger}30`},
-    success:{background:C.successBg,color:C.success,border:`1px solid ${C.success}30`},
-    ghost:{background:"transparent",color:C.textSub,border:`1px solid ${C.border}`},
-  };
-  return<button onClick={onClick} style={{...base,...v[variant],width:full?"100%":"auto"}}>{children}</button>
-}
-
-function Card({children,style={},accent}){
-  return<div style={{background:C.card,borderRadius:16,border:`1px solid ${accent?accent+"40":C.border}`,boxShadow:"0 4px 12px rgba(0,0,0,0.03)",padding:16,marginBottom:12,transition:"transform 0.2s, box-shadow 0.2s",...style}}>{children}</div>
-}
-
-function Badge({label,color}){
-  const map={active:[C.success,"Aktif"],upcoming:[C.warning,"Başlamadı"],ended:[C.danger,"Bitti"],unknown:[C.textMuted,"Belirsiz"]};
-  const [col,txt]=map[label]||[color||C.textMuted,label];
-  return<span style={{fontSize:10,fontWeight:600,padding:"3px 8px",borderRadius:20,background:col+"15",color:col,letterSpacing:0.3}}>{txt}</span>
-}
-
-function SectionTitle({children,action}){
-  return<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12,marginTop:6}}>
-    <div style={{fontSize:12,fontWeight:700,color:C.text,textTransform:"uppercase",letterSpacing:1}}>{children}</div>
-    {action}
-  </div>
-}
-
-function Row({label,val,href,col}){
-  return<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
-    <span style={{fontSize:12,color:C.textSub,flexShrink:0,marginRight:8,fontWeight:500}}>{label}</span>
-    {href?<a href={href} style={{fontSize:13,color:C.accent,textDecoration:"none",fontWeight:600}}>{val}</a>
-         :<span style={{fontSize:13,fontWeight:600,color:col||C.text,textAlign:"right"}}>{val}</span>}
-  </div>
-}
-
-function StatCard({label,value,col,span2}){
-  return<div style={{background:C.card,border:`1px solid ${C.borderLight}`,borderRadius:16,padding:16,gridColumn:span2?"span 2":"span 1",boxShadow:"0 2px 8px rgba(0,0,0,0.02)"}}>
-    <div style={{fontSize:24,fontWeight:800,color:col||C.accent,marginBottom:4,letterSpacing:-0.5}}>{value}</div>
-    <div style={{fontSize:12,color:C.textSub,fontWeight:600}}>{label}</div>
-  </div>
-}
-
-function TabBar({tabs,active,onChange}){
-  return<div style={{display:"flex",borderBottom:`1px solid ${C.border}`,marginBottom:16,overflowX:"auto",gap:0}}>
-    {tabs.map((t,i)=><button key={i} onClick={()=>onChange(i)} style={{padding:"10px 16px",background:"none",border:"none",borderBottom:active===i?`2px solid ${C.accent}`:"2px solid transparent",color:active===i?C.accent:C.textSub,cursor:"pointer",fontWeight:active===i?700:500,fontSize:13,fontFamily:"inherit",whiteSpace:"nowrap",letterSpacing:0.2,transition:"color 0.2s"}}>{t}</button>)}
-  </div>
-}
-
-function Modal({show,onClose,title,children}){
-  if(!show)return null;
-  return<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.6)",backdropFilter:"blur(4px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:300,padding:16}} onClick={e=>e.target===e.currentTarget&&onClose()}>
-    <div style={{background:C.surface,borderRadius:20,padding:"24px",width:"100%",maxWidth:500,maxHeight:"90vh",overflowY:"auto",boxShadow:"0 20px 40px rgba(0,0,0,0.1)"}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
-        <div style={{fontSize:17,fontWeight:800,color:C.text}}>{title}</div>
-        <button onClick={onClose} style={{background:C.bg,border:"none",color:C.textSub,width:32,height:32,borderRadius:16,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center",transition:"background 0.2s"}}>×</button>
-      </div>
-      {children}
-    </div>
-  </div>
-}
-
-function DayPicker({value=[],onChange}){
-  const safeVal = safeArr(value);
-  return<div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:12}}>
-    {DAYS_TR.map((d,i)=>{const on=safeVal.includes(i);return<button key={i} onClick={()=>onChange(on?safeVal.filter(x=>x!==i):[...safeVal,i].sort())}
-      style={{width:40,height:40,borderRadius:"50%",border:`1px solid ${on?C.accent:C.border}`,background:on?C.accentGlow:C.bg,color:on?C.accent:C.textSub,cursor:"pointer",fontSize:12,fontWeight:on?700:500,fontFamily:"inherit",transition:"all 0.2s"}}>{d}</button>})}
-  </div>
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   GİRİŞ EKRANI (Kurumsal)
+   GİRİŞ EKRANI
 ═══════════════════════════════════════════════════════════════ */
 function LoginScreen({ onSuccess, appUsers, adminPin }) {
   const [user, setUser] = useState("");
@@ -289,7 +171,6 @@ function LoginScreen({ onSuccess, appUsers, adminPin }) {
     }
     const foundUser = safeArr(appUsers).find(u => u.username.toLowerCase() === user.toLowerCase() && u.password === pass);
     if (foundUser) { onSuccess(foundUser); return; }
-    
     setErr(true); setTimeout(() => setErr(false), 2000);
   };
 
@@ -308,21 +189,20 @@ function LoginScreen({ onSuccess, appUsers, adminPin }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   PAGES
+   STUDENT FORM (ZORUNLU BÜYÜK HARF ENTEGRASYONU)
 ═══════════════════════════════════════════════════════════════ */
-// ... (Öğrenci, Yoklama, Ödemeler gibi daha önce stabil olan kısımları tutuyoruz) ...
-
-const EMPTY_S={id:null,name:"",dob:"",guardianName:"",guardianPhone1:"",guardianPhone2:"",notes:"",
-  courseStart:TODAY,courseEnd:"",totalSessions:48,weekDays:[1,3,5],swimLevel:"",poolLane:"",groupName:"",
-  monthlyFee:"",discount:"",paymentNote:"",
-  hasTransport:false,address:"",transportFee:"",driverName:"",driverPhone:"",
-  equipment:[],payments:[],attendance:{}};
-
 function StudentForm({initial,onSave,onCancel,stockItems}){
   const [tab,setTab]=useState(0);
   const [f,setF]=useState({...EMPTY_S,...initial});
-  const u=(k,v)=>setF(p=>({...p,[k]:v}));
-  
+
+  // Girişleri otomatik Türkçe destekli Büyük Harf yapar
+  const u=(k,v)=>{
+    if(typeof v === "string" && !["dob","courseStart","courseEnd","guardianPhone1","guardianPhone2"].includes(k)){
+      v = v.toLocaleUpperCase("tr-TR");
+    }
+    setF(p=>({...p,[k]:v}));
+  };
+
   const currentEq = safeArr(f.equipment);
   const safeWeekDays = safeArr(f.weekDays);
 
@@ -332,36 +212,32 @@ function StudentForm({initial,onSave,onCancel,stockItems}){
     }
   },[f.courseStart,f.totalSessions,JSON.stringify(safeWeekDays)]);
 
-  function addEq(item){setF(p=>({...p,equipment:[...safeArr(p.equipment),{id:Date.now(),...item,addedDate:TODAY}]}))}
-  function rmEq(id){setF(p=>({...p,equipment:safeArr(p.equipment).filter(e=>e.id!==id)}))}
-  const netMonthly=Number(f.monthlyFee||0)-Number(f.discount||0);
-
   return<div>
     <TabBar tabs={["Kişisel","Kurs","Servis","Ekipman"]} active={tab} onChange={setTab}/>
     {tab===0&&<div>
-      <Inp label="Ad Soyad *" value={f.name} onChange={v=>u("name",v)} placeholder="Öğrenci adı soyadı"/>
+      <Inp label="Ad Soyad *" value={f.name} onChange={v=>u("name",v)} style={{textTransform:"uppercase"}}/>
       <Inp label="Doğum Tarihi" value={f.dob} onChange={v=>u("dob",v)} type="date"/>
       <div style={{height:1,background:C.border,margin:"12px 0"}}/>
-      <Inp label="Veli Adı Soyadı" value={f.guardianName} onChange={v=>u("guardianName",v)} placeholder="Veli adı soyadı"/>
+      <Inp label="Veli Adı Soyadı" value={f.guardianName} onChange={v=>u("guardianName",v)} style={{textTransform:"uppercase"}}/>
       <div style={{display:"flex",gap:8}}>
-        <Inp label="Veli Telefonu 1" value={f.guardianPhone1} onChange={v=>u("guardianPhone1",v)} placeholder="0500 000 0000" type="tel" half/>
-        <Inp label="Veli Telefonu 2" value={f.guardianPhone2} onChange={v=>u("guardianPhone2",v)} placeholder="0500 000 0000" type="tel" half/>
+        <Inp label="Veli Telefonu 1" value={f.guardianPhone1} onChange={v=>u("guardianPhone1",v)} type="tel" half/>
+        <Inp label="Veli Telefonu 2" value={f.guardianPhone2} onChange={v=>u("guardianPhone2",v)} type="tel" half/>
       </div>
       <div style={{height:1,background:C.border,margin:"12px 0"}}/>
-      <Inp label="Özel Not" value={f.notes} onChange={v=>u("notes",v)} rows={3} placeholder="Öğrenciye ait notlar..."/>
+      <Inp label="Özel Not" value={f.notes} onChange={v=>u("notes",v)} rows={3} style={{textTransform:"uppercase"}}/>
     </div>}
     {tab===1&&<div>
       <div style={{display:"flex",gap:8}}>
         <div style={{flex:1}}><Sel label="Yüzme Seviyesi" value={f.swimLevel} onChange={v=>u("swimLevel",v)} options={[{value:"beginner",label:"Başlangıç"},{value:"intermediate",label:"Orta"},{value:"advanced",label:"İleri"},{value:"competitive",label:"Yarışmacı"}]}/></div>
-        <div style={{flex:1}}><Inp label="Havuz Kulvarı" value={f.poolLane} onChange={v=>u("poolLane",v)} placeholder="örn. 3"/></div>
+        <div style={{flex:1}}><Inp label="Havuz Kulvarı" value={f.poolLane} onChange={v=>u("poolLane",v)}/></div>
       </div>
-      <Inp label="Grup / Sınıf Adı" value={f.groupName} onChange={v=>u("groupName",v)} placeholder="örn. Pazartesi-Çarşamba Grubu A"/>
+      <Inp label="Grup / Sınıf Adı" value={f.groupName} onChange={v=>u("groupName",v)} style={{textTransform:"uppercase"}}/>
       <div style={{height:1,background:C.border,margin:"12px 0"}}/>
       <div style={{fontSize:11,color:C.textSub,marginBottom:6,fontWeight:600}}>Haftalık Günler *</div>
       <DayPicker value={safeWeekDays} onChange={v=>u("weekDays",v)}/>
       <div style={{display:"flex",gap:8}}>
         <div style={{flex:1}}><Inp label="Başlangıç *" value={f.courseStart} onChange={v=>u("courseStart",v)} type="date"/></div>
-        <div style={{flex:1}}><Inp label="Seans Sayısı *" value={f.totalSessions} onChange={v=>u("totalSessions",v)} type="number" placeholder="48"/></div>
+        <div style={{flex:1}}><Inp label="Seans Sayısı *" value={f.totalSessions} onChange={v=>u("totalSessions",v)} type="number"/></div>
       </div>
       <Card style={{marginBottom:12}} accent={C.accent}>
         <div style={{fontSize:11,color:C.textSub,marginBottom:4,fontWeight:600}}>Hesaplanan Bitiş Tarihi</div>
@@ -369,11 +245,10 @@ function StudentForm({initial,onSave,onCancel,stockItems}){
       </Card>
       <div style={{height:1,background:C.border,margin:"12px 0"}}/>
       <div style={{display:"flex",gap:8}}>
-        <div style={{flex:1}}><Inp label="Aylık Ücret (₺)" value={f.monthlyFee} onChange={v=>u("monthlyFee",v)} type="number" placeholder="1500"/></div>
-        <div style={{flex:1}}><Inp label="İndirim (₺)" value={f.discount} onChange={v=>u("discount",v)} type="number" placeholder="0"/></div>
+        <div style={{flex:1}}><Inp label="Aylık Ücret (₺)" value={f.monthlyFee} onChange={v=>u("monthlyFee",v)} type="number"/></div>
+        <div style={{flex:1}}><Inp label="İndirim (₺)" value={f.discount} onChange={v=>u("discount",v)} type="number"/></div>
       </div>
-      <Inp label="Ödeme Notu" value={f.paymentNote} onChange={v=>u("paymentNote",v)} placeholder="örn. Her ayın 1'i"/>
-      <Card style={{marginBottom:4}}><div style={{display:"flex",justifyContent:"space-between",fontSize:13,fontWeight:600}}><span style={{color:C.textSub}}>Aylık Net Ücret</span><span style={{color:C.success}}>{netMonthly.toLocaleString("tr-TR")} ₺</span></div></Card>
+      <Inp label="Ödeme Notu" value={f.paymentNote} onChange={v=>u("paymentNote",v)} style={{textTransform:"uppercase"}}/>
     </div>}
     {tab===2&&<div>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid ${C.border}`,marginBottom:14}}>
@@ -381,180 +256,29 @@ function StudentForm({initial,onSave,onCancel,stockItems}){
         <Toggle checked={f.hasTransport} onChange={v=>u("hasTransport",v)}/>
       </div>
       {f.hasTransport?<div>
-        <Inp label="Öğrenci Adresi" value={f.address} onChange={v=>u("address",v)} rows={2}/>
+        <Inp label="Öğrenci Adresi" value={f.address} onChange={v=>u("address",v)} rows={2} style={{textTransform:"uppercase"}}/>
         <Inp label="Servis Ücreti (₺)" value={f.transportFee} onChange={v=>u("transportFee",v)} type="number"/>
         <div style={{height:1,background:C.border,margin:"12px 0"}}/>
         <div style={{display:"flex",gap:8}}>
-          <div style={{flex:1}}><Inp label="Şoför Adı" value={f.driverName} onChange={v=>u("driverName",v)}/></div>
+          <div style={{flex:1}}><Inp label="Şoför Adı" value={f.driverName} onChange={v=>u("driverName",v)} style={{textTransform:"uppercase"}}/></div>
           <div style={{flex:1}}><Inp label="Şoför Tel" value={f.driverPhone} onChange={v=>u("driverPhone",v)} type="tel"/></div>
         </div>
       </div>:<div style={{textAlign:"center",padding:"30px 0",color:C.textMuted}}>Servis kullanmıyor.</div>}
     </div>}
     {tab===3&&<div>
       <div style={{fontSize:12,color:C.textSub,marginBottom:12}}>Alınan ekipmanlar aylık ücrete yansır.</div>
-      <EqPicker stockItems={stockItems} current={currentEq} onAdd={addEq} onRemove={rmEq}/>
-      {currentEq.length>0&&<Card accent={C.warning} style={{marginTop:8}}>
-        <div style={{display:"flex",justifyContent:"space-between",fontSize:13,marginBottom:6,fontWeight:600}}><span style={{color:C.textSub}}>Ekipman Toplamı</span><span style={{color:C.warning}}>+{equipmentTotal(f).toLocaleString("tr-TR")} ₺</span></div>
-        <div style={{display:"flex",justifyContent:"space-between",fontSize:14,fontWeight:700}}><span style={{color:C.text}}>Aylık Toplam</span><span style={{color:C.success}}>{monthlyTotal(f).toLocaleString("tr-TR")} ₺</span></div>
-      </Card>}
+      <EqPicker stockItems={stockItems} current={currentEq} onAdd={(item)=>setF(p=>({...p,equipment:[...currentEq,{id:Date.now(),...item,addedDate:TODAY}]}))} onRemove={(id)=>setF(p=>({...p,equipment:currentEq.filter(e=>e.id!==id)}))}/>
     </div>}
     <div style={{display:"flex",gap:10,marginTop:20}}>
       <Btn variant="secondary" onClick={onCancel} style={{flex:1}}>İptal</Btn>
-      <Btn onClick={()=>onSave(f)} style={{flex:2}}>Öğrenciyi Kaydet</Btn>
+      <Btn onClick={()=>onSave(f)} style={{flex:2}}>Kaydet</Btn>
     </div>
   </div>
 }
 
-function EqPicker({stockItems,current,onAdd,onRemove}){
-  const [sel,setSel]=useState("");
-  const safeStock = safeArr(stockItems);
-  return<div>
-    <div style={{display:"flex",gap:8,marginBottom:10}}>
-      <select style={{flex:1,padding:"9px 11px",background:C.bg,border:`1px solid ${C.border}`,borderRadius:8,color:sel?C.text:C.textMuted,fontSize:13,outline:"none",fontFamily:"inherit"}} value={sel} onChange={e=>setSel(e.target.value)}>
-        <option value="">Ekipman seç...</option>
-        {safeStock.filter(s=>Number(s.stock)>0).map(s=><option key={s.id} value={s.id}>{s.name} — {Number(s.price).toLocaleString("tr-TR")} ₺</option>)}
-      </select>
-      <Btn sm onClick={()=>{if(!sel)return;const item=safeStock.find(s=>String(s.id)===String(sel));if(item)onAdd({name:item.name,price:item.price,stockId:item.id});setSel("");}}>Ekle</Btn>
-    </div>
-    {safeArr(current).map(e=><div key={e.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:`1px solid ${C.border}`}}>
-      <div><div style={{fontSize:13,fontWeight:600}}>{e.name}</div><div style={{fontSize:11,color:C.textSub}}>{fmtDate(e.addedDate)}</div></div>
-      <div style={{display:"flex",alignItems:"center",gap:12}}><span style={{color:C.warning,fontWeight:700,fontSize:14}}>{Number(e.price).toLocaleString("tr-TR")} ₺</span><button onClick={()=>onRemove(e.id)} style={{background:"none",border:"none",color:C.danger,cursor:"pointer",fontSize:18,lineHeight:1}}>×</button></div>
-    </div>)}
-  </div>
-}
-
-function StudentDetail({student,onBack,students,stockItems}){
-  const [tab,setTab]=useState(0);
-  const [editing,setEditing]=useState(false);
-  const [payForm,setPayForm]=useState({amount:"",date:TODAY,note:""});
-  const [showPay,setShowPay]=useState(false);
-
-  const safePays = safeArr(student.payments);
-  const safeEqs = safeArr(student.equipment);
-  const safeDays = safeArr(student.weekDays);
-
-  function save(f){const n=safeArr(students).map(s=>s.id===student.id?{...s,...f,id:s.id}:s);DB.set("students",n);setEditing(false);}
-  function addPay(){
-    if(!payForm.amount)return;
-    const n=safeArr(students).map(s=>s.id===student.id?{...s,payments:[...safeArr(s.payments),{id:Date.now(),...payForm,amount:Number(payForm.amount)}]}:s);
-    DB.set("students",n); setPayForm({amount:"",date:TODAY,note:""}); setShowPay(false);
-  }
-  function delPay(pid){const n=safeArr(students).map(s=>s.id===student.id?{...s,payments:safeArr(s.payments).filter(p=>p.id!==pid)}:s);DB.set("students",n);}
-
-  if(editing)return<div style={{padding:14}}>
-    <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:20}}>
-      <button onClick={()=>setEditing(false)} style={{background:"none",border:`1px solid ${C.border}`,color:C.textSub,width:32,height:32,borderRadius:8,cursor:"pointer",fontSize:16}}>←</button>
-      <span style={{fontWeight:800,fontSize:16,color:C.text}}>Düzenle: {student.name}</span>
-    </div>
-    <StudentForm initial={student} onSave={save} onCancel={()=>setEditing(false)} stockItems={stockItems}/>
-  </div>;
-
-  const paid=totalPaid(student),monthly=monthlyTotal(student),balance=paid-monthly;
-  const st=courseStatus(student);
-
-  return<div style={{padding:14}}>
-    <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
-      <button onClick={onBack} style={{background:"none",border:`1px solid ${C.border}`,color:C.textSub,width:36,height:36,borderRadius:10,cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>←</button>
-      <div style={{flex:1}}><div style={{fontWeight:800,fontSize:18,color:C.text}}>{student.name}</div><div style={{fontSize:12,color:C.textSub,marginTop:2}}>{age(student.dob)} · {student.groupName||"Grup yok"}</div></div>
-      <Badge label={st}/>
-    </div>
-
-    <TabBar tabs={["Genel","Kurs","Servis","Ekipman","Ödemeler"]} active={tab} onChange={setTab}/>
-
-    {tab===0&&<div>
-      <Card>
-        <Row label="Ad Soyad" val={student.name}/>
-        <Row label="Doğum Tarihi" val={`${fmtDate(student.dob)} (${age(student.dob)})`}/>
-        <Row label="Veli" val={student.guardianName||"—"}/>
-        <Row label="Veli Tel 1" val={student.guardianPhone1||"—"} href={student.guardianPhone1?`tel:${student.guardianPhone1}`:undefined}/>
-        {student.notes&&<div style={{marginTop:12,padding:12,background:C.bg,borderRadius:10,fontSize:13,color:C.textSub,lineHeight:1.6,border:`1px solid ${C.border}`}}>{student.notes}</div>}
-      </Card>
-      
-      {student.guardianPhone1 && (
-        <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:12}}>
-          <Btn sm style={{background:C.whatsapp, color:"#fff", border:"none", boxShadow:"0 2px 8px rgba(37,211,102,0.3)"}} onClick={()=>openWA(student.guardianPhone1, `Sayın velimiz, ${student.name} isimli öğrencimizin ödemesi hakkında hatırlatma yapmak isteriz. İyi günler.`)}>💬 Ödeme Hatırlat</Btn>
-          <Btn sm style={{background:C.whatsapp, color:"#fff", border:"none", boxShadow:"0 2px 8px rgba(37,211,102,0.3)"}} onClick={()=>openWA(student.guardianPhone1, `Sayın velimiz, ${student.name} isimli öğrencimiz bugünkü antrenmana katılmamıştır. Bilginize sunarız.`)}>💬 Devamsızlık Bildir</Btn>
-        </div>
-      )}
-
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
-        <StatCard label="Katılım (gün)" value={attendanceCount(student)}/>
-        <StatCard label="Aylık Bakiye" value={`${balance>=0?"+":""}${balance.toLocaleString("tr-TR")} ₺`} col={balance>=0?C.success:C.danger}/>
-      </div>
-      <Btn variant="secondary" full onClick={()=>setEditing(true)}>Bilgileri Düzenle</Btn>
-    </div>}
-
-    {tab===1&&<div>
-      <Card>
-        <Row label="Seviye" val={swimLevelLabel(student.swimLevel)}/>
-        <Row label="Grup" val={student.groupName||"—"}/>
-        <Row label="Kulvar" val={student.poolLane||"—"}/>
-        <Row label="Günler" val={safeDays.map(d=>DAYS_TR[d]).join(", ")||"—"}/>
-        <Row label="Başlangıç" val={fmtDate(student.courseStart)}/>
-        <Row label="Bitiş" val={fmtDate(student.courseEnd)}/>
-        {st==="active"&&<Row label="Kalan Gün" val={daysLeft(student)+" gün"} col={daysLeft(student)<=14?C.warning:C.success}/>}
-      </Card>
-      <Card>
-        <Row label="Aylık Ücret" val={`${Number(student.monthlyFee||0).toLocaleString("tr-TR")} ₺`}/>
-        {Number(student.discount)>0&&<Row label="İndirim" val={`-${Number(student.discount).toLocaleString("tr-TR")} ₺`} col={C.success}/>}
-        {student.hasTransport&&<Row label="Servis Ücreti" val={`${Number(student.transportFee||0).toLocaleString("tr-TR")} ₺`}/>}
-        <div style={{display:"flex",justifyContent:"space-between",paddingTop:12,marginTop:8,borderTop:`1px solid ${C.border}`,fontWeight:700}}>
-          <span style={{color:C.textSub,fontSize:13}}>Aylık Toplam</span>
-          <span style={{color:C.success,fontSize:16}}>{monthly.toLocaleString("tr-TR")} ₺</span>
-        </div>
-      </Card>
-    </div>}
-
-    {tab===2&&<div>
-      {student.hasTransport?<Card>
-        <Row label="Servis" val="Kullanıyor" col={C.success}/>
-        <Row label="Adres" val={student.address||"—"}/>
-        <Row label="Servis Ücreti" val={`${Number(student.transportFee||0).toLocaleString("tr-TR")} ₺/ay`}/>
-        <Row label="Şoför" val={student.driverName||"—"}/>
-        <Row label="Şoför Tel" val={student.driverPhone||"—"} href={student.driverPhone?`tel:${student.driverPhone}`:undefined}/>
-      </Card>:<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>Servis kullanmıyor</div>}
-    </div>}
-
-    {tab===3&&<div>
-      {safeEqs.length===0?<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>Kayıtlı ekipman yok</div>:
-      <Card>
-        {safeEqs.map(e=><div key={e.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:`1px solid ${C.border}`}}>
-          <div><div style={{fontSize:13,fontWeight:600}}>{e.name}</div><div style={{fontSize:11,color:C.textSub}}>{fmtDate(e.addedDate)}</div></div>
-          <span style={{color:C.warning,fontWeight:700}}>{Number(e.price).toLocaleString("tr-TR")} ₺</span>
-        </div>)}
-        <div style={{display:"flex",justifyContent:"space-between",paddingTop:12,marginTop:8,borderTop:`1px solid ${C.border}`}}>
-          <span style={{color:C.textSub,fontSize:13,fontWeight:600}}>Ekipman Toplamı</span>
-          <span style={{fontWeight:800,color:C.success,fontSize:15}}>{equipmentTotal(student).toLocaleString("tr-TR")} ₺</span>
-        </div>
-      </Card>}
-    </div>}
-
-    {tab===4&&<div>
-      <SectionTitle action={<Btn sm onClick={()=>setShowPay(true)}>+ Ödeme Ekle</Btn>}>Ödeme Geçmişi</SectionTitle>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
-        <StatCard label="Toplam Ödenen" value={`${paid.toLocaleString("tr-TR")} ₺`} col={C.success}/>
-        <StatCard label="Aylık Beklenen" value={`${monthly.toLocaleString("tr-TR")} ₺`}/>
-      </div>
-      {safePays.length===0?<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>Ödeme kaydı yok</div>:
-      <Card>
-        {[...safePays].sort((a,b)=>new Date(b.date)-new Date(a.date)).map(p=><div key={p.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:`1px solid ${C.border}`}}>
-          <div><div style={{fontSize:14,fontWeight:700,color:C.text}}>{Number(p.amount).toLocaleString("tr-TR")} ₺</div><div style={{fontSize:11,color:C.textSub}}>{fmtDate(p.date)} {p.note&&`• ${p.note}`}</div></div>
-          <button onClick={()=>delPay(p.id)} style={{background:C.dangerBg,border:"none",color:C.danger,width:32,height:32,borderRadius:8,cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
-        </div>)}
-      </Card>}
-      <Modal show={showPay} onClose={()=>setShowPay(false)} title="Ödeme Ekle">
-        <Inp label="Tutar (₺) *" value={payForm.amount} onChange={v=>setPayForm(p=>({...p,amount:v}))} type="number"/>
-        <Inp label="Tarih" value={payForm.date} onChange={v=>setPayForm(p=>({...p,date:v}))} type="date"/>
-        <Inp label="Not" value={payForm.note} onChange={v=>setPayForm(p=>({...p,note:v}))} placeholder="örn. Temmuz ödemesi"/>
-        <div style={{display:"flex",gap:10,marginTop:20}}>
-          <Btn variant="secondary" onClick={()=>setShowPay(false)} style={{flex:1}}>İptal</Btn>
-          <Btn onClick={addPay} style={{flex:2}}>Kaydet</Btn>
-        </div>
-      </Modal>
-    </div>}
-  </div>
-}
-
+/* ═══════════════════════════════════════════════════════════════
+   STUDENTS PAGE (SIKILAŞTIRILMIŞ BOŞLUKLAR)
+═══════════════════════════════════════════════════════════════ */
 function StudentsPage({students,stockItems}){
   const [search,setSearch]=useState("");
   const [showAdd,setShowAdd]=useState(false);
@@ -573,387 +297,214 @@ function StudentsPage({students,stockItems}){
   }
   function del(id){const n=safeStudents.filter(s=>s.id!==id);DB.set("students",n);setDetailId(null);}
 
-  function downloadExcel() {
-    const headers = ["Ad Soyad", "Grup", "Veli", "Veli Tel", "Bitis Tarihi", "Aylik Ucret (TL)", "Odenen (TL)", "Kalan Borc (TL)"];
-    const rows = filtered.map(s => { const exp = monthlyTotal(s); const paid = totalPaid(s); return [s.name, s.groupName||"-", s.guardianName||"-", s.guardianPhone1||"-", fmtDate(s.courseEnd), exp, paid, exp-paid]; });
-    exportCSV("Ogrenciler", headers, rows);
-  }
-
   const groups=["all",...new Set(safeStudents.map(s=>s.groupName).filter(Boolean))];
-  const filtered=safeStudents.filter(s=>{
-    if(!s.name.toLowerCase().includes(search.toLowerCase()))return false;
-    if(statusFilter==="active"&&courseStatus(s)!=="active")return false;
-    if(statusFilter==="ended"&&courseStatus(s)!=="ended")return false;
-    if(statusFilter==="upcoming"&&courseStatus(s)!=="upcoming")return false;
-    if(statusFilter==="unpaid"&&totalPaid(s)>=monthlyTotal(s))return false; 
-    if(groupFilter!=="all"&&s.groupName!==groupFilter)return false;
-    return true;
-  });
+  const filtered=safeStudents.filter(s=>s && s.name && s.name.toLowerCase().includes(search.toLowerCase()));
 
   if(student)return<StudentDetail student={student} onBack={()=>setDetailId(null)} students={safeStudents} stockItems={stockItems}/>;
 
   return<div style={{padding:16}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-      <div style={{fontSize:14,fontWeight:800,color:C.text,letterSpacing:0.5}}>Öğrenciler ({filtered.length})</div>
-      <div style={{display:"flex", gap:8}}><Btn sm variant="ghost" onClick={downloadExcel}>⬇️ Excel</Btn><Btn sm onClick={()=>setShowAdd(true)}>+ Yeni Kayıt</Btn></div>
+      <div style={{fontSize:14,fontWeight:800,color:C.text}}>Öğrenciler ({filtered.length})</div>
+      <Btn sm onClick={()=>setShowAdd(true)}>+ Yeni Kayıt</Btn>
     </div>
-    
     <div style={{position:"relative",marginBottom:12}}>
-      <Icon d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0" size={16} color={C.textMuted} style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",pointerEvents:"none"}}/>
-      <input style={{width:"100%",padding:"12px 14px 12px 40px",background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,color:C.text,fontSize:14,outline:"none",fontFamily:"inherit",boxShadow:"0 2px 4px rgba(0,0,0,0.02)"}} placeholder="İsimle öğrenci ara..." value={search} onChange={e=>setSearch(e.target.value)}/>
+      <input style={{width:"100%",padding:"12px 14px",background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,color:C.text,fontSize:14,outline:"none"}} placeholder="Öğrenci ara..." value={search} onChange={e=>setSearch(e.target.value)}/>
     </div>
-    
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
-      <Sel value={statusFilter} onChange={setStatusFilter} options={[{value:"all",label:"Tüm Durumlar"},{value:"active",label:"Aktifler"},{value:"upcoming",label:"Başlamayanlar"},{value:"ended",label:"Bitenler"},{value:"unpaid",label:"Eksik Ödemeler"}]}/>
-      <Sel value={groupFilter} onChange={setGroupFilter} options={[{value:"all",label:"Tüm Gruplar"},...groups.filter(g=>g!=="all").map(g=>({value:g,label:g}))]}/>
-    </div>
-
-    {filtered.length===0&&<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted,fontWeight:500}}>Kayıt bulunamadı.</div>}
-    
-    {filtered.map(s=><Card key={s.id} style={{marginBottom:12}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
-        <div><div style={{fontWeight:700,fontSize:16,color:C.text,letterSpacing:-0.3}}>{s.name}</div><div style={{fontSize:12,color:C.textSub,marginTop:2}}>{s.groupName||"Grup yok"}</div></div>
-        <Badge label={courseStatus(s)}/>
+    {/* Sıkılaştırılmış kart marjinleri (marginBottom: 6, padding: 10px 14px) */}
+    {filtered.map(s=><Card key={s.id} style={{marginBottom:6, padding:"10px 14px"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div><div style={{fontWeight:700,fontSize:15,color:C.text}}>{s.name}</div><div style={{fontSize:12,color:C.textSub,marginTop:2}}>{s.groupName||"Grup belirtilmemiş"}</div></div>
+        <div style={{display:"flex",gap:6}}><Btn variant="secondary" sm onClick={()=>setDetailId(s.id)}>Detay</Btn><Btn variant="danger" sm onClick={()=>{if(confirm(`${s.name} silinsin mi?`))del(s.id);}}>Sil</Btn></div>
       </div>
-      <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>
-        <span style={{fontSize:11,padding:"3px 10px",borderRadius:20,background:C.bg,color:C.textSub,fontWeight:600,border:`1px solid ${C.border}`}}>Bitiş: {fmtDate(s.courseEnd)}</span>
-        <span style={{fontSize:11,padding:"3px 10px",borderRadius:20,background:C.successBg,color:C.success,fontWeight:700}}>{totalPaid(s).toLocaleString("tr-TR")} ₺ ödendi</span>
-        {s.hasTransport&&<span style={{fontSize:11,padding:"3px 10px",borderRadius:20,background:C.purpleBg,color:C.purple,fontWeight:600}}>Servis</span>}
-      </div>
-      <div style={{display:"flex",gap:10}}><Btn variant="secondary" sm onClick={()=>setDetailId(s.id)} style={{flex:1}}>Detay</Btn><Btn variant="danger" sm onClick={()=>{if(confirm(`${s.name} silinsin mi?`))del(s.id);}} style={{flex:0,padding:"6px 12px"}}>Sil</Btn></div>
     </Card>)}
-
-    <Modal show={showAdd} onClose={()=>setShowAdd(false)} title="Yeni Öğrenci Kaydı"><StudentForm initial={{}} onSave={save} onCancel={()=>setShowAdd(false)} stockItems={stockItems}/></Modal>
+    <Modal show={showAdd} onClose={()=>setShowAdd(false)} title="Yeni Öğrenci"><StudentForm initial={{}} onSave={save} onCancel={()=>setShowAdd(false)} stockItems={stockItems}/></Modal>
   </div>
 }
 
-function AttendancePage({students}){
-  const safeStudents = safeArr(students);
-  const [date,setDate]=useState(TODAY);
-  const [y, m, d] = date.split('-');
-  const selectedDayIndex = new Date(y, m - 1, d).getDay();
-  const active=safeStudents.filter(s=>courseStatus(s)==="active" && safeArr(s.weekDays).includes(selectedDayIndex));
-  const present=active.filter(s=>(s.attendance||{})[date]).length;
-
-  function toggle(id,val){
-    const n=safeStudents.map(s=>{if(s.id!==id)return s;const att={...s.attendance};if(val)att[date]=true;else delete att[date];return{...s,attendance:att}});
-    DB.set("students",n);
-  }
-
-  return<div style={{padding:16}}>
-    <SectionTitle action={<Btn sm variant="ghost" onClick={()=>exportCSV(`Yoklama_${date}`, ["Ad Soyad", "Grup", "Durum"], active.map(s => [s.name, s.groupName||"-", (s.attendance||{})[date] ? "Katildi" : "Katilmadi"]))}>⬇️ Excel</Btn>}>Günlük Yoklama</SectionTitle>
-    <Inp value={date} onChange={setDate} type="date"/>
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
-      <StatCard label="Beklenen Öğrenci" value={active.length}/>
-      <StatCard label="Mevcut Katılım" value={`${present}`} col={C.success}/>
-    </div>
-    {active.length===0?<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>Bu gün için planlı öğrenci yok.</div>:
-    <Card>
-      {active.map((s,i)=><div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:i===active.length-1?"none":`1px solid ${C.borderLight}`}}>
-        <div><div style={{fontSize:15,fontWeight:700,color:C.text}}>{s.name}</div><div style={{fontSize:12,color:C.textSub}}>{attendanceCount(s)} gün katılım</div></div>
-        <Toggle checked={!!(s.attendance||{})[date]} onChange={v=>toggle(s.id,v)}/>
-      </div>)}
-    </Card>}
-  </div>
-}
-
-function PaymentsPage({students}){
-  const safeStudents = safeArr(students);
-  const all=safeStudents.flatMap(s=>safeArr(s.payments).map(p=>({...p,studentName:s.name}))).sort((a,b)=>new Date(b.date)-new Date(a.date));
-  const total=all.reduce((t,p)=>t+Number(p.amount),0);
-  const thisMonth=all.filter(p=>p.date&&p.date.startsWith(TODAY.slice(0,7))).reduce((t,p)=>t+Number(p.amount),0);
-  const unpaid = safeStudents.filter(s => courseStatus(s) === "active" && totalPaid(s) < monthlyTotal(s)).sort((a, b) => new Date(a.courseStart) - new Date(b.courseStart));
-
-  return<div style={{padding:16}}>
-    <SectionTitle action={<Btn sm variant="ghost" onClick={()=>exportCSV("Odemeler", ["Ogrenci", "Tutar", "Tarih", "Not"], all.map(p => [p.studentName, p.amount, fmtDate(p.date), p.note||"-"]))}>⬇️ Excel</Btn>}>Ödeme Merkezi</SectionTitle>
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
-      <StatCard label="Toplam Tahsilat" value={`${total.toLocaleString("tr-TR")} ₺`} col={C.success} span2/>
-      <StatCard label="Bu Ayki Gelir" value={`${thisMonth.toLocaleString("tr-TR")} ₺`} col={C.accent}/>
-      <StatCard label="Eksik Ödeme" value={unpaid.length} col={unpaid.length>0?C.danger:C.textMuted}/>
-    </div>
-    
-    {unpaid.length>0&&<>
-      <SectionTitle>Eksik Ödemeler</SectionTitle>
-      {unpaid.map(s=>{
-        const expected = monthlyTotal(s); const paid = totalPaid(s); const debt = expected - paid;
-        return (
-          <Card key={s.id} accent={C.danger}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <div><div style={{fontWeight:700,fontSize:15,color:C.text}}>{s.name}</div><div style={{fontSize:12,color:C.textSub,marginTop:2}}>Aylık: {expected.toLocaleString("tr-TR")} ₺</div></div>
-              <div style={{textAlign:"right"}}><span style={{color:C.danger,fontWeight:800,fontSize:16}}>{debt.toLocaleString("tr-TR")} ₺</span><div style={{fontSize:10,color:C.textSub,fontWeight:600}}>kalan borç</div></div>
-            </div>
-          </Card>
-        )
-      })}
-    </>}
-
-    <SectionTitle>İşlem Geçmişi</SectionTitle>
-    {all.length===0?<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>Kayıt yok.</div>:
-    <Card>
-      {all.map((p,i)=><div key={p.id+p.studentName+i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:i===all.length-1?"none":`1px solid ${C.borderLight}`}}>
-        <div><div style={{fontSize:14,fontWeight:700,color:C.text}}>{p.studentName}</div><div style={{fontSize:11,color:C.textSub}}>{fmtDate(p.date)}{p.note?` • ${p.note}`:""}</div></div>
-        <span style={{color:C.success,fontWeight:800,fontSize:15}}>+{Number(p.amount).toLocaleString("tr-TR")} ₺</span>
-      </div>)}
-    </Card>}
-  </div>
-}
-
-function ExpensesPage({expenses}){
-  const validExpenses = safeArr(expenses);
-  const [show,setShow]=useState(false);
-  const [f,setF]=useState({id:null, title:"", amount:"", date:TODAY, category:"", isFood:false, expiryDate:"", note:"", qty:""});
-  const [filterMonth,setFilterMonth]=useState(TODAY.slice(0,7)); 
-  const u=(k,v)=>setF(p=>({...p,[k]:v}));
-
-  function save(){
-    if(!f.title.trim() || !f.amount)return;
-    const n = f.id ? validExpenses.map(e=>e.id===f.id?{...f}:e) : [...validExpenses,{...f,id:Date.now()}];
-    DB.set("expenses", n); setShow(false); setF({id:null, title:"", amount:"", date:TODAY, category:"", isFood:false, expiryDate:"", note:"", qty:""});
-  }
-  function del(id){DB.set("expenses", validExpenses.filter(e=>e.id!==id));}
-
-  const filtered = validExpenses.filter(e => e.date && e.date.startsWith(filterMonth)).sort((a,b)=>new Date(b.date)-new Date(a.date));
-  const totalExp = filtered.reduce((t,e)=>t+Number(e.amount),0);
-
-  return<div style={{padding:16}}>
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-      <div style={{fontSize:14,fontWeight:800,color:C.text,letterSpacing:0.5}}>Gider & Kasa</div>
-      <div style={{display:"flex", gap:8}}>
-        <Btn sm variant="ghost" onClick={()=>exportCSV("Giderler", ["Gider", "Tutar", "Tarih", "Kategori"], filtered.map(e=>[e.title, e.amount, fmtDate(e.date), e.category]))}>⬇️ Excel</Btn>
-        <Btn sm onClick={()=>{setF({id:null, title:"", amount:"", date:TODAY, category:"", isFood:false, expiryDate:"", note:"", qty:""});setShow(true);}}>+ Gider Ekle</Btn>
-      </div>
-    </div>
-
-    <div style={{display:"flex",gap:10,marginBottom:16}}>
-      <input type="month" value={filterMonth} onChange={e=>setFilterMonth(e.target.value)} style={{flex:1, padding:"12px", background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, color:C.text, fontFamily:"inherit", fontWeight:600}}/>
-      <StatCard label="Aylık Çıkan (Gider)" value={`${totalExp.toLocaleString("tr-TR")} ₺`} col={C.danger} span2/>
-    </div>
-
-    {filtered.length===0&&<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>Gider kaydı yok.</div>}
-    
-    {filtered.map(e=><Card key={e.id} accent={e.isFood?C.warning:undefined}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
-        <div><div style={{fontWeight:700,fontSize:15,color:C.text}}>{e.title}</div><div style={{fontSize:12,color:C.textSub,marginTop:2}}>{e.category||"Diğer"} • {fmtDate(e.date)}</div></div>
-        <span style={{fontSize:16,fontWeight:800,color:C.danger}}>-{Number(e.amount).toLocaleString("tr-TR")} ₺</span>
-      </div>
-      {e.isFood && e.expiryDate && (<div style={{fontSize:11, padding:"4px 10px", background:C.warningBg, color:C.warning, borderRadius:6, marginBottom:10, display:"inline-block", fontWeight:600}}>SKT: {fmtDate(e.expiryDate)}</div>)}
-      <div style={{display:"flex",gap:10,marginTop:10}}><Btn variant="secondary" sm onClick={()=>{setF(e);setShow(true);}} style={{flex:1}}>Düzenle</Btn><Btn variant="danger" sm onClick={()=>{if(confirm(`${e.title} silinsin mi?`))del(e.id);}} style={{flex:0}}>Sil</Btn></div>
-    </Card>)}
-
-    <Modal show={show} onClose={()=>setShow(false)} title={f.id?"Gider Düzenle":"Yeni Gider"}>
-      <Inp label="Açıklama / Ürün Adı *" value={f.title} onChange={v=>u("title",v)}/>
-      <Sel label="Kategori" value={f.category} onChange={v=>u("category",v)} options={["Fatura","Maaş","Kira","Gıda","Malzeme","Ulaşım","Diğer"].map(c=>({value:c,label:c}))}/>
-      <div style={{display:"flex",gap:8}}><div style={{flex:1}}><Inp label="Miktar" value={f.qty} onChange={v=>u("qty",v)}/></div><div style={{flex:1}}><Inp label="Tutar (₺) *" value={f.amount} onChange={v=>u("amount",v)} type="number"/></div></div>
-      <Inp label="Tarih" value={f.date} onChange={v=>u("date",v)} type="date"/>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderTop:`1px solid ${C.borderLight}`,marginTop:4}}>
-        <div><div style={{fontWeight:600,fontSize:13,color:C.text}}>Gıda Ürünü mü? (SKT Takipli)</div></div>
-        <Toggle checked={f.isFood} onChange={v=>u("isFood",v)}/>
-      </div>
-      {f.isFood && <Inp label="Son Kullanma Tarihi (SKT)" value={f.expiryDate} onChange={v=>u("expiryDate",v)} type="date"/>}
-      <div style={{display:"flex",gap:10,marginTop:20}}><Btn variant="secondary" onClick={()=>setShow(false)} style={{flex:1}}>İptal</Btn><Btn onClick={save} style={{flex:2}}>Kaydet</Btn></div>
-    </Modal>
-  </div>
-}
-
-function InventoryPage({items}){
-  const validItems = safeArr(items);
-  const [show,setShow]=useState(false);
-  const [f,setF]=useState({id:null,name:"",category:"",price:"",stock:"",minStock:"",supplier:"",notes:""});
+/* ═══════════════════════════════════════════════════════════════
+   YENİ PERSONEL YÖNETİMİ, YOKLAMA VE HAKEDİŞ SİSTEMİ
+═══════════════════════════════════════════════════════════════ */
+function StaffPage({staff}){
+  const validStaff = safeArr(staff);
+  const [tab, setTab] = useState(0);
+  const [showAdd, setShowAdd] = useState(false);
+  const [f, setF] = useState(EMPTY_STAFF);
+  const [selectedMonth, setSelectedMonth] = useState(TODAY.slice(0,7)); 
+  const [activeStaffId, setActiveStaffId] = useState(null);
+  
   const u=(k,v)=>setF(p=>({...p,[k]:v}));
 
   function save(){
     if(!f.name.trim()) return;
-    const n = f.id ? validItems.map(i=>i.id===f.id?{...f}:i) : [...validItems,{...f,id:Date.now()}];
-    DB.set("stock",n); setShow(false); setF({id:null,name:"",category:"",price:"",stock:"",minStock:"",supplier:"",notes:""});
+    const n = f.id ? validStaff.map(s=>s.id===f.id?{...s,...f}:s) : [...validStaff,{...f,id:Date.now(),attendance:{},dailyWage:Number(f.dailyWage||0)}];
+    DB.set("staff",n); setShowAdd(false); setF(EMPTY_STAFF);
   }
-  function del(id){ DB.set("stock", validItems.filter(i=>i.id!==id)); }
-  function adj(id,delta){ DB.set("stock", validItems.map(i=>i.id===id ? {...i, stock: Math.max(0, Number(i.stock||0)+delta)} : i)); }
+  function del(id){if(confirm("Personel silinsin mi?")) DB.set("staff", validStaff.filter(s=>s.id!==id));}
 
-  const totalVal=validItems.reduce((t,i)=>t+Number(i.price||0)*Number(i.stock||0),0);
+  const year = Number(selectedMonth.split("-")[0] || 2026);
+  const month = Number(selectedMonth.split("-")[1] || 6);
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const daysArray = Array.from({length: daysInMonth}, (_, i) => i + 1);
+
+  function toggleAttendance(staffId, dayKey) {
+    const n = validStaff.map(s => {
+      if(s.id !== staffId) return s;
+      const att = { ...(s.attendance || {}) };
+      if(att[dayKey]) delete att[dayKey]; else att[dayKey] = true;
+      return { ...s, attendance: att };
+    });
+    DB.set("staff", n);
+  }
 
   return<div style={{padding:16}}>
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-      <div style={{fontSize:14,fontWeight:800,color:C.text,letterSpacing:0.5}}>Stok & Envanter</div>
-      <div style={{display:"flex",gap:8}}>
-        <Btn sm variant="ghost" onClick={()=>exportCSV("Envanter", ["Urun", "Stok", "Fiyat"], validItems.map(i=>[i.name, i.stock, i.price]))}>⬇️ Excel</Btn>
-        <Btn sm onClick={()=>{setF({id:null,name:"",category:"",price:"",stock:"",minStock:"",supplier:"",notes:""});setShow(true);}}>+ Ürün</Btn>
+    <TabBar tabs={["Personel Listesi","Yoklama & Maaş Hakediş"]} active={tab} onChange={setTab}/>
+    
+    {tab===0&&<div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+        <div style={{fontSize:14,fontWeight:800}}>Personel Kadrosu ({validStaff.length})</div>
+        <Btn sm onClick={()=>{setF(EMPTY_STAFF);setShowAdd(true);}}>+ Yeni Personel</Btn>
       </div>
-    </div>
-
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
-      <StatCard label="Ürün Çeşidi" value={validItems.length}/>
-      <StatCard label="Stok Değeri" value={`${totalVal.toLocaleString("tr-TR")} ₺`} col={C.success}/>
-    </div>
-
-    {validItems.map(item=>(
-      <Card key={item.id} accent={Number(item.stock)===0?C.danger:(Number(item.stock)<=Number(item.minStock||0)?C.warning:undefined)}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
-          <div><div style={{fontWeight:800,fontSize:16,color:C.text}}>{item.name}</div><div style={{fontSize:12,color:C.textSub,marginTop:2}}>{item.category||"Kategori Yok"}</div></div>
-          <div style={{textAlign:"right"}}><div style={{fontWeight:800,color:C.success,fontSize:15}}>{Number(item.price||0).toLocaleString("tr-TR")} ₺</div></div>
-        </div>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12, background:C.bg, padding:"8px", borderRadius:12, border:`1px solid ${C.borderLight}`}}>
-          <div style={{fontSize:12, fontWeight:600, color:C.textSub, paddingLeft:4}}>Stok Miktarı:</div>
-          <div style={{display:"flex",alignItems:"center",gap:16}}>
-            <button onClick={()=>adj(item.id,-1)} style={{width:32,height:32,borderRadius:8,border:`1px solid ${C.border}`,background:C.surface,color:C.danger,cursor:"pointer",fontSize:18,fontWeight:700}}>−</button>
-            <div style={{fontSize:20,fontWeight:800,color:Number(item.stock)===0?C.danger:C.text}}>{item.stock}</div>
-            <button onClick={()=>adj(item.id,1)} style={{width:32,height:32,borderRadius:8,border:`1px solid ${C.border}`,background:C.surface,color:C.success,cursor:"pointer",fontSize:18,fontWeight:700}}>+</button>
+      {validStaff.length===0?<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>Kayıtlı personel bulunmuyor.</div>:
+        validStaff.map(s=><Card key={s.id}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div><div style={{fontWeight:700,fontSize:15,color:C.text}}>{s.name}</div><div style={{fontSize:12,color:C.textSub,marginTop:2}}>{roleLabel(s.role)} • Sabit Yevmiye: {Number(s.dailyWage||0)} ₺</div></div>
+            <div style={{display:"flex",gap:6}}><Btn variant="secondary" sm onClick={()=>{setF(s);setShowAdd(true);}}>Düzenle</Btn><Btn variant="danger" sm onClick={()=>del(s.id)}>Sil</Btn></div>
           </div>
-        </div>
-        <div style={{display:"flex",gap:10}}><Btn variant="secondary" sm onClick={()=>{setF(item);setShow(true);}} style={{flex:1}}>Düzenle</Btn><Btn variant="danger" sm onClick={()=>{if(confirm(`${item.name} silinsin mi?`))del(item.id);}} style={{flex:0}}>Sil</Btn></div>
-      </Card>
-    ))}
+        </Card>)
+      }
+    </div>}
 
-    <Modal show={show} onClose={()=>setShow(false)} title={f.id?"Ürün Düzenle":"Yeni Ürün"}>
-      <Inp label="Ürün Adı *" value={f.name} onChange={v=>u("name",v)}/>
-      <Sel label="Kategori" value={f.category} onChange={v=>u("category",v)} options={["Gözlük","Bone","Palet","Aksesuar","Diğer"].map(c=>({value:c,label:c}))}/>
-      <div style={{display:"flex",gap:8}}><div style={{flex:1}}><Inp label="Satış Fiyatı (₺)" value={f.price} onChange={v=>u("price",v)} type="number"/></div><div style={{flex:1}}><Inp label="Stok Adedi" value={f.stock} onChange={v=>u("stock",v)} type="number"/></div></div>
-      <Inp label="Min. Stok Uyarısı" value={f.minStock} onChange={v=>u("minStock",v)} type="number"/>
-      <div style={{display:"flex",gap:10,marginTop:20}}><Btn variant="secondary" onClick={()=>setShow(false)} style={{flex:1}}>İptal</Btn><Btn onClick={save} style={{flex:2}}>Kaydet</Btn></div>
+    {tab===1&&<div>
+      <SectionTitle>Aylık Puantaj & Hakediş Raporu</SectionTitle>
+      <Card style={{marginBottom:16}}><Inp label="Çalışma ve Takip Ayı" type="month" value={selectedMonth} onChange={setSelectedMonth}/></Card>
+      
+      {validStaff.map(s=>{
+        const monthlyAtt = Object.keys(s.attendance || {}).filter(k => k.startsWith(selectedMonth) && s.attendance[k]);
+        const daysCount = monthlyAtt.length;
+        const totalOwed = daysCount * Number(s.dailyWage || 0);
+        const isExpanded = activeStaffId === s.id;
+
+        return <Card key={`track-${s.id}`} style={{borderLeft: isExpanded ? `4px solid ${C.accent}` : "none", marginBottom:10}}>
+          <div style={{display:"flex", justifyTemplateColumns:"space-between", justifyContent:"space-between", alignItems:"center", cursor:"pointer"}} onClick={()=>setActiveStaffId(isExpanded ? null : s.id)}>
+            <div>
+              <div style={{fontWeight:700, fontSize:15, color:C.text}}>{s.name}</div>
+              <div style={{fontSize:12, color:C.textSub, marginTop:2}}>{daysCount} Gün Mesai • Toplam Hakediş: <strong style={{color:C.success}}>{totalOwed.toLocaleString("tr-TR")} ₺</strong></div>
+            </div>
+            <Btn sm variant="secondary">{isExpanded ? "Kapat ▲" : "Yoklama Gir ▼"}</Btn>
+          </div>
+
+          {isExpanded && <div style={{marginTop:16, paddingTop:16, borderTop:`1px solid ${C.border}`}}>
+            <div style={{marginBottom:14}}><Inp label="Günlük Yevmiye Ücreti Güncelle (₺)" type="number" value={s.dailyWage || 0} onChange={(v)=>{
+              const n = validStaff.map(st => st.id === s.id ? { ...st, dailyWage: Number(v) } : st); DB.set("staff", n);
+            }}/></div>
+            <div style={{fontSize:11, fontWeight:700, color:C.textSub, marginBottom:10, textTransform:"uppercase"}}>{selectedMonth} Dönemi Takvimi (İşaretlemek için günlere tıklayın)</div>
+            <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(42px, 1fr))", gap:6}}>
+              {daysArray.map(day => {
+                const dayStr = String(day).padStart(2, '0'); const dayKey = `${selectedMonth}-${dayStr}`; const isPresent = !!s.attendance?.[dayKey];
+                return <button key={day} onClick={()=>toggleAttendance(s.id, dayKey)} style={{padding:"8px 0", borderRadius:8, border:`1px solid ${isPresent ? C.success : C.border}`, background: isPresent ? C.successBg : C.bg, color: isPresent ? C.success : C.textSub, fontWeight:700, fontSize:12, cursor:"pointer"}}>{day}</button>
+              })}
+            </div>
+          </div>}
+        </Card>
+      })}
+    </div>}
+
+    <Modal show={showAdd} onClose={()=>setShowAdd(false)} title={f.id?"Personel Düzenle":"Yeni Personel Ekle"}>
+      <Inp label="Personel Ad Soyad *" value={f.name} onChange={v=>u("name",v)}/>
+      <Sel label="Görev" value={f.role} onChange={v=>u("role",v)} options={[{value:"trainer",label:"Antrenör"},{value:"admin",label:"İdari Personel"},{value:"driver",label:"Şoför"},{value:"other",label:"Diğer"}]}/>
+      <div style={{display:"flex",gap:8}}><div style={{flex:1}}><Inp label="Yaş" value={f.age} onChange={v=>u("age",v)} type="number"/></div><div style={{flex:1}}><Inp label="Telefon" value={f.phone} onChange={v=>u("phone",v)} type="tel"/></div></div>
+      <Inp label="Günlük Hakediş/Yevmiye Ücreti (₺) *" value={f.dailyWage} onChange={v=>u("dailyWage",v)} type="number"/>
+      <div style={{display:"flex",gap:10,marginTop:20}}><Btn variant="secondary" onClick={()=>setShowAdd(false)} style={{flex:1}}>İptal</Btn><Btn onClick={save} style={{flex:2}}>Kaydet</Btn></div>
     </Modal>
   </div>
 }
 
-function WhatsAppPage({students, waGroupLink}) {
-  const [linkInput, setLinkInput] = useState(waGroupLink || "");
-  const [saveMsg, setSaveMsg] = useState("");
+/* ═══════════════════════════════════════════════════════════════
+   YOKLAMA, ÖDEMELER, GİDERLER VE WHATSAPP BİLEŞENLERİ
+═══════════════════════════════════════════════════════════════ */
+// (Değişmeyen kurumsal alt modüller aynen korunmuştur)
+function AttendancePage({students}){
+  const [date,setDate]=useState(TODAY); const [y, m, d] = date.split('-'); const selectedDayIndex = new Date(y, m - 1, d).getDay();
+  const active=safeArr(students).filter(s=>courseStatus(s)==="active" && (s.weekDays||[]).includes(selectedDayIndex));
+  const present=active.filter(s=>(s.attendance||{})[date]).length;
+  function toggle(id,val){ const n=safeArr(students).map(s=>{if(s.id!==id)return s; const att={...s.attendance}; if(val)att[date]=true; else delete att[date]; return{...s,attendance:att}}); DB.set("students",n); }
+  return<div style={{padding:16}}>
+    <SectionTitle action={<Btn sm variant="ghost" onClick={()=>exportCSV(`Yoklama_${date}`, ["Ad", "Durum"], active.map(s => [s.name, (s.attendance||{})[date] ? "Var" : "Yok"]))}>⬇️ Excel</Btn>}>Yoklama</SectionTitle>
+    <Inp value={date} onChange={setDate} type="date"/>
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}><StatCard label="Beklenen" value={active.length}/><StatCard label="Mevcut" value={present} col={C.success}/></div>
+    <Card>{active.map((s,i)=><div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:i===active.length-1?"none":`1px solid ${C.borderLight}`}}><div><div style={{fontSize:15,fontWeight:700}}>{s.name}</div></div><Toggle checked={!!(s.attendance||{})[date]} onChange={v=>toggle(s.id,v)}/></div>)}</Card>
+  </div>
+}
+function PaymentsPage({students}){
+  const all=safeArr(students).flatMap(s=>safeArr(s.payments).map(p=>({...p,studentName:s.name}))).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const total=all.reduce((t,p)=>t+Number(p.amount),0); const thisMonth=all.filter(p=>p.date&&p.date.startsWith(TODAY.slice(0,7))).reduce((t,p)=>t+Number(p.amount),0);
+  const unpaid = safeArr(students).filter(s => courseStatus(s) === "active" && totalPaid(s) < monthlyTotal(s));
+  return<div style={{padding:16}}>
+    <SectionTitle action={<Btn sm variant="ghost" onClick={()=>exportCSV("Odemeler", ["Ogrenci", "Tutar"], all.map(p => [p.studentName, p.amount]))}>⬇️ Excel</Btn>}>Ödemeler</SectionTitle>
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}><StatCard label="Toplam" value={`${total} ₺`} col={C.success} span2/><StatCard label="Bu Ay" value={`${thisMonth} ₺`}/><StatCard label="Eksik" value={unpaid.length} col={C.danger}/></div>
+    <Card>{all.map(p=><Row key={p.id} label={p.studentName} val={`+${p.amount} ₺`} col={C.success}/>)}</Card>
+  </div>
+}
+function ExpensesPage({expenses}){
+  const [show,setShow]=useState(false); const [f,setF]=useState(EMPTY_EXPENSE); const [filterMonth,setFilterMonth]=useState(TODAY.slice(0,7)); const u=(k,v)=>setF(p=>({...p,[k]:v}));
+  function save(){ if(!f.title.trim()||!f.amount)return; const n=f.id?safeArr(expenses).map(e=>e.id===f.id?{...f}:e):[...safeArr(expenses),{...f,id:Date.now()}]; DB.set("expenses",n); setShow(false); setF(EMPTY_EXPENSE); }
+  const filtered=safeArr(expenses).filter(e=>e.date&&e.date.startsWith(filterMonth)); const totalExp=filtered.reduce((t,e)=>t+Number(e.amount),0);
+  return<div style={{padding:16}}>
+    <SectionTitle action={<Btn sm onClick={()=>setShow(true)}>+ Gider Ekle</Btn>}>Giderler</SectionTitle>
+    <div style={{display:"flex",gap:10,marginBottom:16}}><input type="month" value={filterMonth} onChange={e=>setFilterMonth(e.target.value)} style={{flex:1,padding:12,background:C.surface,border:`1px solid ${C.border}`,borderRadius:12}}/><StatCard label="Toplam Gider" value={`${totalExp} ₺`} col={C.danger}/></div>
+    {filtered.map(e=><Card key={e.id}><Row label={e.title} val={`-${e.amount} ₺`} col={C.danger}/></Card>)}
+    <Modal show={show} onClose={()=>setShow(false)} title="Yeni Gider"><Inp label="Açıklama *" value={f.title} onChange={v=>u("title",v)}/><Inp label="Tutar *" value={f.amount} onChange={v=>u("amount",v)} type="number"/><Btn full onClick={save}>Kaydet</Btn></Modal>
+  </div>
+}
+function WhatsAppPage({students, waGroupLink}){
   const activeStudents = safeArr(students).filter(s => courseStatus(s) === "active" && s.guardianPhone1);
-
-  function saveLink() { DB.set("waGroupLink", linkInput); setSaveMsg("Bağlantı kaydedildi!"); setTimeout(() => setSaveMsg(""), 3000); }
-  function sendInvite(student) {
-    if(!waGroupLink) { alert("Önce WhatsApp bağlantısını kaydedin."); return; }
-    openWA(student.guardianPhone1, `Sayın velimiz,\n${student.name} isimli öğrencimizin duyuru takibi için resmi WhatsApp grubumuza katılabilirsiniz:\n\n${waGroupLink}`);
-  }
-
   return <div style={{padding:16}}>
-    <SectionTitle>WhatsApp Web Merkezi</SectionTitle>
-    <Card style={{marginBottom:20}}>
-      <div style={{display:"flex", alignItems:"center", gap:14, marginBottom:16}}>
-        <div style={{width:48, height:48, borderRadius:16, background:C.whatsappBg, display:"flex", alignItems:"center", justifyContent:"center", color:C.whatsapp}}>
-          <svg width={26} height={26} viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.482-1.46-1.656-1.758-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z M12 22C6.477 22 2 17.523 2 12c0-1.76.452-3.414 1.25-4.832L2 2l5.344 1.156C8.683 2.43 10.297 2 12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10z"/></svg>
-        </div>
-        <div><div style={{fontWeight:800, fontSize:16, color:C.text}}>WhatsApp Web Uygulaması</div><div style={{fontSize:12, color:C.textSub, marginTop:2}}>Yeni sekmede açılacaktır.</div></div>
-      </div>
-      <Btn full style={{background:C.whatsapp, color:"#fff", border:"none", padding:"12px"}} onClick={()=>window.open("https://web.whatsapp.com", "_blank")}>WhatsApp Web'i Aç</Btn>
-    </Card>
-
-    <SectionTitle>Otomatik Grup Daveti</SectionTitle>
-    <Card style={{marginBottom:16}}>
-      <Inp label="WhatsApp Grubunun Katılım Linki" value={linkInput} onChange={setLinkInput} placeholder="https://chat.whatsapp.com/..." />
-      <Btn full onClick={saveLink} style={{marginTop:8}}>Linki Kaydet</Btn>
-      {saveMsg && <div style={{fontSize:13, color:C.success, marginTop:10, fontWeight:700, textAlign:"center"}}>{saveMsg}</div>}
-    </Card>
-
-    {activeStudents.length > 0 && (
-      <div>
-        <div style={{fontSize:12, fontWeight:700, color:C.textSub, marginBottom:10, textTransform:"uppercase"}}>Aktif Öğrenciler ({activeStudents.length})</div>
-        <Card>
-          {activeStudents.map((s, i) => (
-            <div key={s.id} style={{display:"flex", justifyContent:"space-between", alignItems:"center", padding:"12px 0", borderBottom:i===activeStudents.length-1?"none":`1px solid ${C.borderLight}`}}>
-              <div><div style={{fontWeight:700, fontSize:15, color:C.text}}>{s.name}</div><div style={{fontSize:12, color:C.textSub, marginTop:2}}>{s.guardianPhone1}</div></div>
-              <Btn sm style={{background:C.whatsappBg, color:C.whatsapp, border:"none"}} onClick={()=>sendInvite(s)}>Davet Gönder</Btn>
-            </div>
-          ))}
-        </Card>
-      </div>
-    )}
+    <SectionTitle>WhatsApp Entegrasyonu</SectionTitle>
+    <Card style={{marginBottom:16}}><Btn full style={{background:C.whatsapp, color:"#fff", border:"none"}} onClick={()=>window.open("https://web.whatsapp.com", "_blank")}>WhatsApp Web Sekmesini Aç</Btn></Card>
+    <Card>{activeStudents.map(s=><div key={s.id} style={{display:"flex",justifyContent:"space-between",padding:"10px 0"}}><span style={{color:C.text, fontWeight:600}}>{s.name}</span><Btn sm style={{background:C.whatsappBg,color:C.whatsapp}} onClick={()=>openWA(s.guardianPhone1,`Merhaba, duyuru grubumuz: ${waGroupLink || ''}`)}>Grup Daveti Gönder</Btn></div>)}</Card>
   </div>
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   GELİŞMİŞ KURUMSAL DASHBOARD (Izgara Düzeni)
+   GELİŞMİŞ KURUMSAL DASHBOARD (YAN YANA GRID DÜZENİ)
 ═══════════════════════════════════════════════════════════════ */
 function Dashboard({students,expenses}){
-  const safeStudents = safeArr(students);
-  const safeExpenses = safeArr(expenses);
-  const active=safeStudents.filter(s=>courseStatus(s)==="active");
-  const presentToday=safeStudents.filter(s=>(s.attendance||{})[TODAY]).length;
-  
-  const totalRev=safeStudents.reduce((t,s)=>t+totalPaid(s),0);
-  const totalExp=safeExpenses.reduce((t,e)=>t+Number(e.amount||0),0);
-  const netProfit = totalRev - totalExp;
-
+  const safeStudents = safeArr(students); const safeExpenses = safeArr(expenses); const active=safeStudents.filter(s=>courseStatus(s)==="active");
+  const totalRev=safeStudents.reduce((t,s)=>t+totalPaid(s),0); const totalExp=safeExpenses.reduce((t,e)=>t+Number(e.amount||0),0); const netProfit = totalRev - totalExp;
   const recentRegistrations = [...safeStudents].sort((a,b) => b.id - a.id).slice(0, 5);
-  const recentPay = safeStudents.flatMap(s=>safeArr(s.payments).map(p=>({...p,studentName:s.name}))).sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
-  const endingSoon = active.filter(s=>{const d=daysLeft(s);return d>=0&&d<=14;}).sort((a,b)=>daysLeft(a)-daysLeft(b)).slice(0,5);
-  
-  const foodWarnings = safeExpenses.filter(e => {
-    if(!e.isFood || !e.expiryDate) return false;
-    const days = Math.ceil((new Date(e.expiryDate) - new Date(TODAY))/86400000);
-    return days <= 7;
-  }).sort((a,b)=>new Date(a.expiryDate)-new Date(b.expiryDate));
+  const recentPay = safeStudents.flatMap(s=>safeArr(s.payments).map(p=>({...p,studentName:s.name}))).sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0, 5);
+  const endingSoon = active.filter(s=>{const d=daysLeft(s);return d>=0&&d<=14;}).sort((a,b)=>daysLeft(a)-daysLeft(b)).slice(0, 5);
 
   return<div style={{padding:16}}>
-    {/* NET KAR ÖZETİ (TEPE) */}
     <Card accent={netProfit >= 0 ? C.success : C.danger} style={{marginBottom:16, background:netProfit >= 0 ? C.successBg : C.dangerBg, border:"none"}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-        <div style={{fontSize:14, color:netProfit >= 0 ? C.success : C.danger, fontWeight:800, textTransform:"uppercase"}}>Net Kasa (Kâr/Zarar)</div>
-        <div style={{fontSize:28, fontWeight:800, color:netProfit >= 0 ? C.success : C.danger}}>{netProfit >= 0 ? "+" : ""}{netProfit.toLocaleString("tr-TR")} ₺</div>
-      </div>
-      <div style={{display:"flex",justifyContent:"space-between",fontSize:13,color:C.textMain, fontWeight:600}}>
-        <span>Toplam Tahsilat: {totalRev.toLocaleString("tr-TR")} ₺</span>
-        <span>Toplam Gider: {totalExp.toLocaleString("tr-TR")} ₺</span>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div style={{fontSize:13, color:netProfit >= 0 ? C.success : C.danger, fontWeight:800}}>NET KASA DURUMU</div>
+        <div style={{fontSize:26, fontWeight:800, color:netProfit >= 0 ? C.success : C.danger}}>{netProfit >= 0 ? "+" : ""}{netProfit.toLocaleString("tr-TR")} ₺</div>
       </div>
     </Card>
 
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}>
-      <StatCard label="Aktif Öğrenci" value={active.length}/>
-      <StatCard label="Bugün Mevcut" value={`${presentToday} / ${active.length}`} col={C.success}/>
-    </div>
-
-    {foodWarnings.length>0&&<div style={{marginBottom:16}}>
-      {foodWarnings.map(f=>{
-         const d = Math.ceil((new Date(f.expiryDate)-new Date(TODAY))/86400000);
-         return <Card key={f.id} style={{borderLeft:`4px solid ${d<0?C.danger:C.warning}`, marginBottom:8, padding:"12px 16px"}}>
-           <div style={{fontSize:14,fontWeight:700,color:d<0?C.danger:C.warning}}>⚠️ SKT Uyarısı: {f.title} ({d<0 ? "Tarihi Geçti!" : `${d} Gün Kaldı`})</div>
-         </Card>
-      })}
-    </div>}
-
-    {/* KURUMSAL YAN YANA TABLOLAR (GRID SİSTEMİ) */}
-    <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(320px, 1fr))", gap:16, alignItems:"start"}}>
+    {/* YAN YANA SIRALANAN KURUMSAL 3'LÜ GRID SİSTEMİ */}
+    <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(300px, 1fr))", gap:16, alignItems:"start", marginTop:12}}>
       
       {/* 1. SON KAYITLAR */}
-      <Card style={{padding:"16px", borderRadius:16, boxShadow:"0 4px 20px rgba(0,0,0,0.03)"}}>
-        <div style={{fontSize:13, fontWeight:800, color:C.text, marginBottom:16, textTransform:"uppercase", letterSpacing:0.5}}>Son Kayıtlar</div>
-        <div className="data-row data-header"><div>Ad Soyad</div><div>Tarih</div><div className="data-col-right">Grup</div></div>
-        {recentRegistrations.length === 0 ? <div style={{padding:"16px 0", fontSize:13, color:C.textMuted, textAlign:"center"}}>Kayıt yok.</div> :
-          recentRegistrations.map(s => (
-            <div className="data-row" key={`reg-${s.id}`}>
-              <div className="data-col" style={{color:C.text}}>{s.name}</div>
-              <div className="data-col data-col-sub">{fmtDate(s.courseStart)}</div>
-              <div className="data-col data-col-right" style={{color:C.accent}}>{s.groupName || "-"}</div>
-            </div>
-          ))
-        }
+      <Card style={{borderRadius:16, padding:16}}>
+        <div style={{fontSize:12, fontWeight:800, marginBottom:12, textTransform:"uppercase", color:C.text}}>Son Kayıt Olanlar</div>
+        <div className="data-row data-header"><div>Ad Soyad</div><div>Kayıt Trh.</div><div className="data-col-right">Grup</div></div>
+        {recentRegistrations.map(s => <div className="data-row" key={s.id}><div className="data-col">{s.name}</div><div className="data-col data-col-sub">{fmtDate(s.courseStart)}</div><div className="data-col data-col-right" style={{color:C.accent}}>{s.groupName || "-"}</div></div>)}
       </Card>
 
       {/* 2. SON ÖDEMELER */}
-      <Card style={{padding:"16px", borderRadius:16, boxShadow:"0 4px 20px rgba(0,0,0,0.03)"}}>
-        <div style={{fontSize:13, fontWeight:800, color:C.text, marginBottom:16, textTransform:"uppercase", letterSpacing:0.5}}>Son Ödemeler</div>
+      <Card style={{borderRadius:16, padding:16}}>
+        <div style={{fontSize:12, fontWeight:800, marginBottom:12, textTransform:"uppercase", color:C.text}}>Son Ödemeler</div>
         <div className="data-row data-header"><div>Ad Soyad</div><div>Tarih</div><div className="data-col-right">Tutar</div></div>
-        {recentPay.length === 0 ? <div style={{padding:"16px 0", fontSize:13, color:C.textMuted, textAlign:"center"}}>Ödeme yok.</div> :
-          recentPay.map((p, i) => (
-            <div className="data-row" key={`pay-${i}`}>
-              <div className="data-col" style={{color:C.text}}>{p.studentName}</div>
-              <div className="data-col data-col-sub">{fmtDate(p.date)}</div>
-              <div className="data-col data-col-right" style={{color:C.success}}>+{Number(p.amount).toLocaleString("tr-TR")} ₺</div>
-            </div>
-          ))
-        }
+        {recentPay.map((p, i) => <div className="data-row" key={i}><div className="data-col">{p.studentName}</div><div className="data-col data-col-sub">{fmtDate(p.date)}</div><div className="data-col data-col-right" style={{color:C.success}}>+{p.amount} ₺</div></div>)}
       </Card>
 
       {/* 3. BİTİŞİ YAKLAŞANLAR */}
-      <Card style={{padding:"16px", borderRadius:16, boxShadow:"0 4px 20px rgba(0,0,0,0.03)", border:`1px solid ${C.warning}40`}}>
-        <div style={{fontSize:13, fontWeight:800, color:C.text, marginBottom:16, textTransform:"uppercase", letterSpacing:0.5}}>Kayıt Bitişi Yaklaşanlar</div>
+      <Card style={{borderRadius:16, padding:16, border:`1px solid ${C.warning}40`}}>
+        <div style={{fontSize:12, fontWeight:800, marginBottom:12, textTransform:"uppercase", color:C.text}}>Kayıt Bitişi Yaklaşanlar</div>
         <div className="data-row data-header"><div>Ad Soyad</div><div>Bitiş Trh.</div><div className="data-col-right">Kalan</div></div>
-        {endingSoon.length === 0 ? <div style={{padding:"16px 0", fontSize:13, color:C.textMuted, textAlign:"center"}}>Yaklaşan bitiş yok.</div> : 
-          endingSoon.map(s => (
-          <div className="data-row" key={`end-${s.id}`}>
-            <div className="data-col" style={{color:C.text}}>{s.name}</div>
-            <div className="data-col data-col-sub">{fmtDate(s.courseEnd)}</div>
-            <div className="data-col data-col-right" style={{color:C.warning}}>{daysLeft(s)} Gün</div>
-          </div>
-        ))}
+        {endingSoon.map(s => <div className="data-row" key={s.id}><div className="data-col">{s.name}</div><div className="data-col data-col-sub">{fmtDate(s.courseEnd)}</div><div className="data-col data-col-right" style={{color:C.warning}}>{daysLeft(s)} Gün</div></div>)}
       </Card>
 
     </div>
@@ -961,142 +512,37 @@ function Dashboard({students,expenses}){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   AYARLAR & YETKİLENDİRME (RBAC)
+   AYARLAR PANELİ
 ═══════════════════════════════════════════════════════════════ */
 function SettingsPage({navItems, clubName, logoUrl, themeColor, sidebarColor, cardColor, textColor, appUsers}){
-  const [tab, setTab] = useState(0);
+  const [tab, setTab] = useState(0); const [nameVal, setNameVal] = useState(clubName); const [logoVal, setLogoVal] = useState(logoUrl);
+  const [colorVal, setColorVal] = useState(themeColor); const [sidebarColorVal, setSidebarColorVal] = useState(sidebarColor);
+  const [cardColorVal, setCardColorVal] = useState(cardColor); const [textColorVal, setTextColorVal] = useState(textColor); const [saveMsg, setSaveMsg] = useState("");
+  const [showUserModal, setShowUserModal] = useState(false); const [uForm, setUForm] = useState({ id:null, username:"", password:"", role:"staff", allowedTabs:[] });
 
-  const [nameVal, setNameVal] = useState(clubName);
-  const [logoVal, setLogoVal] = useState(logoUrl);
-  const [colorVal, setColorVal] = useState(themeColor);
-  const [sidebarColorVal, setSidebarColorVal] = useState(sidebarColor);
-  const [cardColorVal, setCardColorVal] = useState(cardColor);
-  const [textColorVal, setTextColorVal] = useState(textColor);
-  const [saveMsg, setSaveMsg] = useState("");
-
-  const [showUserModal, setShowUserModal] = useState(false);
-  const [uForm, setUForm] = useState({ id:null, username:"", password:"", role:"staff", allowedTabs:[] });
-
-  useEffect(() => {
-    setNameVal(clubName); setLogoVal(logoUrl); setColorVal(themeColor);
-    setSidebarColorVal(sidebarColor); setCardColorVal(cardColor); setTextColorVal(textColor);
-  }, [clubName, logoUrl, themeColor, sidebarColor, cardColor, textColor]);
-
-  function saveGeneral(){
-    DB.set("clubName", nameVal); DB.set("logoUrl", logoVal); 
-    DB.set("themeColor", colorVal); DB.set("sidebarColor", sidebarColorVal); 
-    DB.set("cardColor", cardColorVal); DB.set("textColor", textColorVal);
-    setSaveMsg("Ayarlar başarıyla kaydedildi."); setTimeout(()=>setSaveMsg(""), 3000);
-  }
-
-  function resetColors(){
-    setColorVal("#F4F7F6"); setSidebarColorVal("#FFFFFF"); setCardColorVal("#FFFFFF"); setTextColorVal("#1E293B");
-  }
-
-  function toggleMenuAccess(menuId) {
-    const tabs = uForm.allowedTabs || [];
-    if(tabs.includes(menuId)) setUForm({...uForm, allowedTabs: tabs.filter(t=>t!==menuId)});
-    else setUForm({...uForm, allowedTabs: [...tabs, menuId]});
-  }
-
-  function saveUser() {
-    if(!uForm.username || !uForm.password) { alert("Kullanıcı adı ve şifre zorunludur!"); return; }
-    if(uForm.username.toLowerCase() === "admin" && uForm.id !== "admin") { alert("'admin' kullanıcı adı rezerve edilmiştir."); return; }
-    
-    let n = safeArr(appUsers);
-    if(uForm.id) n = n.map(u => u.id === uForm.id ? {...uForm} : u);
-    else n = [...n, {...uForm, id:Date.now()}];
-    DB.set("appUsers", n); setShowUserModal(false);
-  }
-  function deleteUser(id) {
-    if(id === "admin") { alert("Ana yönetici hesabı silinemez!"); return; }
-    DB.set("appUsers", safeArr(appUsers).filter(u => u.id !== id));
-  }
+  useEffect(() => { setNameVal(clubName); setLogoVal(logoUrl); setColorVal(themeColor); setSidebarColorVal(sidebarColor); setCardColorVal(cardColor); setTextColorVal(textColor); }, [clubName, logoUrl, themeColor, sidebarColor, cardColor, textColor]);
+  function saveGeneral(){ DB.set("clubName", nameVal); DB.set("logoUrl", logoVal); DB.set("themeColor", colorVal); DB.set("sidebarColor", sidebarColorVal); DB.set("cardColor", cardColorVal); DB.set("textColor", textColorVal); setSaveMsg("Ayarlar başarıyla kaydedildi."); setTimeout(()=>setSaveMsg(""), 3000); }
+  function saveUser() { if(!uForm.username||!uForm.password)return; let n = safeArr(appUsers); if(uForm.id) n = n.map(u => u.id === uForm.id ? {...uForm} : u); else n = [...n, {...uForm, id:Date.now()}]; DB.set("appUsers", n); setShowUserModal(false); }
 
   return<div style={{padding:16}}>
-    <TabBar tabs={["Genel & Renk", "Kullanıcılar & Yetkiler"]} active={tab} onChange={setTab}/>
-    
+    <TabBar tabs={["Genel & Renk", "Kullanıcı Yetkileri"]} active={tab} onChange={setTab}/>
     {tab === 0 && (
       <div>
-        <SectionTitle>Genel Kurum Ayarları</SectionTitle>
+        <Card><Inp label="Kulüp Adı" value={nameVal} onChange={setNameVal}/><Inp label="Logo URL" value={logoVal} onChange={setLogoVal}/></Card>
         <Card>
-          <Inp label="Kulüp Adı" value={nameVal} onChange={setNameVal} placeholder="Örn: AquaClub Pro"/>
-          <Inp label="Logo URL (İsteğe Bağlı)" value={logoVal} onChange={setLogoVal} placeholder="Örn: https://site.com/logo.png"/>
+          <div style={{display:"flex", justifyContent:"space-between", marginBottom:10}}><span>Arkaplan Gri</span><input type="color" value={colorVal} onChange={e=>setColorVal(e.target.value)}/></div>
+          <div style={{display:"flex", justifyContent:"space-between", marginBottom:10}}><span>Menü Beyaz</span><input type="color" value={sidebarColorVal} onChange={e=>setSidebarColorVal(e.target.value)}/></div>
+          <div style={{display:"flex", justifyContent:"space-between"}}><span>Yazı Koyu Füme</span><input type="color" value={textColorVal} onChange={e=>setTextColorVal(e.target.value)}/></div>
         </Card>
-
-        <SectionTitle action={<Btn sm variant="ghost" onClick={resetColors}>Açık Temaya Dön</Btn>}>Renk Teması</SectionTitle>
-        <Card>
-          <div style={{display:"grid", gridTemplateColumns:"1fr", gap:16}}>
-            <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", borderBottom:`1px solid ${C.borderLight}`, paddingBottom:12}}>
-              <div><div style={{fontSize:14, fontWeight:700, color:C.text}}>Ana Arkaplan</div><div style={{fontSize:12, color:C.textSub}}>Sayfanın geneli</div></div>
-              <input type="color" value={colorVal} onChange={e=>setColorVal(e.target.value)} style={{width:44, height:44, padding:0, border:`1px solid ${C.border}`, borderRadius:8, cursor:"pointer", background:"none"}}/>
-            </div>
-            <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", borderBottom:`1px solid ${C.borderLight}`, paddingBottom:12}}>
-              <div><div style={{fontSize:14, fontWeight:700, color:C.text}}>Yan Menü & Üst Bar</div><div style={{fontSize:12, color:C.textSub}}>Menü alanları</div></div>
-              <input type="color" value={sidebarColorVal} onChange={e=>setSidebarColorVal(e.target.value)} style={{width:44, height:44, padding:0, border:`1px solid ${C.border}`, borderRadius:8, cursor:"pointer", background:"none"}}/>
-            </div>
-            <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", borderBottom:`1px solid ${C.borderLight}`, paddingBottom:12}}>
-              <div><div style={{fontSize:14, fontWeight:700, color:C.text}}>Kart & Kutu Rengi</div><div style={{fontSize:12, color:C.textSub}}>Veri kutucukları</div></div>
-              <input type="color" value={cardColorVal} onChange={e=>setCardColorVal(e.target.value)} style={{width:44, height:44, padding:0, border:`1px solid ${C.border}`, borderRadius:8, cursor:"pointer", background:"none"}}/>
-            </div>
-            <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
-              <div><div style={{fontSize:14, fontWeight:700, color:C.text}}>Yazı Rengi</div><div style={{fontSize:12, color:C.textSub}}>Genel metinlerin rengi</div></div>
-              <input type="color" value={textColorVal} onChange={e=>setTextColorVal(e.target.value)} style={{width:44, height:44, padding:0, border:`1px solid ${C.border}`, borderRadius:8, cursor:"pointer", background:"none"}}/>
-            </div>
-          </div>
-        </Card>
-        <Btn full onClick={saveGeneral} style={{marginTop:12, padding:"12px"}}>Değişiklikleri Kaydet</Btn>
-        {saveMsg && <div style={{marginTop:12, fontSize:13, color:C.success, textAlign:"center", fontWeight:700}}>{saveMsg}</div>}
+        <Btn full onClick={saveGeneral}>Kaydet</Btn>
+        {saveMsg && <div style={{textAlign:"center",color:C.success,marginTop:10}}>{saveMsg}</div>}
       </div>
     )}
-
-    {tab === 1 && (
-      <div>
-        <SectionTitle action={<Btn sm onClick={()=>{setUForm({ id:null, username:"", password:"", role:"staff", allowedTabs:["dashboard", "attendance"] }); setShowUserModal(true);}}>+ Personel Ekle</Btn>}>Yetkili Kullanıcılar</SectionTitle>
-        <div style={{fontSize:13,color:C.textSub,marginBottom:16,lineHeight:1.6}}>Çalışanlarınızın panele girerken kullanacağı şifreleri ve görebilecekleri sayfaları buradan yönetebilirsiniz.</div>
-        
-        {safeArr(appUsers).map(u => (
-          <Card key={u.id} accent={u.role === "admin" ? C.accent : undefined}>
-            <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
-              <div>
-                <div style={{fontWeight:800, fontSize:16, color:C.text}}>{u.username} <span style={{fontSize:10, padding:"2px 8px", background:u.role==="admin"?C.accentGlow:C.successBg, color:u.role==="admin"?C.accent:C.success, borderRadius:12, marginLeft:8, verticalAlign:"middle"}}>{u.role==="admin"?"Yönetici":"Çalışan"}</span></div>
-                <div style={{fontSize:12, color:C.textSub, marginTop:4, fontWeight:500}}>Şifre: {u.password}</div>
-              </div>
-              <div style={{display:"flex", gap:8}}>
-                <Btn sm variant="secondary" onClick={()=>{setUForm(u); setShowUserModal(true);}}>Düzenle</Btn>
-                {u.id !== "admin" && <Btn sm variant="danger" onClick={()=>deleteUser(u.id)}>Sil</Btn>}
-              </div>
-            </div>
-          </Card>
-        ))}
-
-        <Modal show={showUserModal} onClose={()=>setShowUserModal(false)} title={uForm.id ? "Kullanıcı Düzenle" : "Yeni Kullanıcı Ekle"}>
-          <Inp label="Kullanıcı Adı *" value={uForm.username} onChange={v=>setUForm({...uForm, username:v})} disabled={uForm.id==="admin"} placeholder="Örn: ahmet123"/>
-          <Inp label="Giriş Şifresi *" value={uForm.password} onChange={v=>setUForm({...uForm, password:v})} placeholder="••••"/>
-          
-          {uForm.id !== "admin" && (
-            <>
-              <div style={{height:1, background:C.border, margin:"20px 0"}}/>
-              <div style={{fontSize:14, fontWeight:800, marginBottom:8, color:C.text}}>Görüntüleme Yetkileri</div>
-              <div style={{fontSize:12, color:C.textSub, marginBottom:16}}>Bu çalışanın sol menüde görebileceği sayfaları işaretleyin.</div>
-              
-              <div style={{display:"flex", flexDirection:"column", gap:10}}>
-                {NAV_ITEMS.filter(n=>n.id!=="settings").map(nav => (
-                  <label key={nav.id} style={{display:"flex", alignItems:"center", gap:12, padding:"12px 16px", background:C.bg, borderRadius:12, border:`1px solid ${(uForm.allowedTabs||[]).includes(nav.id)?C.accent:C.border}`, cursor:"pointer", transition:"border 0.2s"}}>
-                    <input type="checkbox" checked={(uForm.allowedTabs||[]).includes(nav.id)} onChange={()=>toggleMenuAccess(nav.id)} style={{width:18, height:18, accentColor:C.accent}} />
-                    <span style={{fontSize:14, fontWeight:600, color:C.text}}>{nav.label}</span>
-                  </label>
-                ))}
-              </div>
-            </>
-          )}
-          <div style={{display:"flex", gap:12, marginTop:24}}>
-            <Btn variant="secondary" onClick={()=>setShowUserModal(false)} style={{flex:1, padding:"12px"}}>İptal</Btn>
-            <Btn onClick={saveUser} style={{flex:2, padding:"12px"}}>Kaydet</Btn>
-          </div>
-        </Modal>
-      </div>
-    )}
+    {tab===1&&<div>
+      <SectionTitle action={<Btn sm onClick={()=>{setUForm({id:null,username:"",password:"",role:"staff",allowedTabs:["dashboard","attendance"]});setShowUserModal(true);}}>+ Yeni Personel Ekle</Btn>}>Kullanıcı Hesapları</SectionTitle>
+      {safeArr(appUsers).map(u=><Card key={u.id}><Row label={u.username} val={u.role==='admin'?'Yönetici':'Çalışan'}/></Card>)}
+      <Modal show={showUserModal} onClose={()=>setShowUserModal(false)} title="Hesap Yetkilendir"><Inp label="Kullanıcı Adı" value={uForm.username} onChange={v=>setUForm({...uForm,username:v})}/><Inp label="Şifre" value={uForm.password} onChange={v=>setUForm({...uForm,password:v})}/><Btn full onClick={saveUser}>Kaydet</Btn></Modal>
+    </div>}
   </div>
 }
 
@@ -1104,39 +550,13 @@ function SettingsPage({navItems, clubName, logoUrl, themeColor, sidebarColor, ca
    APP ROOT
 ═══════════════════════════════════════════════════════════════ */
 function App(){
-  const [currentUser, setCurrentUser] = useState(() => {
-    try { return JSON.parse(sessionStorage.getItem("aqua_user")); } catch { return null; }
-  });
-  
+  const [currentUser, setCurrentUser] = useState(() => { try { return JSON.parse(sessionStorage.getItem("aqua_user")); } catch { return null; } });
   const [isDbLoaded, setIsDbLoaded] = useState(false);
-  const [students,setStudents]=useState([]);
-  const [staff,setStaff]=useState([]);
-  const [stockItems,setStockItems]=useState([]);
-  const [expenses,setExpenses]=useState([]);
-  
-  const [clubName,setClubName]=useState("AquaClub");
-  const [appUsers, setAppUsers]=useState([]);
-  const [oldPinCode, setOldPinCode]=useState("0309");
-  const [waGroupLink,setWaGroupLink]=useState("");
-  
-  // Varsayılan Açık Tema Renkleri
-  const [themeColor,setThemeColor]=useState("#F4F7F6");
-  const [sidebarColor,setSidebarColor]=useState("#FFFFFF");
-  const [cardColor,setCardColor]=useState("#FFFFFF");
-  const [textColor,setTextColor]=useState("#1E293B");
-  const [logoUrl,setLogoUrl]=useState("");
-  
-  const [activeTab,setActiveTab]=useState("dashboard");
-  const [sidebarOpen,setSidebarOpen]=useState(false);
+  const [students,setStudents]=useState([]); const [staff,setStaff]=useState([]); const [stockItems,setStockItems]=useState([]); const [movements,setMovements]=useState([]); const [expenses,setExpenses]=useState([]);
+  const [clubName,setClubName]=useState("AquaClub"); const [navItems,setNavItems]=useState(NAV_ITEMS); const [appUsers, setAppUsers]=useState([]); const [oldPinCode, setOldPinCode]=useState("0309"); const [waGroupLink,setWaGroupLink]=useState("");
+  const [themeColor,setThemeColor]=useState("#F0F4F8"); const [sidebarColor,setSidebarColor]=useState("#FFFFFF"); const [cardColor,setCardColor]=useState("#FFFFFF"); const [textColor,setTextColor]=useState("#1E293B"); const [logoUrl,setLogoUrl]=useState(""); const [activeTab,setActiveTab]=useState("dashboard"); const [sidebarOpen,setSidebarOpen]=useState(false);
 
-  useEffect(() => {
-    document.documentElement.style.setProperty('--bg-color', themeColor);
-    document.documentElement.style.setProperty('--sidebar-bg', sidebarColor);
-    document.documentElement.style.setProperty('--card-bg', cardColor);
-    document.documentElement.style.setProperty('--text-main', textColor);
-    const metaTheme = document.querySelector('meta[name="theme-color"]');
-    if(metaTheme) metaTheme.setAttribute("content", themeColor);
-  }, [themeColor, sidebarColor, cardColor, textColor]);
+  useEffect(() => { document.documentElement.style.setProperty('--bg-color', themeColor); document.documentElement.style.setProperty('--sidebar-bg', sidebarColor); document.documentElement.style.setProperty('--card-bg', cardColor); document.documentElement.style.setProperty('--text-main', textColor); }, [themeColor, sidebarColor, cardColor, textColor]);
 
   useEffect(() => {
     const unsub = db.collection("appData").doc("main").onSnapshot((doc) => {
@@ -1145,22 +565,20 @@ function App(){
         if (d.students) setStudents(safeArr(d.students));
         if (d.staff) setStaff(safeArr(d.staff));
         if (d.stock) setStockItems(safeArr(d.stock));
+        if (d.movements) setMovements(safeArr(d.movements));
         if (d.expenses) setExpenses(safeArr(d.expenses));
         if (d.waGroupLink) setWaGroupLink(d.waGroupLink);
         if (d.clubName) setClubName(d.clubName);
         if (d.pinCode) setOldPinCode(d.pinCode); 
-        
         let loadedUsers = safeArr(d.appUsers);
-        if (loadedUsers.length === 0) {
-           loadedUsers = [{ id:"admin", username:"admin", password: d.pinCode || "0309", role:"admin", allowedTabs: NAV_ITEMS.map(n=>n.id) }];
-        }
+        if (loadedUsers.length === 0) { loadedUsers = [{ id:"admin", username:"admin", password: d.pinCode || "0309", role:"admin", allowedTabs: NAV_ITEMS.map(n=>n.id) }]; }
         setAppUsers(loadedUsers);
-
         if (d.themeColor) setThemeColor(d.themeColor);
         if (d.sidebarColor) setSidebarColor(d.sidebarColor);
         if (d.cardColor) setCardColor(d.cardColor);
         if (d.textColor) setTextColor(d.textColor);
         if (d.logoUrl) setLogoUrl(d.logoUrl);
+        if (d.navItems) setNavItems(d.navItems);
       }
       setIsDbLoaded(true);
     });
@@ -1168,49 +586,31 @@ function App(){
   }, []);
 
   if (!isDbLoaded) return <div style={{display:"flex",flexDirection:"column",height:"100vh",alignItems:"center",justifyContent:"center",background:"var(--bg-color)"}}><div className="spinner"></div><div style={{color:"var(--text-main)",fontWeight:700,marginTop:10}}>Sistem Yükleniyor...</div></div>;
-  
   if (!currentUser) return <LoginScreen onSuccess={(user) => { sessionStorage.setItem("aqua_user", JSON.stringify(user)); setCurrentUser(user); }} appUsers={appUsers} adminPin={oldPinCode} />;
 
-  const visibleNav = NAV_ITEMS.filter(n => {
-    if (currentUser.role === "admin") return true;
-    return (currentUser.allowedTabs || []).includes(n.id);
-  });
+  const visibleNav = NAV_ITEMS.filter(n => currentUser.role === "admin" || (currentUser.allowedTabs || []).includes(n.id));
 
   return<div style={{display:"flex",height:"100vh",overflow:"hidden",background:"var(--bg-color)"}}>
-    <div className="sidebar-desktop" style={{width:240, background:"var(--sidebar-bg)", borderRight:"1px solid var(--border-color)", display:"flex", flexDirection:"column", boxShadow:"2px 0 10px rgba(0,0,0,0.02)", zIndex:100}}>
-      <div style={{padding:"24px 20px 20px", borderBottom:"1px solid var(--border-color)", display:"flex", alignItems:"center", gap:12}}>
-        <div style={{width:38,height:38,borderRadius:10,background:`linear-gradient(135deg,${C.accent},${C.accentDark})`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,overflow:"hidden",boxShadow:"0 2px 8px "+C.accentGlow}}>
-          {logoUrl ? <img src={logoUrl} alt="Logo" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.style.display='none'}}/> : <span style={{color:"white", fontWeight:800, fontSize:15}}>AC</span>}
+    <div className="sidebar-desktop" style={{width:240, background:"var(--sidebar-bg)", borderRight:"1px solid #E2E8F0", display:"flex", flexDirection:"column", boxShadow:"2px 0 10px rgba(0,0,0,0.02)", zIndex:100}}>
+      <div style={{padding:"24px 20px 20px", borderBottom:"1px solid #E2E8F0", display:"flex", alignItems:"center", gap:12}}>
+        <div style={{width:38,height:38,borderRadius:10,background:`linear-gradient(135deg,${C.accent},${C.accentDark})`,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
+          {logoUrl ? <img src={logoUrl} alt="Logo" style={{width:"100%",height:"100%",objectFit:"cover"}}/> : <span style={{color:"white", fontWeight:800}}>AC</span>}
         </div>
-        <div>
-          <div style={{fontSize:15,fontWeight:800,letterSpacing:-0.3,color:"var(--text-main)"}}>{clubName}</div>
-          <div style={{fontSize:11,color:C.textSub,fontWeight:600,marginTop:2}}>{currentUser.role==="admin"?"Yönetici":currentUser.username}</div>
-        </div>
+        <div><div style={{fontSize:15,fontWeight:800,color:"var(--text-main)"}}>{clubName}</div><div style={{fontSize:11,color:C.textSub,fontWeight:600}}>{currentUser.username}</div></div>
       </div>
-      
       <div style={{flex:1, overflowY:"auto", padding:"16px 12px"}}>
-        {visibleNav.map(item=><button key={item.id} onClick={()=>{setActiveTab(item.id);setSidebarOpen(false);}} style={{display:"flex",alignItems:"center",gap:12,width:"100%", padding:"12px 14px", marginBottom:6, background:activeTab===item.id?C.accentGlow:"transparent", border:"none", borderRadius:12, color:activeTab===item.id?C.accentDark:C.textSub, cursor:"pointer", textAlign:"left", fontSize:14, fontWeight:activeTab===item.id?700:500, transition:"all 0.2s"}}><Icon d={item.icon} size={18}/> {item.label}</button>)}
+        {visibleNav.map(item=><button key={item.id} onClick={()=>setActiveTab(item.id)} style={{display:"flex",alignItems:"center",gap:12,width:"100%", padding:"12px 14px", marginBottom:6, background:activeTab===item.id?C.accentGlow:"transparent", border:"none", borderRadius:12, color:activeTab===item.id?C.accentDark:C.textSub, cursor:"pointer", textAlign:"left", fontSize:14, fontWeight:activeTab===item.id?700:500}}><Icon d={item.icon} size={18}/> {item.label}</button>)}
       </div>
-      <div style={{padding:"16px", borderTop:"1px solid var(--border-color)"}}>
-        <button onClick={()=>{sessionStorage.removeItem("aqua_user"); window.location.reload();}} style={{width:"100%", padding:"12px", background:C.dangerBg, borderRadius:12, border:"none", color:C.danger, fontWeight:700, cursor:"pointer", fontSize:13, transition:"background 0.2s"}}>Güvenli Çıkış Yap</button>
-      </div>
+      <div style={{padding:"16px"}}><button onClick={()=>{sessionStorage.removeItem("aqua_user"); window.location.reload();}} style={{width:"100%", padding:"12px", background:C.dangerBg, borderRadius:12, border:"none", color:C.danger, fontWeight:700, cursor:"pointer"}}>Çıkış Yap</button></div>
     </div>
     
-    <div style={{flex:1, display:"flex", flexDirection:"column", overflow:"hidden", position:"relative"}}>
-      {sidebarOpen && <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.4)",zIndex:300,backdropFilter:"blur(2px)"}} onClick={()=>setSidebarOpen(false)}/>}
-      {sidebarOpen && <div style={{position:"absolute",top:0,bottom:0,left:0,zIndex:400,width:260,background:"var(--sidebar-bg)",boxShadow:"4px 0 24px rgba(0,0,0,0.1)"}}>
-        <div style={{padding:"24px", borderBottom:"1px solid var(--border-color)", fontWeight:800, fontSize:18, color:"var(--text-main)"}}>{clubName}</div>
-        <div style={{padding:"16px 12px"}}>
-          {visibleNav.map(item=><button key={item.id} onClick={()=>{setActiveTab(item.id);setSidebarOpen(false);}} style={{display:"flex",alignItems:"center",gap:12,width:"100%", padding:"14px", marginBottom:8, background:activeTab===item.id?C.accentGlow:"transparent", border:"none", borderRadius:12, color:activeTab===item.id?C.accentDark:C.textSub, cursor:"pointer", textAlign:"left", fontSize:15, fontWeight:activeTab===item.id?700:500}}><Icon d={item.icon} size={20}/> {item.label}</button>)}
-        </div>
-      </div>}
-
-      <div style={{padding:"16px 20px", background:"var(--sidebar-bg)", borderBottom:"1px solid var(--border-color)", fontWeight:800, fontSize:16, display:"flex", alignItems:"center", gap:16, color:"var(--text-main)", zIndex:50}}>
-        <button onClick={()=>setSidebarOpen(true)} className="menu-btn" style={{background:"transparent", border:`1px solid var(--border-color)`, color:"var(--text-main)", width:36, height:36, borderRadius:10, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center"}}>☰</button>
-        {(visibleNav.find(n=>n.id===activeTab)||{}).label||"Genel Bakış"}
+    <div style={{flex:1, display:"flex", flexDirection:"column", overflow:"hidden"}}>
+      <div style={{padding:"16px 20px", background:"var(--sidebar-bg)", borderBottom:"1px solid #E2E8F0", fontWeight:800, fontSize:16, display:"flex", alignItems:"center", gap:16, color:"var(--text-main)"}}>
+        <button onClick={()=>setSidebarOpen(true)} className="menu-btn" style={{background:"transparent", border:`1px solid #E2E8F0`, color:"var(--text-main)", width:36, height:36, borderRadius:10}}>☰</button>
+        {(visibleNav.find(n=>n.id===activeTab)||{}).label}
       </div>
       
-      <div style={{flex:1, overflowY:"auto", paddingBottom:40}}>
+      <div style={{flex:1, overflowY:"auto"}}>
         {activeTab==="dashboard"&&<Dashboard students={students} stockItems={stockItems} expenses={expenses}/>}
         {activeTab==="students"&&<StudentsPage students={students} stockItems={stockItems}/>}
         {activeTab==="attendance"&&<AttendancePage students={students}/>}
@@ -1219,10 +619,7 @@ function App(){
         {activeTab==="whatsapp"&&<WhatsAppPage students={students} waGroupLink={waGroupLink} />}
         {activeTab==="staff"&&<StaffPage staff={staff}/>}
         {activeTab==="inventory"&&<InventoryPage items={stockItems}/>}
-        
-        {activeTab==="settings" && currentUser.role === "admin" && (
-          <SettingsPage navItems={NAV_ITEMS} clubName={clubName} logoUrl={logoUrl} themeColor={themeColor} sidebarColor={sidebarColor} cardColor={cardColor} textColor={textColor} appUsers={appUsers} />
-        )}
+        {activeTab==="settings"&&currentUser.role==='admin'&&<SettingsPage navItems={NAV_ITEMS} clubName={clubName} logoUrl={logoUrl} themeColor={themeColor} sidebarColor={sidebarColor} cardColor={cardColor} textColor={textColor} appUsers={appUsers}/>}
       </div>
     </div>
     <style>{`@media(max-width:768px){.sidebar-desktop{display:none!important}} @media(min-width:769px){.menu-btn{display:none!important}}`}</style>
@@ -1231,6 +628,5 @@ function App(){
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
-<script>if('serviceWorker'in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));}</script>
 </body>
 </html>

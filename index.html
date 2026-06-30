@@ -57,7 +57,6 @@ const firebaseConfig = {
   measurementId: "G-2YQYQ8PHMG"
 };
 
-// Firebase'i Başlat
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
@@ -79,20 +78,11 @@ const C={
 };
 
 /* ═══════════════════════════════════════════════════════════════
-   BULUT VERİTABANI BAĞLANTISI VE ZIRHLI VERİ FİLTRESİ
+   VERİTABANI KAYIT
 ═══════════════════════════════════════════════════════════════ */
-// Firebase'den gelen bozuk (null) veya array yerine obje olmuş verileri temizler.
-function safeArr(val) { 
-  if (!val) return [];
-  const arr = Array.isArray(val) ? val : Object.values(val);
-  return arr.filter(item => item !== null && item !== undefined && typeof item === 'object');
-}
-
 const DB={
   set:(k,v)=>{
-    // Kaydederken de null'ları temizleyip kaydediyoruz.
-    const cleanV = Array.isArray(v) ? v.filter(i => i !== null && i !== undefined) : v;
-    db.collection("appData").doc("main").set({ [k]: cleanV }, { merge: true })
+    db.collection("appData").doc("main").set({ [k]: v }, { merge: true })
       .catch(err => console.error("Firebase kayıt hatası:", err));
   }
 };
@@ -116,12 +106,12 @@ const DAYS_FULL=["Pazar","Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cu
 const TODAY=new Date().toISOString().split("T")[0];
 
 /* ═══════════════════════════════════════════════════════════════
-   UTILS (WhatsApp ve Excel Eklentileri)
+   UTILS (Yardımcı Fonksiyonlar)
 ═══════════════════════════════════════════════════════════════ */
 function fmtDate(d){if(!d)return"—";const[y,m,day]=d.split("-");return`${day}.${m}.${y}`}
-function totalPaid(s){return safeArr(s.payments).reduce((t,p)=>t+Number(p.amount||0),0)}
-function equipmentTotal(s){return safeArr(s.equipment).reduce((t,e)=>t+Number(e.price||0),0)}
-function monthlyTotal(s){return Number(s.monthlyFee||0)-Number(s.discount||0)+equipmentTotal(s)+(s.hasTransport?Number(s.transportFee||0):0)}
+function totalPaid(s){return (s.payments||[]).reduce((t,p)=>t+Number(p.amount||0),0);}
+function equipmentTotal(s){return (s.equipment||[]).reduce((t,e)=>t+Number(e.price||0),0);}
+function monthlyTotal(s){return Number(s.monthlyFee||0)-Number(s.discount||0)+equipmentTotal(s)+(s.hasTransport?Number(s.transportFee||0):0);}
 function courseStatus(s){
   if(!s.courseStart||!s.courseEnd)return"unknown";
   const now=new Date(TODAY),st=new Date(s.courseStart),en=new Date(s.courseEnd);
@@ -133,14 +123,12 @@ function age(dob){if(!dob)return"—";return Math.floor((Date.now()-new Date(dob
 function calcEndDate(start,total,days){
   if(!start||!total||!days||days.length===0)return"";
   let d=new Date(start),cnt=0,iter=0;
-  const safeDays = safeArr(days);
-  while(cnt<total&&iter<total*30){if(safeDays.includes(d.getDay()))cnt++;if(cnt<total)d.setDate(d.getDate()+1);iter++;}
+  while(cnt<total&&iter<total*30){if(days.includes(d.getDay()))cnt++;if(cnt<total)d.setDate(d.getDate()+1);iter++;}
   return d.toISOString().split("T")[0];
 }
 function swimLevelLabel(v){return{beginner:"Başlangıç",intermediate:"Orta",advanced:"İleri",competitive:"Yarışmacı"}[v]||v||"—"}
 function roleLabel(r){return{trainer:"Antrenör",admin:"İdari Personel",driver:"Şoför",other:"Diğer"}[r]||r||"—"}
 
-// WhatsApp Hızlı Mesaj Linki Oluşturucu
 function openWA(phone, text) {
   if (!phone) { alert("Sisteme kayıtlı veli telefonu bulunamadı."); return; }
   let p = phone.replace(/\D/g, "");
@@ -149,9 +137,8 @@ function openWA(phone, text) {
   window.open(`https://wa.me/${p}?text=${encodeURIComponent(text)}`, "_blank");
 }
 
-// Excel (CSV) Çıktı Alıcı
 function exportCSV(filename, headers, rows) {
-  const bom = "\uFEFF"; // Türkçe karakter (UTF-8) uyumu için
+  const bom = "\uFEFF"; 
   const csv = [headers.join(","), ...rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(","))].join("\n");
   const blob = new Blob([bom + csv], { type: "text/csv;charset=utf-8;" });
   const link = document.createElement("a");
@@ -240,4 +227,4 @@ function StatCard({label,value,col,span2}){
 
 function TabBar({tabs,active,onChange}){
   return<div style={{display:"flex",borderBottom:`1px solid ${C.border}`,marginBottom:14,overflowX:"auto",gap:0}}>
-    {tabs.map((t,i)=><button key={i} onClick={()=>onChange(i)} style={{padding:"9px 14px",background:"none",border:"none",borderBottom:active===i?`2px solid ${C.accent}`:"2px
+    {

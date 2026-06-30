@@ -34,12 +34,12 @@ button{font-family:'Inter',-apple-system,sans-serif}
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
 /* Kurumsal Tablo Tasarımları */
-.data-row { display: grid; grid-template-columns: 2fr 1.2fr 1fr; gap: 10px; align-items: center; padding: 12px 4px; border-bottom: 1px solid #E2E8F0; }
+.data-row { display: grid; grid-template-columns: 2fr 1.2fr 1fr; gap: 10px; align-items: center; padding: 10px 4px; border-bottom: 1px solid #E2E8F0; }
 .data-row:last-child { border-bottom: none; }
 .data-col { font-size: 13px; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
 .data-col-sub { font-size: 11px; color: #64748B; font-weight: 400; }
 .data-col-right { text-align: right; font-weight: 700; }
-.data-header { font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #E2E8F0; padding-bottom: 8px; margin-bottom: 4px; }
+.data-header { font-size: 11px; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #E2E8F0; padding-bottom: 6px; margin-bottom: 4px; }
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -55,7 +55,7 @@ button{font-family:'Inter',-apple-system,sans-serif}
 const {useState,useEffect,useRef}=React;
 
 /* ═══════════════════════════════════════════════════════════════
-   GLOBAL AYAR SABİTLERİ (ÇÖKMEYİ ENGELLEYEN TANIMLAR)
+   GLOBAL STATICS & DEFAULTS
 ═══════════════════════════════════════════════════════════════ */
 const EMPTY_ITEM={id:null,name:"",category:"",price:"",stock:"",minStock:"",supplier:"",notes:""};
 const STOCK_CATS=["Gözlük","Bone","Palet","Şamandıra","Aksesuar","Kıyafet","Temizlik","Diğer"];
@@ -63,87 +63,41 @@ const EMPTY_EXPENSE={id:null, title:"", amount:"", date:TODAY, category:"", isFo
 const EXP_CATS=["Fatura", "Maaş", "Kira", "Gıda", "Ekipman/Malzeme", "Temizlik", "Ulaşım", "Diğer"];
 const EMPTY_STAFF={id:null,name:"",role:"trainer",age:"",phone:"",email:"",dailyWage:0,attendance:{}};
 
-/* ═══════════════════════════════════════════════════════════════
-   FIREBASE YAPILANDIRMASI
-═══════════════════════════════════════════════════════════════ */
-const firebaseConfig = {
-  apiKey: "AIzaSyA6d55XjKFlj4-eZPCYrfTl1451f-IKdq0",
-  authDomain: "aquaclub44.firebaseapp.com",
-  projectId: "aquaclub44",
-  storageBucket: "aquaclub44.firebasestorage.app",
-  messagingSenderId: "984045542069",
-  appId: "1:984045542069:web:f04273e9644ad03ed9fcfc",
-  measurementId: "G-2YQYQ8PHMG"
-};
+const NAV_ITEMS=[
+  {id:"dashboard",label:"Genel Bakış",icon:"M3 12l9-9 9 9M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9"},
+  {id:"students",label:"Öğrenciler",icon:"M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 7a4 4 0 100 8 4 4 0 000-8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"},
+  {id:"attendance",label:"Yoklama",icon:"M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"},
+  {id:"payments",label:"Ödemeler",icon:"M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"},
+  {id:"expenses",label:"Giderler",icon:"M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"},
+  {id:"staff",label:"Personel & Puantaj",icon:"M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197"},
+  {id:"inventory",label:"Envanter",icon:"M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"},
+  {id:"whatsapp",label:"WhatsApp",icon:"M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.482-1.46-1.656-1.758-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z M12 22C6.477 22 2 17.523 2 12c0-1.76.452-3.414 1.25-4.832L2 2l5.344 1.156C8.683 2.43 10.297 2 12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10z"},
+  {id:"settings",label:"Ayarlar",icon:"M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"},
+];
 
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
-const db = firebase.firestore();
+const DAYS_TR=["Paz","Pzt","Sal","Çar","Per","Cum","Cmt"];
+const DAYS_FULL=["Pazar","Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi"];
+const TODAY=new Date().toISOString().split("T")[0];
 
 /* ═══════════════════════════════════════════════════════════════
-   TEMEL RENK YAPILANDIRMASI
-═══════════════════════════════════════════════════════════════ */
-const C={
-  bg:"var(--bg-color)", surface:"var(--card-bg)", card:"var(--card-bg)", sidebar:"var(--sidebar-bg)",
-  border:"#E2E8F0", borderLight:"#F1F5F9",
-  accent:"#0EA5E9", accentDark:"#0284C7", accentGlow:"#0EA5E915",
-  text:"var(--text-main)", textSub:"#475569", textMuted:"#94A3B8",
-  success:"#10B981", successBg:"#10B98115",
-  warning:"#F59E0B", warningBg:"#F59E0B15",
-  danger:"#EF4444",  dangerBg:"#EF444415",
-  purple:"#8B5CF6",  purpleBg:"#8B5CF615",
-  whatsapp:"#25D366", whatsappBg:"#25D36615",
-  sidebarW:220
-};
-
-/* ═══════════════════════════════════════════════════════════════
-   VERİTABANI KORUMALI FİLTRE
+   SAFE DATA FILTER & UTILS
 ═══════════════════════════════════════════════════════════════ */
 function safeArr(val) { 
   if (!val) return [];
-  const arr = Array.isArray(val) ? val : Object.values(val);
-  return arr.filter(item => item !== null && item !== undefined && typeof item === 'object');
+  return (Array.isArray(val) ? val : Object.values(val)).filter(item => item !== null && item !== undefined && typeof item === 'object');
 }
 
-const DB={
-  set:(k,v)=>{
-    const cleanV = Array.isArray(v) ? v.filter(i => i && typeof i === 'object') : v;
-    db.collection("appData").doc("main").set({ [k]: cleanV }, { merge: true })
-      .catch(err => console.error("Firebase kayıt hatası:", err));
-  }
-};
-
-/* ═══════════════════════════════════════════════════════════════
-   YARDIMCI FONKSİYONLAR
-═══════════════════════════════════════════════════════════════ */
 function fmtDate(d){if(!d)return"—";const[y,m,day]=d.split("-");return`${day}.${m}.${y}`}
-function totalPaid(s){return safeArr(s.payments).reduce((t,p)=>t+Number(p.amount||0),0);}
-function equipmentTotal(s){return safeArr(s.equipment).reduce((t,e)=>t+Number(e.price||0),0);}
-function monthlyTotal(s){return Number(s.monthlyFee||0)-Number(s.discount||0)+equipmentTotal(s)+(s.hasTransport?Number(s.transportFee||0):0);}
+function totalPaid(s){return safeArr(s?.payments).reduce((t,p)=>t+Number(p.amount||0),0);}
+function equipmentTotal(s){return safeArr(s?.equipment).reduce((t,e)=>t+Number(e.price||0),0);}
+function monthlyTotal(s){return Number(s?.monthlyFee||0)-Number(s?.discount||0)+equipmentTotal(s)+(s?.hasTransport?Number(s?.transportFee||0):0);}
 function courseStatus(s){
-  if(!s.courseStart||!s.courseEnd)return"unknown";
+  if(!s?.courseStart||!s?.courseEnd)return"unknown";
   const now=new Date(TODAY),st=new Date(s.courseStart),en=new Date(s.courseEnd);
   if(now<st)return"upcoming";if(now>en)return"ended";return"active";
 }
-/* ═══════════════════════════════════════════════════════════════
-   SABİT BOYUTLU MODAL BİLEŞENİ
-═══════════════════════════════════════════════════════════════ */
-function Modal({show,onClose,title,children}){
-  if(!show)return null;
-  return<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(4px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:300,padding:16}} onClick={e=>e.target===e.currentTarget&&onClose()}>
-    <div style={{background:C.surface,borderRadius:20,padding:"24px",width:"100%",maxWidth:540,height:"580px",display:"flex",flexDirection:"column",boxShadow:"0 20px 40px rgba(0,0,0,0.08)"}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20,flexShrink:0}}>
-        <div style={{fontSize:17,fontWeight:800,color:C.text}}>{title}</div>
-        <button onClick={onClose} style={{background:C.bg,border:"none",color:C.textSub,width:32,height:32,borderRadius:16,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
-      </div>
-      <div style={{flex:1,overflowY:"auto",paddingRight:4}}>{children}</div>
-    </div>
-  </div>
-}
-
-function daysLeft(s){return Math.ceil((new Date(s.courseEnd)-new Date(TODAY))/86400000)}
-function attendanceCount(s){return Object.values(s.attendance||{}).filter(Boolean).length}
+function daysLeft(s){return Math.ceil((new Date(s?.courseEnd)-new Date(TODAY))/86400000)}
+function attendanceCount(s){return Object.values(s?.attendance||{}).filter(Boolean).length}
 function age(dob){if(!dob)return"—";return Math.floor((Date.now()-new Date(dob))/31557600000)+" yaş"}
 function calcEndDate(start,total,days){
   if(!start||!total||!days||days.length===0)return"";
@@ -155,8 +109,117 @@ function calcEndDate(start,total,days){
 function swimLevelLabel(v){return{beginner:"Başlangıç",intermediate:"Orta",advanced:"İleri",competitive:"Yarışmacı"}[v]||v||"—"}
 function roleLabel(r){return{trainer:"Antrenör",admin:"İdari Personel",driver:"Şoför",other:"Diğer"}[r]||r||"—"}
 
+function openWA(phone, text) {
+  if (!phone) { alert("Sisteme kayıtlı veli telefonu bulunamadı."); return; }
+  let p = phone.replace(/\D/g, "");
+  if (p.startsWith("0")) p = "90" + p.slice(1);
+  else if (p.length === 10) p = "90" + p;
+  window.open(`https://wa.me/${p}?text=${encodeURIComponent(text)}`, "_blank");
+}
+
 /* ═══════════════════════════════════════════════════════════════
-   GİRİŞ EKRANI
+   SABİT BOYUTLU MODAL (WIDGET JUMP ENGELLEYİCİ)
+═══════════════════════════════════════════════════════════════ */
+function Modal({show,onClose,title,children}){
+  if(!show)return null;
+  return<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(4px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:300,padding:16}} onClick={e=>e.target===e.currentTarget&&onClose()}>
+    <div style={{background:"var(--card-bg)",borderRadius:20,padding:"24px",width:"100%",maxWidth:540,height:"580px",display:"flex",flexDirection:"column",boxShadow:"0 20px 40px rgba(0,0,0,0.08)"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20,flexShrink:0}}>
+        <div style={{fontSize:17,fontWeight:800,color:"var(--text-main)"}}>{title}</div>
+        <button onClick={onClose} style={{background:"var(--bg-color)",border:"none",color:"#64748B",width:32,height:32,borderRadius:16,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+      </div>
+      <div style={{flex:1,overflowY:"auto",paddingRight:4}}>{children}</div>
+    </div>
+  </div>
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PRIMITIVE UI ELEMENTS
+═══════════════════════════════════════════════════════════════ */
+function Toggle({checked,onChange}){
+  return<button onClick={()=>onChange(!checked)} style={{width:40,height:22,borderRadius:11,background:checked?"#0EA5E9":"#E2E8F0",border:"none",cursor:"pointer",position:"relative",transition:"background .2s",flexShrink:0}}>
+    <span style={{position:"absolute",top:2,left:checked?19:2,width:18,height:18,borderRadius:"50%",background:"#fff",transition:"left .2s"}}/>
+  </button>
+}
+
+function Inp({label,value,onChange,type="text",placeholder,rows,half,autoFocus,style}){
+  return<div style={{marginBottom:10,flex:half?"1":"unset"}}>
+    {label&&<div style={{fontSize:11,color:"#475569",marginBottom:4,fontWeight:600,letterSpacing:0.3}}>{label}</div>}
+    {rows?<textarea style={{width:"100%",padding:"9px 11px",background:"var(--bg-color)",border:`1px solid #E2E8F0`,borderRadius:8,color:"var(--text-main)",fontSize:13,outline:"none",fontFamily:"inherit",resize:"vertical",minHeight:60,...style}} rows={rows} value={value||""} onChange={e=>onChange(e.target.value)} placeholder={placeholder}/>
+         :<input style={{width:"100%",padding:"9px 11px",background:"var(--bg-color)",border:`1px solid #E2E8F0`,borderRadius:8,color:"var(--text-main)",fontSize:13,outline:"none",fontFamily:"inherit",...style}} type={type} value={value||""} onChange={e=>onChange(e.target.value)} placeholder={placeholder} autoFocus={autoFocus}/>}
+  </div>
+}
+
+function Sel({label,value,onChange,options}){
+  return<div style={{marginBottom:10}}>
+    {label&&<div style={{fontSize:11,color:"#475569",marginBottom:4,fontWeight:600,letterSpacing:0.3}}>{label}</div>}
+    <select style={{width:"100%",padding:"9px 11px",background:"var(--bg-color)",border:`1px solid #E2E8F0`,borderRadius:8,color:"var(--text-main)",fontSize:13,outline:"none",fontFamily:"inherit",cursor:"pointer"}} value={value||""} onChange={e=>onChange(e.target.value)}>
+      <option value="">Seçiniz</option>
+      {(options||[]).map(o=><option key={o.value} value={o.value}>{o.label}</option>)}
+    </select>
+  </div>
+}
+
+function Btn({children,onClick,variant="primary",sm,full,style={}}){
+  const base={padding:sm?"6px 14px":"9px 18px",borderRadius:8,border:"none",cursor:"pointer",fontWeight:600,fontSize:sm?12:13,fontFamily:"inherit",letterSpacing:0.2,transition:"opacity .15s",...style};
+  const v={
+    primary:{background:`linear-gradient(135deg,#0EA5E9,#38BDF8)`,color:"#fff"},
+    secondary:{background:"var(--card-bg)",color:"#475569",border:`1px solid #E2E8F0`},
+    danger:{background:"#EF444415",color:"#EF4444",border:`1px solid #EF444430`},
+    success:{background:"#10B98115",color:"#10B981",border:`1px solid #10B98130`},
+    ghost:{background:"transparent",color:"#475569",border:`1px solid #E2E8F0`},
+  };
+  return<button onClick={onClick} style={{...base,...v[variant],width:full?"100%":"auto"}}>{children}</button>
+}
+
+function Card({children,style={},accent}){
+  return<div style={{background:"var(--card-bg)",borderRadius:12,border:accent?`1px solid ${accent}40`:`1px solid #E2E8F0`,padding:14,marginBottom:10,...style}}>{children}</div>
+}
+
+function Badge({label,color}){
+  const map={active:["#10B981","Aktif"],upcoming:["#F59E0B","Başlamadı"],ended:["#EF4444","Bitti"],unknown:["#64748B","Belirsiz"]};
+  const [col,txt]=map[label]||[color||"#64748B",label];
+  return<span style={{fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:20,background:col+"15",color:col,letterSpacing:0.3}}>{txt}</span>
+}
+
+function SectionTitle({children,action}){
+  return<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10,marginTop:6}}>
+    <div style={{fontSize:11,fontWeight:700,color:"#0EA5E9",textTransform:"uppercase",letterSpacing:1}}>{children}</div>
+    {action}
+  </div>
+}
+
+function Row({label,val,href,col}){
+  return<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:`1px solid #E2E8F0`}}>
+    <span style={{fontSize:12,color:"#64748B",flexShrink:0,marginRight:8}}>{label}</span>
+    {href?<a href={href} style={{fontSize:13,color:"#0EA5E9",textDecoration:"none",fontWeight:500}}>{val}</a>
+         :<span style={{fontSize:13,fontWeight:500,color:col||"var(--text-main)",textAlign:"right"}}>{val}</span>}
+  </div>
+}
+
+function StatCard({label,value,col,span2}){
+  return<div style={{background:"var(--card-bg)",border:`1px solid #E2E8F0`,borderRadius:16,padding:16,gridColumn:span2?"span 2":"span 1"}}>
+    <div style={{fontSize:24,fontWeight:800,color:col||"#0EA5E9",marginBottom:4,letterSpacing:-0.5}}>{value}</div>
+    <div style={{fontSize:12,color:"#475569",fontWeight:600}}>{label}</div>
+  </div>
+}
+
+function TabBar({tabs,active,onChange}){
+  return<div style={{display:"flex",borderBottom:`1px solid #E2E8F0`,marginBottom:16,overflowX:"auto",gap:0}}>
+    {tabs.map((t,i)=><button key={i} onClick={()=>onChange(i)} style={{padding:"10px 16px",background:"none",border:"none",borderBottom:active===i?`2px solid #0EA5E9`:"2px solid transparent",color:active===i?"#0EA5E9":"#64748B",cursor:"pointer",fontWeight:active===i?700:500,fontSize:13,fontFamily:"inherit",whiteSpace:"nowrap",transition:"color 0.2s"}}>{t}</button>)}
+  </div>
+}
+
+function DayPicker({value=[],onChange}){
+  const safeVal = safeArr(value);
+  return<div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:12}}>
+    {DAYS_TR.map((d,i)=>{const on=safeVal.includes(i);return<button key={i} onClick={()=>onChange(on?safeVal.filter(x=>x!==i):[...safeVal,i].sort())}
+      style={{width:40,height:40,borderRadius:"50%",border:`1px solid ${on?"#0EA5E9":"#E2E8F0"}`,background:on?"#0EA5E915":"var(--bg-color)",color:on?"#0EA5E9":"#475569",cursor:"pointer",fontSize:12,fontWeight:on?700:500,fontFamily:"inherit",transition:"all 0.2s"}}>{d}</button>})}
+  </div>
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LOGIN SCREEN
 ═══════════════════════════════════════════════════════════════ */
 function LoginScreen({ onSuccess, appUsers, adminPin }) {
   const [user, setUser] = useState("");
@@ -175,27 +238,27 @@ function LoginScreen({ onSuccess, appUsers, adminPin }) {
   };
 
   return (
-    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100vh",background:C.bg,padding:20}}>
-      <div style={{fontSize:48, fontWeight:800, color:C.accent, marginBottom:30, letterSpacing:-1.5}}>AquaClub Pro</div>
-      <form onSubmit={handleLogin} style={{background:C.card,padding:"40px 30px",borderRadius:24,border:`1px solid ${err?C.danger:C.borderLight}`,textAlign:"center",boxShadow:"0 12px 32px rgba(0,0,0,0.06)",width:"100%",maxWidth:360, transition:"all 0.3s"}}>
-        <div style={{fontSize:18,fontWeight:700,marginBottom:24,color:C.text}}>Sisteme Giriş Yapın</div>
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100vh",background:"var(--bg-color)",padding:20}}>
+      <div style={{fontSize:48, fontWeight:800, color:"#0EA5E9", marginBottom:30, letterSpacing:-1.5}}>AquaClub Pro</div>
+      <form onSubmit={handleLogin} style={{background:"var(--card-bg)",padding:"40px 30px",borderRadius:24,border:`1px solid ${err?"#EF4444":"#E2E8F0"}`,textAlign:"center",boxShadow:"0 12px 32px rgba(0,0,0,0.06)",width:"100%",maxWidth:360, transition:"all 0.3s"}}>
+        <div style={{fontSize:18,fontWeight:700,marginBottom:24,color:"var(--text-main)"}}>Sisteme Giriş Yapın</div>
         <Inp value={user} onChange={setUser} placeholder="Kullanıcı Adı" autoFocus style={{textAlign:"center", fontSize:14, padding:"14px", borderRadius:12}}/>
-        <Inp value={pass} onChange={setPass} type="password" placeholder="Şifre" style={{textAlign:"center", fontSize:14, padding:"14px", borderRadius:12, letterSpacing:4}}/>
+        <Inp value={pass} onChange={setPass} type="password" placeholder="Şifre" style={{textAlign:"center", fontSize:14, padding:"14px", borderRadius:12}}/>
         <Btn full style={{marginTop:12, padding:"14px", borderRadius:12, fontSize:14}}>Giriş Yap</Btn>
-        <div style={{height: 20, marginTop: 16}}>{err && <div style={{color:C.danger,fontSize:13,fontWeight:600}}>Hatalı Bilgi Girdiniz!</div>}</div>
+        <div style={{height: 20, marginTop: 16}}>{err && <div style={{color:"#EF4444",fontSize:13,fontWeight:600}}>Hatalı Bilgi Girdiniz!</div>}</div>
       </form>
     </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   STUDENT FORM (ZORUNLU BÜYÜK HARF ENTEGRASYONU)
+   STUDENT FORM & PAGES (UPPERCASE ENFORCED & DENSE MARGINS)
 ═══════════════════════════════════════════════════════════════ */
 function StudentForm({initial,onSave,onCancel,stockItems}){
   const [tab,setTab]=useState(0);
   const [f,setF]=useState({...EMPTY_S,...initial});
 
-  // Girişleri otomatik Türkçe destekli Büyük Harf yapar
+  // Türkçe Karakter Uyumlu Otomatik Büyük Harf Dönüştürücü
   const u=(k,v)=>{
     if(typeof v === "string" && !["dob","courseStart","courseEnd","guardianPhone1","guardianPhone2"].includes(k)){
       v = v.toLocaleUpperCase("tr-TR");
@@ -215,23 +278,23 @@ function StudentForm({initial,onSave,onCancel,stockItems}){
   return<div>
     <TabBar tabs={["Kişisel","Kurs","Servis","Ekipman"]} active={tab} onChange={setTab}/>
     {tab===0&&<div>
-      <Inp label="Ad Soyad *" value={f.name} onChange={v=>u("name",v)} style={{textTransform:"uppercase"}}/>
+      <Inp label="Ad Soyad *" value={f.name} onChange={v=>u("name",v)}/>
       <Inp label="Doğum Tarihi" value={f.dob} onChange={v=>u("dob",v)} type="date"/>
-      <div style={{height:1,background:C.border,margin:"12px 0"}}/>
-      <Inp label="Veli Adı Soyadı" value={f.guardianName} onChange={v=>u("guardianName",v)} style={{textTransform:"uppercase"}}/>
+      <div style={{height:1,background:"#E2E8F0",margin:"12px 0"}}/>
+      <Inp label="Veli Adı Soyadı" value={f.guardianName} onChange={v=>u("guardianName",v)}/>
       <div style={{display:"flex",gap:8}}>
         <Inp label="Veli Telefonu 1" value={f.guardianPhone1} onChange={v=>u("guardianPhone1",v)} type="tel" half/>
         <Inp label="Veli Telefonu 2" value={f.guardianPhone2} onChange={v=>u("guardianPhone2",v)} type="tel" half/>
       </div>
-      <div style={{height:1,background:C.border,margin:"12px 0"}}/>
-      <Inp label="Özel Not" value={f.notes} onChange={v=>u("notes",v)} rows={3} style={{textTransform:"uppercase"}}/>
+      <div style={{height:1,background:#E2E8F0,margin:"12px 0"}}/>
+      <Inp label="Özel Not" value={f.notes} onChange={v=>u("notes",v)} rows={3}/>
     </div>}
     {tab===1&&<div>
       <div style={{display:"flex",gap:8}}>
         <div style={{flex:1}}><Sel label="Yüzme Seviyesi" value={f.swimLevel} onChange={v=>u("swimLevel",v)} options={[{value:"beginner",label:"Başlangıç"},{value:"intermediate",label:"Orta"},{value:"advanced",label:"İleri"},{value:"competitive",label:"Yarışmacı"}]}/></div>
         <div style={{flex:1}}><Inp label="Havuz Kulvarı" value={f.poolLane} onChange={v=>u("poolLane",v)}/></div>
       </div>
-      <Inp label="Grup / Sınıf Adı" value={f.groupName} onChange={v=>u("groupName",v)} style={{textTransform:"uppercase"}}/>
+      <Inp label="Grup / Sınıf Adı" value={f.groupName} onChange={v=>u("groupName",v)}/>
       <div style={{height:1,background:C.border,margin:"12px 0"}}/>
       <div style={{fontSize:11,color:C.textSub,marginBottom:6,fontWeight:600}}>Haftalık Günler *</div>
       <DayPicker value={safeWeekDays} onChange={v=>u("weekDays",v)}/>
@@ -244,11 +307,11 @@ function StudentForm({initial,onSave,onCancel,stockItems}){
         <div style={{fontSize:18,fontWeight:700,color:C.accent}}>{fmtDate(f.courseEnd)||"—"}</div>
       </Card>
       <div style={{height:1,background:C.border,margin:"12px 0"}}/>
-      <div style={{display:"flex",gap:8}}>
-        <div style={{flex:1}}><Inp label="Aylık Ücret (₺)" value={f.monthlyFee} onChange={v=>u("monthlyFee",v)} type="number"/></div>
+      <div style={{display:"flex",gap:8 Sax}}>
+        <div style={{flex:1}}><Inp label="Aylık Kurs Ücreti (₺)" value={f.monthlyFee} onChange={v=>u("monthlyFee",v)} type="number"/></div>
         <div style={{flex:1}}><Inp label="İndirim (₺)" value={f.discount} onChange={v=>u("discount",v)} type="number"/></div>
       </div>
-      <Inp label="Ödeme Notu" value={f.paymentNote} onChange={v=>u("paymentNote",v)} style={{textTransform:"uppercase"}}/>
+      <Inp label="Ödeme Notu" value={f.paymentNote} onChange={v=>u("paymentNote",v)}/>
     </div>}
     {tab===2&&<div>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid ${C.border}`,marginBottom:14}}>
@@ -256,11 +319,11 @@ function StudentForm({initial,onSave,onCancel,stockItems}){
         <Toggle checked={f.hasTransport} onChange={v=>u("hasTransport",v)}/>
       </div>
       {f.hasTransport?<div>
-        <Inp label="Öğrenci Adresi" value={f.address} onChange={v=>u("address",v)} rows={2} style={{textTransform:"uppercase"}}/>
+        <Inp label="Öğrenci Adresi" value={f.address} onChange={v=>u("address",v)} rows={2}/>
         <Inp label="Servis Ücreti (₺)" value={f.transportFee} onChange={v=>u("transportFee",v)} type="number"/>
         <div style={{height:1,background:C.border,margin:"12px 0"}}/>
         <div style={{display:"flex",gap:8}}>
-          <div style={{flex:1}}><Inp label="Şoför Adı" value={f.driverName} onChange={v=>u("driverName",v)} style={{textTransform:"uppercase"}}/></div>
+          <div style={{flex:1}}><Inp label="Şoför Adı" value={f.driverName} onChange={v=>u("driverName",v)}/></div>
           <div style={{flex:1}}><Inp label="Şoför Tel" value={f.driverPhone} onChange={v=>u("driverPhone",v)} type="tel"/></div>
         </div>
       </div>:<div style={{textAlign:"center",padding:"30px 0",color:C.textMuted}}>Servis kullanmıyor.</div>}
@@ -276,62 +339,138 @@ function StudentForm({initial,onSave,onCancel,stockItems}){
   </div>
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   STUDENTS PAGE (SIKILAŞTIRILMIŞ BOŞLUKLAR)
-═══════════════════════════════════════════════════════════════ */
+function StudentDetail({student,onBack,students,stockItems}){
+  const [tab,setTab]=useState(0); const [editing,setEditing]=useState(false); const [payForm,setPayForm]=useState({amount:"",date:TODAY,note:""}); const [showPay,setShowPay]=useState(false);
+  const safePays = safeArr(student.payments); const safeEqs = safeArr(student.equipment); const safeDays = safeArr(student.weekDays);
+  function save(f){const n=safeArr(students).map(s=>s.id===student.id?{...s,...f,id:s.id}:s);DB.set("students",n);setEditing(false);}
+  function addPay(){ if(!payForm.amount)return; const n=safeArr(students).map(s=>s.id===student.id?{...s,payments:[...safeArr(s.payments),{id:Date.now(),...payForm,amount:Number(payForm.amount)}]}:s); DB.set("students",n); setPayForm({amount:"",date:TODAY,note:""}); setShowPay(false); }
+  function delPay(pid){const n=safeArr(students).map(s=>s.id===student.id?{...s,payments:safeArr(s.payments).filter(p=>p.id!==pid)}:s);DB.set("students",n);}
+
+  if(editing)return<div style={{padding:14}}><div style={{display:"flex",alignItems:"center",gap:10,marginBottom:20}}><button onClick={()=>setEditing(false)} style={{background:"none",border:`1px solid ${C.border}`,color:C.textSub,width:32,height:32,borderRadius:8}}>←</button><span style={{fontWeight:800,fontSize:16,color:C.text}}>Düzenle: {student.name}</span></div><StudentForm initial={student} onSave={save} onCancel={()=>setEditing(false)} stockItems={stockItems}/></div>;
+  const paid=totalPaid(student),monthly=monthlyTotal(student),balance=paid-monthly; const st=courseStatus(student);
+
+  return<div style={{padding:14}}>
+    <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
+      <button onClick={onBack} style={{background:"none",border:`1px solid ${C.border}`,color:C.textSub,width:36,height:36,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center"}}>←</button>
+      <div style={{flex:1}}><div style={{fontWeight:800,fontSize:18,color:C.text}}>{student.name}</div><div style={{fontSize:12,color:C.textSub,marginTop:2}}>{age(student.dob)} · {student.groupName||"Grup yok"}</div></div>
+      <Badge label={st}/>
+    </div>
+    <TabBar tabs={["Genel","Kurs","Servis","Ekipman","Ödemeler"]} active={tab} onChange={setTab}/>
+    {tab===0&&<div>
+      <Card><Row label="Ad Soyad" val={student.name}/><Row label="Doğum Tarihi" val={`${fmtDate(student.dob)} (${age(student.dob)})`}/><Row label="Veli" val={student.guardianName||"—"}/><Row label="Veli Tel 1" val={student.guardianPhone1||"—"} href={student.guardianPhone1?`tel:${student.guardianPhone1}`:undefined}/></Card>
+      {student.guardianPhone1 && (
+        <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:12}}>
+          <Btn sm style={{background:C.whatsapp, color:"#fff", border:"none"}} onClick={()=>openWA(student.guardianPhone1, `Sayın velimiz, ${student.name} isimli öğrencimizin ödemesi hakkında hatırlatma yapmak isteriz.`)}>💬 Ödeme Hatırlat</Btn>
+          <Btn sm style={{background:C.whatsapp, color:"#fff", border:"none"}} onClick={()=>openWA(student.guardianPhone1, `Sayın velimiz, ${student.name} isimli öğrencimiz bugünkü antrenmana katılmamıştır.`)}>💬 Devamsızlık Bildir</Btn>
+        </div>
+      )}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}><StatCard label="Katılım (gün)" value={attendanceCount(student)}/><StatCard label="Aylık Bakiye" value={`${balance>=0?"+":""}${balance.toLocaleString("tr-TR")} ₺`} col={balance>=0?C.success:C.danger}/></div>
+      <Btn variant="secondary" full onClick={()=>setEditing(true)}>Bilgileri Düzenle</Btn>
+    </div>}
+    {tab===1&&<div><Card><Row label="Seviye" val={swimLevelLabel(student.swimLevel)}/><Row label="Grup" val={student.groupName||"—"}/><Row label="Günler" val={safeDays.map(d=>DAYS_TR[d]).join(", ")||"—"}/><Row label="Başlangıç" val={fmtDate(student.courseStart)}/><Row label="Bitiş" val={fmtDate(student.courseEnd)}/></Card></div>}
+    {tab===2&&<div>{student.hasTransport?<Card><Row label="Adres" val={student.address||"—"}/><Row label="Servis Ücreti" val={`${student.transportFee} ₺`}/><Row label="Şoför" val={student.driverName}/></Card>:<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>Servis kullanmıyor</div>}</div>}
+    {tab===3&&<div>{safeEqs.length===0?<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>Ekipman yok</div>:<Card>{safeEqs.map(e=><Row key={e.id} label={e.name} val={`${e.price} ₺`}/>)}</Card>}</div>}
+    {tab===4&&<div><SectionTitle action={<Btn sm onClick={()=>setShowPay(true)}>+ Ödeme Ekle</Btn>}>Ödemeler</SectionTitle><Card>{safePays.map(p=><Row key={p.id} label={fmtDate(p.date)} val={`+${p.amount} ₺`} col={C.success}/>)}</Card></div>}
+  </div>
+}
+
 function StudentsPage({students,stockItems}){
-  const [search,setSearch]=useState("");
-  const [showAdd,setShowAdd]=useState(false);
-  const [detailId,setDetailId]=useState(null);
-  const [statusFilter,setStatusFilter]=useState("all");
-  const [groupFilter,setGroupFilter]=useState("all");
-
-  const safeStudents = safeArr(students);
-  const student=detailId?safeStudents.find(s=>s.id===detailId):null;
-
-  function save(f){
-    let n;
-    if(f.id){n=safeStudents.map(s=>s.id===f.id?{...f}:s);}
-    else{n=[...safeStudents,{...f,id:Date.now(),payments:[],attendance:{},equipment:safeArr(f.equipment)}];}
-    DB.set("students",n);setShowAdd(false);
-  }
-  function del(id){const n=safeStudents.filter(s=>s.id!==id);DB.set("students",n);setDetailId(null);}
-
-  const groups=["all",...new Set(safeStudents.map(s=>s.groupName).filter(Boolean))];
+  const [search,setSearch]=useState(""); const [showAdd,setShowAdd]=useState(false); const [detailId,setDetailId]=useState(null);
+  const safeStudents = safeArr(students); const student=detailId?safeStudents.find(s=>s.id===detailId):null;
   const filtered=safeStudents.filter(s=>s && s.name && s.name.toLowerCase().includes(search.toLowerCase()));
-
   if(student)return<StudentDetail student={student} onBack={()=>setDetailId(null)} students={safeStudents} stockItems={stockItems}/>;
 
   return<div style={{padding:16}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-      <div style={{fontSize:14,fontWeight:800,color:C.text}}>Öğrenciler ({filtered.length})</div>
+      <div style={{fontSize:14,fontWeight:800}}>Öğrenciler ({filtered.length})</div>
       <Btn sm onClick={()=>setShowAdd(true)}>+ Yeni Kayıt</Btn>
     </div>
-    <div style={{position:"relative",marginBottom:12}}>
-      <input style={{width:"100%",padding:"12px 14px",background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,color:C.text,fontSize:14,outline:"none"}} placeholder="Öğrenci ara..." value={search} onChange={e=>setSearch(e.target.value)}/>
-    </div>
-    {/* Sıkılaştırılmış kart marjinleri (marginBottom: 6, padding: 10px 14px) */}
+    <div style={{position:"relative",marginBottom:12}}><input style={{width:"100%",padding:"12px 14px",background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,color:C.text}} placeholder="İsimle öğrenci ara..." value={search} onChange={e=>setSearch(e.target.value)}/></div>
+    {/* Sıkılaştırılmış kurumsal liste düzeni */}
     {filtered.map(s=><Card key={s.id} style={{marginBottom:6, padding:"10px 14px"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-        <div><div style={{fontWeight:700,fontSize:15,color:C.text}}>{s.name}</div><div style={{fontSize:12,color:C.textSub,marginTop:2}}>{s.groupName||"Grup belirtilmemiş"}</div></div>
-        <div style={{display:"flex",gap:6}}><Btn variant="secondary" sm onClick={()=>setDetailId(s.id)}>Detay</Btn><Btn variant="danger" sm onClick={()=>{if(confirm(`${s.name} silinsin mi?`))del(s.id);}}>Sil</Btn></div>
+        <div><div style={{fontWeight:700,fontSize:15,color:C.text}}>{s.name}</div><div style={{fontSize:12,color:C.textSub,marginTop:2}}>{s.groupName||"Grup yok"}</div></div>
+        <div style={{display:"flex",gap:6}}><Btn variant="secondary" sm onClick={()=>setDetailId(s.id)}>Detay</Btn><Btn variant="danger" sm onClick={()=>{if(confirm(`${s.name} silinsin mi?`))DB.set("students",safeStudents.filter(x=>x.id!==s.id));}}>Sil</Btn></div>
       </div>
     </Card>)}
-    <Modal show={showAdd} onClose={()=>setShowAdd(false)} title="Yeni Öğrenci"><StudentForm initial={{}} onSave={save} onCancel={()=>setShowAdd(false)} stockItems={stockItems}/></Modal>
+    <Modal show={showAdd} onClose={()=>setShowAdd(false)} title="Yeni Öğrenci Kaydı"><StudentForm initial={{}} onSave={(f)=>{DB.set("students",[...safeStudents,{...f,id:Date.now(),payments:[],attendance:{},equipment:[]}]);setShowAdd(false);}} onCancel={()=>setShowAdd(false)} stockItems={stockItems}/></Modal>
+  </div>
+}
+
+function AttendancePage({students}){
+  const [date,setDate]=useState(TODAY); const [y, m, d] = date.split('-'); const selectedDayIndex = new Date(y, m - 1, d).getDay();
+  const active=safeArr(students).filter(s=>courseStatus(s)==="active" && safeArr(s.weekDays).includes(selectedDayIndex));
+  return<div style={{padding:16}}><SectionTitle>Yoklama Defteri</SectionTitle><Inp value={date} onChange={setDate} type="date"/>
+    <Card>{active.map(s=><div key={s.id} style={{display:"flex",justifyContent:"space-between",padding:"10px 0"}}><span style={{fontSize:15,fontWeight:700}}>{s.name}</div><Toggle checked={!!(s.attendance||{})[date]} onChange={(v)=>{
+      const n=safeArr(students).map(st=>{if(st.id!==s.id)return st; const att={...(st.attendance||{})}; if(v)att[date]=true; else delete att[date]; return{...st,attendance:att}}); DB.set("students",n);
+    }}/></div>)}</Card>
+  </div>
+}
+
+function PaymentsPage({students}){
+  const all=safeArr(students).flatMap(s=>safeArr(s.payments).map(p=>({...p,studentName:s.name}))).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  return<div style={{padding:16}}><SectionTitle>Ödemeler</SectionTitle><Card>{all.map((p,i)=><Row key={i} label={p.studentName} val={`+${p.amount} ₺`} col={C.success}/>)}</Card></div>
+}
+
+function ExpensesPage({expenses}){
+  const [show,setShow]=useState(false); const [f,setF]=useState(EMPTY_EXPENSE); const u=(k,v)=>setF(p=>({...p,[k]:v}));
+  const valid=safeArr(expenses);
+  return<div style={{padding:16}}><SectionTitle action={<Btn sm onClick={()=>setShow(true)}>+ Gider Ekle</Btn>}>Kurum Giderleri</SectionTitle>
+    {valid.map(e=><Card key={e.id}><Row label={e.title} val={`-${e.amount} ₺`} col={C.danger}/></Card>)}
+    <Modal show={show} onClose={()=>setShow(false)} title="Gider Ekle"><Inp label="Açıklama" value={f.title} onChange={v=>u("title",v)}/><Inp label="Tutar" value={f.amount} onChange={v=>u("amount",v)} type="number"/><Btn full onClick={()=>{DB.set("expenses",[...valid,{...f,id:Date.now()}]);setShow(false);}}>Kaydet</Btn></Modal>
+  </div>
+}
+
+function WhatsAppPage({students, waGroupLink}){
+  return<div style={{padding:16}}><SectionTitle>WhatsApp Haberleşme</SectionTitle><Card><Btn full style={{background:C.whatsapp, color:"#fff", border:"none"}} onClick={()=>window.open("https://web.whatsapp.com", "_blank")}>WhatsApp Web Uygulamasını Aç</Btn></Card></div>
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GÜVENLİ VE SIFIRDAN YAZILMIŞ ENVANTER SAYFASI
+═══════════════════════════════════════════════════════════════ */
+function InventoryPage({items}){
+  const validItems = safeArr(items);
+  const [show,setShow]=useState(false);
+  const [f,setF]=useState(EMPTY_ITEM);
+  const u=(k,v)=>setF(p=>({...p,[k]:v}));
+
+  function save(){
+    if(!f.name.trim()) return;
+    const n = f.id ? validItems.map(i=>i.id===f.id?{...f}:i) : [...validItems,{...f,id:Date.now()}];
+    DB.set("stock",n); setShow(false); setF(EMPTY_ITEM);
+  }
+
+  return<div style={{padding:16}}>
+    <SectionTitle action={<Btn sm onClick={()=>{setF(EMPTY_ITEM);setShow(true);}}>+ Ürün Ekle</Btn>}>Stok ve Envanter</SectionTitle>
+    {validItems.length===0 ? <div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>Envanterde ürün bulunmuyor.</div> :
+      validItems.map(item=>(item && item.id) && <Card key={item.id}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div><div style={{fontWeight:800,fontSize:16,color:C.text}}>{item.name}</div><div style={{fontSize:12,color:C.textSub,marginTop:2}}>{item.category || "Genel"} • Stok: <strong>{item.stock || 0} Adet</strong></div></div>
+          <div style={{fontWeight:800,color:C.success}}>{Number(item.price||0).toLocaleString("tr-TR")} ₺</div>
+        </div>
+        <div style={{display:"flex",gap:6,marginTop:12}}><Btn sm variant="secondary" onClick={()=>{
+          const n = validItems.map(i=>i.id===item.id?{...i,stock:Math.max(0,Number(i.stock||0)+1)}:i); DB.set("stock",n);
+        }}>+</Btn><Btn sm variant="secondary" onClick={()=>{
+          const n = validItems.map(i=>i.id===item.id?{...i,stock:Math.max(0,Number(i.stock||0)-1)}:i); DB.set("stock",n);
+        }}>-</Btn><Btn sm variant="danger" onClick={()=>DB.set("stock", validItems.filter(i=>i.id!==item.id))}>Sil</Btn></div>
+      </Card>)
+    }
+    <Modal show={show} onClose={()=>setShow(false)} title="Ürün Kartı">
+      <Inp label="Ürün Adı *" value={f.name} onChange={v=>u("name",v)}/>
+      <Sel label="Kategori" value={f.category} onChange={v=>u("category",v)} options={STOCK_CATS.map(c=>({value:c,label:c}))}/>
+      <div style={{display:"flex",gap:8}}><div style={{flex:1}}><Inp label="Fiyat (₺)" value={f.price} onChange={v=>u("price",v)} type="number"/></div><div style={{flex:1}}><Inp label="Stok" value={f.stock} onChange={v=>u("stock",v)} type="number"/></div></div>
+      <Btn full onClick={save} style={{marginTop:10}}>Kaydet</Btn>
+    </Modal>
   </div>
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   YENİ PERSONEL YÖNETİMİ, YOKLAMA VE HAKEDİŞ SİSTEMİ
+   PERSONEL YOKLAMA VE PUANTAJ HAKEDİŞ SİSTEMİ
 ═══════════════════════════════════════════════════════════════ */
 function StaffPage({staff}){
   const validStaff = safeArr(staff);
-  const [tab, setTab] = useState(0);
-  const [showAdd, setShowAdd] = useState(false);
-  const [f, setF] = useState(EMPTY_STAFF);
-  const [selectedMonth, setSelectedMonth] = useState(TODAY.slice(0,7)); 
-  const [activeStaffId, setActiveStaffId] = useState(null);
-  
+  const [tab, setTab] = useState(0); const [showAdd, setShowAdd] = useState(false); const [f, setF] = useState(EMPTY_STAFF);
+  const [selectedMonth, setSelectedMonth] = useState(TODAY.slice(0,7)); const [activeStaffId, setActiveStaffId] = useState(null);
   const u=(k,v)=>setF(p=>({...p,[k]:v}));
 
   function save(){
@@ -339,141 +478,59 @@ function StaffPage({staff}){
     const n = f.id ? validStaff.map(s=>s.id===f.id?{...s,...f}:s) : [...validStaff,{...f,id:Date.now(),attendance:{},dailyWage:Number(f.dailyWage||0)}];
     DB.set("staff",n); setShowAdd(false); setF(EMPTY_STAFF);
   }
-  function del(id){if(confirm("Personel silinsin mi?")) DB.set("staff", validStaff.filter(s=>s.id!==id));}
 
-  const year = Number(selectedMonth.split("-")[0] || 2026);
-  const month = Number(selectedMonth.split("-")[1] || 6);
-  const daysInMonth = new Date(year, month, 0).getDate();
+  const daysInMonth = new Date(Number(selectedMonth.split("-")[0]), Number(selectedMonth.split("-")[1]), 0).getDate();
   const daysArray = Array.from({length: daysInMonth}, (_, i) => i + 1);
-
-  function toggleAttendance(staffId, dayKey) {
-    const n = validStaff.map(s => {
-      if(s.id !== staffId) return s;
-      const att = { ...(s.attendance || {}) };
-      if(att[dayKey]) delete att[dayKey]; else att[dayKey] = true;
-      return { ...s, attendance: att };
-    });
-    DB.set("staff", n);
-  }
 
   return<div style={{padding:16}}>
     <TabBar tabs={["Personel Listesi","Yoklama & Maaş Hakediş"]} active={tab} onChange={setTab}/>
-    
     {tab===0&&<div>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-        <div style={{fontSize:14,fontWeight:800}}>Personel Kadrosu ({validStaff.length})</div>
-        <Btn sm onClick={()=>{setF(EMPTY_STAFF);setShowAdd(true);}}>+ Yeni Personel</Btn>
-      </div>
-      {validStaff.length===0?<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>Kayıtlı personel bulunmuyor.</div>:
-        validStaff.map(s=><Card key={s.id}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-            <div><div style={{fontWeight:700,fontSize:15,color:C.text}}>{s.name}</div><div style={{fontSize:12,color:C.textSub,marginTop:2}}>{roleLabel(s.role)} • Sabit Yevmiye: {Number(s.dailyWage||0)} ₺</div></div>
-            <div style={{display:"flex",gap:6}}><Btn variant="secondary" sm onClick={()=>{setF(s);setShowAdd(true);}}>Düzenle</Btn><Btn variant="danger" sm onClick={()=>del(s.id)}>Sil</Btn></div>
-          </div>
-        </Card>)
-      }
+      <SectionTitle action={<Btn sm onClick={()=>{setF(EMPTY_STAFF);setShowAdd(true);}}>+ Personel Ekle</Btn>}>Çalışanlar</SectionTitle>
+      {validStaff.map(s=><Card key={s.id}><Row label={s.name} val={`${s.dailyWage} ₺ / Gün`}/><div style={{marginTop:8, textAlign:"right"}}><Btn sm variant="danger" onClick={()=>DB.set("staff", validStaff.filter(x=>x.id!==s.id))}>Sil</Btn></div></Card>)}
     </div>}
-
     {tab===1&&<div>
-      <SectionTitle>Aylık Puantaj & Hakediş Raporu</SectionTitle>
-      <Card style={{marginBottom:16}}><Inp label="Çalışma ve Takip Ayı" type="month" value={selectedMonth} onChange={setSelectedMonth}/></Card>
-      
+      <Inp label="Takip Ayı Seçimi" type="month" value={selectedMonth} onChange={setSelectedMonth}/>
       {validStaff.map(s=>{
-        const monthlyAtt = Object.keys(s.attendance || {}).filter(k => k.startsWith(selectedMonth) && s.attendance[k]);
-        const daysCount = monthlyAtt.length;
-        const totalOwed = daysCount * Number(s.dailyWage || 0);
-        const isExpanded = activeStaffId === s.id;
-
-        return <Card key={`track-${s.id}`} style={{borderLeft: isExpanded ? `4px solid ${C.accent}` : "none", marginBottom:10}}>
-          <div style={{display:"flex", justifyTemplateColumns:"space-between", justifyContent:"space-between", alignItems:"center", cursor:"pointer"}} onClick={()=>setActiveStaffId(isExpanded ? null : s.id)}>
-            <div>
-              <div style={{fontWeight:700, fontSize:15, color:C.text}}>{s.name}</div>
-              <div style={{fontSize:12, color:C.textSub, marginTop:2}}>{daysCount} Gün Mesai • Toplam Hakediş: <strong style={{color:C.success}}>{totalOwed.toLocaleString("tr-TR")} ₺</strong></div>
-            </div>
-            <Btn sm variant="secondary">{isExpanded ? "Kapat ▲" : "Yoklama Gir ▼"}</Btn>
+        const daysCount = Object.keys(s.attendance||{}).filter(k=>k.startsWith(selectedMonth)&&s.attendance[k]).length;
+        const isExp = activeStaffId === s.id;
+        return <Card key={s.id}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer"}} onClick={()=>setActiveStaffId(isExp?null:s.id)}>
+            <div><div style={{fontWeight:700,fontSize:15}}>{s.name}</div><div style={{fontSize:12,color:C.success,fontWeight:700}}>{daysCount} Gün • {(daysCount*Number(s.dailyWage||0)).toLocaleString("tr-TR")} ₺ Hakediş</div></div>
+            <Btn sm variant="secondary">{isExp?"Kapat ▲":"Yoklama Seç ▼"}</Btn>
           </div>
-
-          {isExpanded && <div style={{marginTop:16, paddingTop:16, borderTop:`1px solid ${C.border}`}}>
-            <div style={{marginBottom:14}}><Inp label="Günlük Yevmiye Ücreti Güncelle (₺)" type="number" value={s.dailyWage || 0} onChange={(v)=>{
-              const n = validStaff.map(st => st.id === s.id ? { ...st, dailyWage: Number(v) } : st); DB.set("staff", n);
-            }}/></div>
-            <div style={{fontSize:11, fontWeight:700, color:C.textSub, marginBottom:10, textTransform:"uppercase"}}>{selectedMonth} Dönemi Takvimi (İşaretlemek için günlere tıklayın)</div>
-            <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(42px, 1fr))", gap:6}}>
-              {daysArray.map(day => {
-                const dayStr = String(day).padStart(2, '0'); const dayKey = `${selectedMonth}-${dayStr}`; const isPresent = !!s.attendance?.[dayKey];
-                return <button key={day} onClick={()=>toggleAttendance(s.id, dayKey)} style={{padding:"8px 0", borderRadius:8, border:`1px solid ${isPresent ? C.success : C.border}`, background: isPresent ? C.successBg : C.bg, color: isPresent ? C.success : C.textSub, fontWeight:700, fontSize:12, cursor:"pointer"}}>{day}</button>
+          {isExp && <div style={{marginTop:12, paddingTop:12, borderTop:`1px solid #E2E8F0`}}>
+            <Inp label="Günlük Yevmiye (₺)" type="number" value={s.dailyWage} onChange={(v)=>DB.set("staff", validStaff.map(x=>x.id===s.id?{...x,dailyWage:Number(v)}:x))}/>
+            <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(40px, 1fr))", gap:6, marginTop:10}}>
+              {daysArray.map(d=>{
+                const key = `${selectedMonth}-${String(d).padStart(2,'0')}`; const isP = !!s.attendance?.[key];
+                return <button key={d} onClick={()=>{
+                  const att={...(s.attendance||{})}; if(isP) delete att[key]; else att[key]=true;
+                  DB.set("staff", validStaff.map(x=>x.id===s.id?{...x,attendance:att}:x));
+                }} style={{padding:8, borderRadius:8, border:`1px solid ${isP?C.success:C.border}`, background:isP?C.successBg:C.bg, color:isP?C.success:C.textSub, fontWeight:700}}>{d}</button>
               })}
             </div>
           </div>}
         </Card>
       })}
     </div>}
-
-    <Modal show={showAdd} onClose={()=>setShowAdd(false)} title={f.id?"Personel Düzenle":"Yeni Personel Ekle"}>
-      <Inp label="Personel Ad Soyad *" value={f.name} onChange={v=>u("name",v)}/>
-      <Sel label="Görev" value={f.role} onChange={v=>u("role",v)} options={[{value:"trainer",label:"Antrenör"},{value:"admin",label:"İdari Personel"},{value:"driver",label:"Şoför"},{value:"other",label:"Diğer"}]}/>
-      <div style={{display:"flex",gap:8}}><div style={{flex:1}}><Inp label="Yaş" value={f.age} onChange={v=>u("age",v)} type="number"/></div><div style={{flex:1}}><Inp label="Telefon" value={f.phone} onChange={v=>u("phone",v)} type="tel"/></div></div>
-      <Inp label="Günlük Hakediş/Yevmiye Ücreti (₺) *" value={f.dailyWage} onChange={v=>u("dailyWage",v)} type="number"/>
-      <div style={{display:"flex",gap:10,marginTop:20}}><Btn variant="secondary" onClick={()=>setShowAdd(false)} style={{flex:1}}>İptal</Btn><Btn onClick={save} style={{flex:2}}>Kaydet</Btn></div>
+    <Modal show={showAdd} onClose={()=>setShowAdd(false)} title="Personel Kartı">
+      <Inp label="Ad Soyad *" value={f.name} onChange={v=>u("name",v)}/>
+      <Inp label="Günlük Yevmiye (₺) *" value={f.dailyWage} onChange={v=>u("dailyWage",v)} type="number"/>
+      <Btn full onClick={save} style={{marginTop:10}}>Kaydet</Btn>
     </Modal>
   </div>
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   YOKLAMA, ÖDEMELER, GİDERLER VE WHATSAPP BİLEŞENLERİ
-═══════════════════════════════════════════════════════════════ */
-// (Değişmeyen kurumsal alt modüller aynen korunmuştur)
-function AttendancePage({students}){
-  const [date,setDate]=useState(TODAY); const [y, m, d] = date.split('-'); const selectedDayIndex = new Date(y, m - 1, d).getDay();
-  const active=safeArr(students).filter(s=>courseStatus(s)==="active" && (s.weekDays||[]).includes(selectedDayIndex));
-  const present=active.filter(s=>(s.attendance||{})[date]).length;
-  function toggle(id,val){ const n=safeArr(students).map(s=>{if(s.id!==id)return s; const att={...s.attendance}; if(val)att[date]=true; else delete att[date]; return{...s,attendance:att}}); DB.set("students",n); }
-  return<div style={{padding:16}}>
-    <SectionTitle action={<Btn sm variant="ghost" onClick={()=>exportCSV(`Yoklama_${date}`, ["Ad", "Durum"], active.map(s => [s.name, (s.attendance||{})[date] ? "Var" : "Yok"]))}>⬇️ Excel</Btn>}>Yoklama</SectionTitle>
-    <Inp value={date} onChange={setDate} type="date"/>
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}><StatCard label="Beklenen" value={active.length}/><StatCard label="Mevcut" value={present} col={C.success}/></div>
-    <Card>{active.map((s,i)=><div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:i===active.length-1?"none":`1px solid ${C.borderLight}`}}><div><div style={{fontSize:15,fontWeight:700}}>{s.name}</div></div><Toggle checked={!!(s.attendance||{})[date]} onChange={v=>toggle(s.id,v)}/></div>)}</Card>
-  </div>
-}
-function PaymentsPage({students}){
-  const all=safeArr(students).flatMap(s=>safeArr(s.payments).map(p=>({...p,studentName:s.name}))).sort((a,b)=>new Date(b.date)-new Date(a.date));
-  const total=all.reduce((t,p)=>t+Number(p.amount),0); const thisMonth=all.filter(p=>p.date&&p.date.startsWith(TODAY.slice(0,7))).reduce((t,p)=>t+Number(p.amount),0);
-  const unpaid = safeArr(students).filter(s => courseStatus(s) === "active" && totalPaid(s) < monthlyTotal(s));
-  return<div style={{padding:16}}>
-    <SectionTitle action={<Btn sm variant="ghost" onClick={()=>exportCSV("Odemeler", ["Ogrenci", "Tutar"], all.map(p => [p.studentName, p.amount]))}>⬇️ Excel</Btn>}>Ödemeler</SectionTitle>
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}><StatCard label="Toplam" value={`${total} ₺`} col={C.success} span2/><StatCard label="Bu Ay" value={`${thisMonth} ₺`}/><StatCard label="Eksik" value={unpaid.length} col={C.danger}/></div>
-    <Card>{all.map(p=><Row key={p.id} label={p.studentName} val={`+${p.amount} ₺`} col={C.success}/>)}</Card>
-  </div>
-}
-function ExpensesPage({expenses}){
-  const [show,setShow]=useState(false); const [f,setF]=useState(EMPTY_EXPENSE); const [filterMonth,setFilterMonth]=useState(TODAY.slice(0,7)); const u=(k,v)=>setF(p=>({...p,[k]:v}));
-  function save(){ if(!f.title.trim()||!f.amount)return; const n=f.id?safeArr(expenses).map(e=>e.id===f.id?{...f}:e):[...safeArr(expenses),{...f,id:Date.now()}]; DB.set("expenses",n); setShow(false); setF(EMPTY_EXPENSE); }
-  const filtered=safeArr(expenses).filter(e=>e.date&&e.date.startsWith(filterMonth)); const totalExp=filtered.reduce((t,e)=>t+Number(e.amount),0);
-  return<div style={{padding:16}}>
-    <SectionTitle action={<Btn sm onClick={()=>setShow(true)}>+ Gider Ekle</Btn>}>Giderler</SectionTitle>
-    <div style={{display:"flex",gap:10,marginBottom:16}}><input type="month" value={filterMonth} onChange={e=>setFilterMonth(e.target.value)} style={{flex:1,padding:12,background:C.surface,border:`1px solid ${C.border}`,borderRadius:12}}/><StatCard label="Toplam Gider" value={`${totalExp} ₺`} col={C.danger}/></div>
-    {filtered.map(e=><Card key={e.id}><Row label={e.title} val={`-${e.amount} ₺`} col={C.danger}/></Card>)}
-    <Modal show={show} onClose={()=>setShow(false)} title="Yeni Gider"><Inp label="Açıklama *" value={f.title} onChange={v=>u("title",v)}/><Inp label="Tutar *" value={f.amount} onChange={v=>u("amount",v)} type="number"/><Btn full onClick={save}>Kaydet</Btn></Modal>
-  </div>
-}
-function WhatsAppPage({students, waGroupLink}){
-  const activeStudents = safeArr(students).filter(s => courseStatus(s) === "active" && s.guardianPhone1);
-  return <div style={{padding:16}}>
-    <SectionTitle>WhatsApp Entegrasyonu</SectionTitle>
-    <Card style={{marginBottom:16}}><Btn full style={{background:C.whatsapp, color:"#fff", border:"none"}} onClick={()=>window.open("https://web.whatsapp.com", "_blank")}>WhatsApp Web Sekmesini Aç</Btn></Card>
-    <Card>{activeStudents.map(s=><div key={s.id} style={{display:"flex",justifyContent:"space-between",padding:"10px 0"}}><span style={{color:C.text, fontWeight:600}}>{s.name}</span><Btn sm style={{background:C.whatsappBg,color:C.whatsapp}} onClick={()=>openWA(s.guardianPhone1,`Merhaba, duyuru grubumuz: ${waGroupLink || ''}`)}>Grup Daveti Gönder</Btn></div>)}</Card>
-  </div>
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   GELİŞMİŞ KURUMSAL DASHBOARD (YAN YANA GRID DÜZENİ)
+   GELİŞMİŞ KURUMSAL DASHBOARD (YAN YANA 3 KOLON GRID)
 ═══════════════════════════════════════════════════════════════ */
 function Dashboard({students,expenses}){
   const safeStudents = safeArr(students); const safeExpenses = safeArr(expenses); const active=safeStudents.filter(s=>courseStatus(s)==="active");
   const totalRev=safeStudents.reduce((t,s)=>t+totalPaid(s),0); const totalExp=safeExpenses.reduce((t,e)=>t+Number(e.amount||0),0); const netProfit = totalRev - totalExp;
+
   const recentRegistrations = [...safeStudents].sort((a,b) => b.id - a.id).slice(0, 5);
-  const recentPay = safeStudents.flatMap(s=>safeArr(s.payments).map(p=>({...p,studentName:s.name}))).sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0, 5);
-  const endingSoon = active.filter(s=>{const d=daysLeft(s);return d>=0&&d<=14;}).sort((a,b)=>daysLeft(a)-daysLeft(b)).slice(0, 5);
+  const recentPay = safeStudents.flatMap(s=>safeArr(s.payments).map(p=>({...p,studentName:s.name}))).sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
+  const endingSoon = active.filter(s=>{const d=daysLeft(s);return d>=0&&d<=14;}).sort((a,b)=>daysLeft(a)-daysLeft(b)).slice(0,5);
 
   return<div style={{padding:16}}>
     <Card accent={netProfit >= 0 ? C.success : C.danger} style={{marginBottom:16, background:netProfit >= 0 ? C.successBg : C.dangerBg, border:"none"}}>
@@ -483,71 +540,48 @@ function Dashboard({students,expenses}){
       </div>
     </Card>
 
-    {/* YAN YANA SIRALANAN KURUMSAL 3'LÜ GRID SİSTEMİ */}
-    <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(300px, 1fr))", gap:16, alignItems:"start", marginTop:12}}>
-      
-      {/* 1. SON KAYITLAR */}
-      <Card style={{borderRadius:16, padding:16}}>
-        <div style={{fontSize:12, fontWeight:800, marginBottom:12, textTransform:"uppercase", color:C.text}}>Son Kayıt Olanlar</div>
+    <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(300px, 1fr))", gap:16, alignItems:"start"}}>
+      <Card>
+        <div style={{fontSize:13, fontWeight:800, marginBottom:12, color:C.text}}>Son Kayıt Olanlar</div>
         <div className="data-row data-header"><div>Ad Soyad</div><div>Kayıt Trh.</div><div className="data-col-right">Grup</div></div>
         {recentRegistrations.map(s => <div className="data-row" key={s.id}><div className="data-col">{s.name}</div><div className="data-col data-col-sub">{fmtDate(s.courseStart)}</div><div className="data-col data-col-right" style={{color:C.accent}}>{s.groupName || "-"}</div></div>)}
       </Card>
 
-      {/* 2. SON ÖDEMELER */}
-      <Card style={{borderRadius:16, padding:16}}>
-        <div style={{fontSize:12, fontWeight:800, marginBottom:12, textTransform:"uppercase", color:C.text}}>Son Ödemeler</div>
+      <Card>
+        <div style={{fontSize:13, fontWeight:800, marginBottom:12, color:C.text}}>Son Ödemeler</div>
         <div className="data-row data-header"><div>Ad Soyad</div><div>Tarih</div><div className="data-col-right">Tutar</div></div>
         {recentPay.map((p, i) => <div className="data-row" key={i}><div className="data-col">{p.studentName}</div><div className="data-col data-col-sub">{fmtDate(p.date)}</div><div className="data-col data-col-right" style={{color:C.success}}>+{p.amount} ₺</div></div>)}
       </Card>
 
-      {/* 3. BİTİŞİ YAKLAŞANLAR */}
-      <Card style={{borderRadius:16, padding:16, border:`1px solid ${C.warning}40`}}>
-        <div style={{fontSize:12, fontWeight:800, marginBottom:12, textTransform:"uppercase", color:C.text}}>Kayıt Bitişi Yaklaşanlar</div>
+      <Card style={{border:`1px solid ${C.warning}40`}}>
+        <div style={{fontSize:13, fontWeight:800, marginBottom:12, color:C.text}}>Kayıt Bitişi Yaklaşanlar</div>
         <div className="data-row data-header"><div>Ad Soyad</div><div>Bitiş Trh.</div><div className="data-col-right">Kalan</div></div>
         {endingSoon.map(s => <div className="data-row" key={s.id}><div className="data-col">{s.name}</div><div className="data-col data-col-sub">{fmtDate(s.courseEnd)}</div><div className="data-col data-col-right" style={{color:C.warning}}>{daysLeft(s)} Gün</div></div>)}
       </Card>
-
     </div>
   </div>
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   AYARLAR PANELİ
-═══════════════════════════════════════════════════════════════ */
-function SettingsPage({navItems, clubName, logoUrl, themeColor, sidebarColor, cardColor, textColor, appUsers}){
+function SettingsPage({navItems, clubName, logoUrl, themeColor, sidebarColor, cardColor, appUsers}){
   const [tab, setTab] = useState(0); const [nameVal, setNameVal] = useState(clubName); const [logoVal, setLogoVal] = useState(logoUrl);
-  const [colorVal, setColorVal] = useState(themeColor); const [sidebarColorVal, setSidebarColorVal] = useState(sidebarColor);
-  const [cardColorVal, setCardColorVal] = useState(cardColor); const [textColorVal, setTextColorVal] = useState(textColor); const [saveMsg, setSaveMsg] = useState("");
   const [showUserModal, setShowUserModal] = useState(false); const [uForm, setUForm] = useState({ id:null, username:"", password:"", role:"staff", allowedTabs:[] });
-
-  useEffect(() => { setNameVal(clubName); setLogoVal(logoUrl); setColorVal(themeColor); setSidebarColorVal(sidebarColor); setCardColorVal(cardColor); setTextColorVal(textColor); }, [clubName, logoUrl, themeColor, sidebarColor, cardColor, textColor]);
-  function saveGeneral(){ DB.set("clubName", nameVal); DB.set("logoUrl", logoVal); DB.set("themeColor", colorVal); DB.set("sidebarColor", sidebarColorVal); DB.set("cardColor", cardColorVal); DB.set("textColor", textColorVal); setSaveMsg("Ayarlar başarıyla kaydedildi."); setTimeout(()=>setSaveMsg(""), 3000); }
-  function saveUser() { if(!uForm.username||!uForm.password)return; let n = safeArr(appUsers); if(uForm.id) n = n.map(u => u.id === uForm.id ? {...uForm} : u); else n = [...n, {...uForm, id:Date.now()}]; DB.set("appUsers", n); setShowUserModal(false); }
+  function saveUser() { if(!uForm.username||!uForm.password)return; let n = safeArr(appUsers); if(uForm.id) n = n.map(u => u.id === uForm.id ? {...uForm} : u); else n = [...n, {...uForm, id:Date.now(), allowedTabs:["dashboard","students","attendance"]}]; DB.set("appUsers", n); setShowUserModal(false); }
 
   return<div style={{padding:16}}>
-    <TabBar tabs={["Genel & Renk", "Kullanıcı Yetkileri"]} active={tab} onChange={setTab}/>
+    <TabBar tabs={["Genel Kurum", "Personel Hesap Yetkileri"]} active={tab} onChange={setTab}/>
     {tab === 0 && (
-      <div>
-        <Card><Inp label="Kulüp Adı" value={nameVal} onChange={setNameVal}/><Inp label="Logo URL" value={logoVal} onChange={setLogoVal}/></Card>
-        <Card>
-          <div style={{display:"flex", justifyContent:"space-between", marginBottom:10}}><span>Arkaplan Gri</span><input type="color" value={colorVal} onChange={e=>setColorVal(e.target.value)}/></div>
-          <div style={{display:"flex", justifyContent:"space-between", marginBottom:10}}><span>Menü Beyaz</span><input type="color" value={sidebarColorVal} onChange={e=>setSidebarColorVal(e.target.value)}/></div>
-          <div style={{display:"flex", justifyContent:"space-between"}}><span>Yazı Koyu Füme</span><input type="color" value={textColorVal} onChange={e=>setTextColorVal(e.target.value)}/></div>
-        </Card>
-        <Btn full onClick={saveGeneral}>Kaydet</Btn>
-        {saveMsg && <div style={{textAlign:"center",color:C.success,marginTop:10}}>{saveMsg}</div>}
-      </div>
+      <div><Card><Inp label="Kulüp Adı" value={nameVal} onChange={setNameVal}/><Inp label="Logo URL" value={logoVal} onChange={setLogoVal}/></Card><Btn full onClick={()=>{DB.set("clubName",nameVal); DB.set("logoUrl",logoVal); alert("Kaydedildi");}}>Kaydet</Btn></div>
     )}
     {tab===1&&<div>
-      <SectionTitle action={<Btn sm onClick={()=>{setUForm({id:null,username:"",password:"",role:"staff",allowedTabs:["dashboard","attendance"]});setShowUserModal(true);}}>+ Yeni Personel Ekle</Btn>}>Kullanıcı Hesapları</SectionTitle>
-      {safeArr(appUsers).map(u=><Card key={u.id}><Row label={u.username} val={u.role==='admin'?'Yönetici':'Çalışan'}/></Card>)}
-      <Modal show={showUserModal} onClose={()=>setShowUserModal(false)} title="Hesap Yetkilendir"><Inp label="Kullanıcı Adı" value={uForm.username} onChange={v=>setUForm({...uForm,username:v})}/><Inp label="Şifre" value={uForm.password} onChange={v=>setUForm({...uForm,password:v})}/><Btn full onClick={saveUser}>Kaydet</Btn></Modal>
+      <SectionTitle action={<Btn sm onClick={()=>{setUForm({id:null,username:"",password:"",role:"staff",allowedTabs:["dashboard","students","attendance"]});setShowUserModal(true);}}>+ Hesap Ekle</Btn>}>Çalışan Giriş Yetkileri</SectionTitle>
+      {safeArr(appUsers).map(u=><Card key={u.id}><Row label={u.username} val={u.role==='admin'?'Tam Yetki (Admin)':'Çalışan (Kısıtlı)'}/></Card>)}
+      <Modal show={showUserModal} onClose={()=>setShowUserModal(false)} title="Personel Hesabı Tanımla"><Inp label="Kullanıcı Adı" value={uForm.username} onChange={v=>setUForm({...uForm,username:v})}/><Inp label="Giriş Şifresi" value={uForm.password} onChange={v=>setUForm({...uForm,password:v})}/><Btn full onClick={saveUser}>Hesabı Oluştur</Btn></Modal>
     </div>}
   </div>
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   APP ROOT
+   APP ROOT (SABİT AÇIK TEMA)
 ═══════════════════════════════════════════════════════════════ */
 function App(){
   const [currentUser, setCurrentUser] = useState(() => { try { return JSON.parse(sessionStorage.getItem("aqua_user")); } catch { return null; } });
@@ -573,19 +607,13 @@ function App(){
         let loadedUsers = safeArr(d.appUsers);
         if (loadedUsers.length === 0) { loadedUsers = [{ id:"admin", username:"admin", password: d.pinCode || "0309", role:"admin", allowedTabs: NAV_ITEMS.map(n=>n.id) }]; }
         setAppUsers(loadedUsers);
-        if (d.themeColor) setThemeColor(d.themeColor);
-        if (d.sidebarColor) setSidebarColor(d.sidebarColor);
-        if (d.cardColor) setCardColor(d.cardColor);
-        if (d.textColor) setTextColor(d.textColor);
-        if (d.logoUrl) setLogoUrl(d.logoUrl);
-        if (d.navItems) setNavItems(d.navItems);
       }
       setIsDbLoaded(true);
     });
     return () => unsub();
   }, []);
 
-  if (!isDbLoaded) return <div style={{display:"flex",flexDirection:"column",height:"100vh",alignItems:"center",justifyContent:"center",background:"var(--bg-color)"}}><div className="spinner"></div><div style={{color:"var(--text-main)",fontWeight:700,marginTop:10}}>Sistem Yükleniyor...</div></div>;
+  if (!isDbLoaded) return <div style={{display:"flex",flexDirection:"column",height:"100vh",alignItems:"center",justifyContent:"center",background:"var(--bg-color)"}}><div className="spinner"></div><div style={{color:"var(--text-main)",fontWeight:700,marginTop:10}}>Kurumsal Sistem Yükleniyor...</div></div>;
   if (!currentUser) return <LoginScreen onSuccess={(user) => { sessionStorage.setItem("aqua_user", JSON.stringify(user)); setCurrentUser(user); }} appUsers={appUsers} adminPin={oldPinCode} />;
 
   const visibleNav = NAV_ITEMS.filter(n => currentUser.role === "admin" || (currentUser.allowedTabs || []).includes(n.id));
@@ -593,25 +621,24 @@ function App(){
   return<div style={{display:"flex",height:"100vh",overflow:"hidden",background:"var(--bg-color)"}}>
     <div className="sidebar-desktop" style={{width:240, background:"var(--sidebar-bg)", borderRight:"1px solid #E2E8F0", display:"flex", flexDirection:"column", boxShadow:"2px 0 10px rgba(0,0,0,0.02)", zIndex:100}}>
       <div style={{padding:"24px 20px 20px", borderBottom:"1px solid #E2E8F0", display:"flex", alignItems:"center", gap:12}}>
-        <div style={{width:38,height:38,borderRadius:10,background:`linear-gradient(135deg,${C.accent},${C.accentDark})`,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
+        <div style={{width:38,height:38,borderRadius:10,background:`linear-gradient(135deg,#0EA5E9,#0284C7)`,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
           {logoUrl ? <img src={logoUrl} alt="Logo" style={{width:"100%",height:"100%",objectFit:"cover"}}/> : <span style={{color:"white", fontWeight:800}}>AC</span>}
         </div>
-        <div><div style={{fontSize:15,fontWeight:800,color:"var(--text-main)"}}>{clubName}</div><div style={{fontSize:11,color:C.textSub,fontWeight:600}}>{currentUser.username}</div></div>
+        <div><div style={{fontSize:15,fontWeight:800,color:"var(--text-main)"}}>{clubName}</div><div style={{fontSize:11,color:"#64748B",fontWeight:600}}>{currentUser.username}</div></div>
       </div>
       <div style={{flex:1, overflowY:"auto", padding:"16px 12px"}}>
-        {visibleNav.map(item=><button key={item.id} onClick={()=>setActiveTab(item.id)} style={{display:"flex",alignItems:"center",gap:12,width:"100%", padding:"12px 14px", marginBottom:6, background:activeTab===item.id?C.accentGlow:"transparent", border:"none", borderRadius:12, color:activeTab===item.id?C.accentDark:C.textSub, cursor:"pointer", textAlign:"left", fontSize:14, fontWeight:activeTab===item.id?700:500}}><Icon d={item.icon} size={18}/> {item.label}</button>)}
+        {visibleNav.map(item=><button key={item.id} onClick={()=>setActiveTab(item.id)} style={{display:"flex",alignItems:"center",gap:12,width:"100%", padding:"12px 14px", marginBottom:6, background:activeTab===item.id?"#0EA5E915":"transparent", border:"none", borderRadius:12, color:activeTab===item.id?"#0284C7":"#475569", cursor:"pointer", textAlign:"left", fontSize:14, fontWeight:activeTab===item.id?700:500}}><Icon d={item.icon} size={18}/> {item.label}</button>)}
       </div>
-      <div style={{padding:"16px"}}><button onClick={()=>{sessionStorage.removeItem("aqua_user"); window.location.reload();}} style={{width:"100%", padding:"12px", background:C.dangerBg, borderRadius:12, border:"none", color:C.danger, fontWeight:700, cursor:"pointer"}}>Çıkış Yap</button></div>
+      <div style={{padding:"16px"}}><button onClick={()=>{sessionStorage.removeItem("aqua_user"); window.location.reload();}} style={{width:"100%", padding:"12px", background:"#EF444415", borderRadius:12, border:"none", color:"#EF4444", fontWeight:700, cursor:"pointer"}}>Çıkış Yap</button></div>
     </div>
     
     <div style={{flex:1, display:"flex", flexDirection:"column", overflow:"hidden"}}>
       <div style={{padding:"16px 20px", background:"var(--sidebar-bg)", borderBottom:"1px solid #E2E8F0", fontWeight:800, fontSize:16, display:"flex", alignItems:"center", gap:16, color:"var(--text-main)"}}>
-        <button onClick={()=>setSidebarOpen(true)} className="menu-btn" style={{background:"transparent", border:`1px solid #E2E8F0`, color:"var(--text-main)", width:36, height:36, borderRadius:10}}>☰</button>
+        <button onClick={()=>setSidebarOpen(!sidebarOpen)} className="menu-btn" style={{background:"transparent", border:`1px solid #E2E8F0`, color:"var(--text-main)", width:36, height:36, borderRadius:10}}>☰</button>
         {(visibleNav.find(n=>n.id===activeTab)||{}).label}
       </div>
-      
       <div style={{flex:1, overflowY:"auto"}}>
-        {activeTab==="dashboard"&&<Dashboard students={students} stockItems={stockItems} expenses={expenses}/>}
+        {activeTab==="dashboard"&&<Dashboard students={students} expenses={expenses}/>}
         {activeTab==="students"&&<StudentsPage students={students} stockItems={stockItems}/>}
         {activeTab==="attendance"&&<AttendancePage students={students}/>}
         {activeTab==="payments"&&<PaymentsPage students={students}/>}
@@ -619,7 +646,7 @@ function App(){
         {activeTab==="whatsapp"&&<WhatsAppPage students={students} waGroupLink={waGroupLink} />}
         {activeTab==="staff"&&<StaffPage staff={staff}/>}
         {activeTab==="inventory"&&<InventoryPage items={stockItems}/>}
-        {activeTab==="settings"&&currentUser.role==='admin'&&<SettingsPage navItems={NAV_ITEMS} clubName={clubName} logoUrl={logoUrl} themeColor={themeColor} sidebarColor={sidebarColor} cardColor={cardColor} textColor={textColor} appUsers={appUsers}/>}
+        {activeTab==="settings"&&currentUser.role==='admin'&&<SettingsPage navItems={NAV_ITEMS} clubName={clubName} logoUrl={logoUrl} themeColor={themeColor} sidebarColor={sidebarColor} cardColor={cardColor} appUsers={appUsers}/>}
       </div>
     </div>
     <style>{`@media(max-width:768px){.sidebar-desktop{display:none!important}} @media(min-width:769px){.menu-btn{display:none!important}}`}</style>

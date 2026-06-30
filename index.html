@@ -30,8 +30,17 @@ button{font-family:'Inter',-apple-system,sans-serif}
 /* Loading Spinner */
 .spinner {border: 4px solid rgba(255,255,255,0.1); border-left-color: #0EA5E9; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 16px;}
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* Kurumsal Tablo Listesi İçin */
+.data-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid #1A2D45; }
+.data-row:last-child { border-bottom: none; }
+.data-col { font-size: 13px; color: #F1F5F9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.data-col-sub { font-size: 11px; color: #94A3B8; }
+.data-col-right { text-align: right; font-weight: 700; }
+.data-header { font-size: 11px; font-weight: 600; color: #4A6080; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #1A2D45; padding-bottom: 8px; margin-bottom: 4px; }
 </style>
 
+<!-- Firebase Kütüphaneleri -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
@@ -74,6 +83,7 @@ const C={
   warning:"#F59E0B", warningBg:"#F59E0B15",
   danger:"#EF4444",  dangerBg:"#EF444415",
   purple:"#8B5CF6",  purpleBg:"#8B5CF615",
+  whatsapp:"#25D366", whatsappBg:"#25D36615",
   sidebarW:220
 };
 
@@ -98,6 +108,7 @@ const NAV_ITEMS=[
   {id:"expenses",label:"Giderler",icon:"M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"},
   {id:"staff",label:"Personel",icon:"M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197"},
   {id:"inventory",label:"Envanter",icon:"M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"},
+  {id:"whatsapp",label:"WhatsApp",icon:"M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.482-1.46-1.656-1.758-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z M12 22C6.477 22 2 17.523 2 12c0-1.76.452-3.414 1.25-4.832L2 2l5.344 1.156C8.683 2.43 10.297 2 12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10z"},
   {id:"settings",label:"Ayarlar",icon:"M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"},
 ];
 
@@ -108,6 +119,12 @@ const TODAY=new Date().toISOString().split("T")[0];
 /* ═══════════════════════════════════════════════════════════════
    UTILS (Yardımcı Fonksiyonlar)
 ═══════════════════════════════════════════════════════════════ */
+function safeArr(val) { 
+  if (!val) return [];
+  const arr = Array.isArray(val) ? val : Object.values(val);
+  return arr.filter(item => item !== null && item !== undefined && typeof item === 'object');
+}
+
 function fmtDate(d){if(!d)return"—";const[y,m,day]=d.split("-");return`${day}.${m}.${y}`}
 function totalPaid(s){return (s.payments||[]).reduce((t,p)=>t+Number(p.amount||0),0);}
 function equipmentTotal(s){return (s.equipment||[]).reduce((t,e)=>t+Number(e.price||0),0);}
@@ -416,16 +433,15 @@ function StudentForm({initial,onSave,onCancel,stockItems}){
 
 function EqPicker({stockItems,current,onAdd,onRemove}){
   const [sel,setSel]=useState("");
-  const safeStock = (stockItems||[]).filter(i => i && i.id);
   return<div>
     <div style={{display:"flex",gap:8,marginBottom:10}}>
       <select style={{flex:1,padding:"9px 11px",background:C.bg,border:`1px solid ${C.border}`,borderRadius:8,color:sel?C.text:C.textMuted,fontSize:13,outline:"none",fontFamily:"inherit"}} value={sel} onChange={e=>setSel(e.target.value)}>
         <option value="">Ekipman seç...</option>
-        {safeStock.filter(s=>Number(s.stock)>0).map(s=><option key={s.id} value={s.id}>{s.name} — {Number(s.price).toLocaleString("tr-TR")} ₺</option>)}
+        {(stockItems||[]).filter(s=>Number(s.stock)>0).map(s=><option key={s.id} value={s.id}>{s.name} — {Number(s.price).toLocaleString("tr-TR")} ₺</option>)}
       </select>
-      <Btn sm onClick={()=>{if(!sel)return;const item=safeStock.find(s=>String(s.id)===String(sel));if(item)onAdd({name:item.name,price:item.price,stockId:item.id});setSel("");}}>Ekle</Btn>
+      <Btn sm onClick={()=>{if(!sel)return;const item=(stockItems||[]).find(s=>String(s.id)===String(sel));if(item)onAdd({name:item.name,price:item.price,stockId:item.id});setSel("");}}>Ekle</Btn>
     </div>
-    {(current||[]).map(e=>e && <div key={e.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
+    {(current||[]).map(e=><div key={e.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
       <div>
         <div style={{fontSize:13,fontWeight:600}}>{e.name}</div>
         <div style={{fontSize:11,color:C.textSub}}>{fmtDate(e.addedDate)}</div>
@@ -536,7 +552,7 @@ function StudentDetail({student,onBack,students,stockItems}){
     {tab===3&&<div>
       {(student.equipment||[]).length===0?<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted,fontSize:13}}>Kayıtlı ekipman yok</div>:
       <Card>
-        {(student.equipment||[]).map(e=>e && <div key={e.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
+        {(student.equipment||[]).map(e=><div key={e.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
           <div><div style={{fontSize:13,fontWeight:600}}>{e.name}</div><div style={{fontSize:11,color:C.textSub}}>{fmtDate(e.addedDate)}</div></div>
           <span style={{color:C.warning,fontWeight:700}}>{Number(e.price).toLocaleString("tr-TR")} ₺</span>
         </div>)}
@@ -555,7 +571,7 @@ function StudentDetail({student,onBack,students,stockItems}){
       </div>
       {(student.payments||[]).length===0?<div style={{textAlign:"center",padding:"30px 0",color:C.textMuted,fontSize:13}}>Ödeme kaydı yok</div>:
       <Card>
-        {[...(student.payments||[])].sort((a,b)=>new Date(b.date)-new Date(a.date)).map(p=>p && <div key={p.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
+        {[...(student.payments||[])].sort((a,b)=>new Date(b.date)-new Date(a.date)).map(p=><div key={p.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:`1px solid ${C.border}`}}>
           <div>
             <div style={{fontSize:13,fontWeight:600}}>{Number(p.amount).toLocaleString("tr-TR")} ₺</div>
             <div style={{fontSize:11,color:C.textSub}}>{fmtDate(p.date)}{p.note?` · ${p.note}`:""}</div>
@@ -577,7 +593,7 @@ function StudentDetail({student,onBack,students,stockItems}){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   PAGES
+   PAGES (STUDENTS, ATTENDANCE, PAYMENTS, EXPENSES, STAFF, INVENTORY)
 ═══════════════════════════════════════════════════════════════ */
 function StudentsPage({students,stockItems}){
   const [search,setSearch]=useState("");
@@ -586,16 +602,15 @@ function StudentsPage({students,stockItems}){
   const [statusFilter,setStatusFilter]=useState("all");
   const [groupFilter,setGroupFilter]=useState("all");
 
-  const validStudents = (students||[]).filter(s=>s && s.id);
-  const student = detailId ? validStudents.find(s=>s.id===detailId) : null;
+  const student=detailId?(students||[]).find(s=>s.id===detailId):null;
 
   function save(f){
     let n;
-    if(f.id){n=validStudents.map(s=>s.id===f.id?{...f}:s);}
-    else{n=[...validStudents,{...f,id:Date.now(),payments:[],attendance:{},equipment:(f.equipment||[])}];}
+    if(f.id){n=(students||[]).map(s=>s.id===f.id?{...f}:s);}
+    else{n=[...(students||[]),{...f,id:Date.now(),payments:[],attendance:{},equipment:(f.equipment||[])}];}
     DB.set("students",n);setShowAdd(false);
   }
-  function del(id){const n=validStudents.filter(s=>s.id!==id);DB.set("students",n);setDetailId(null);}
+  function del(id){const n=(students||[]).filter(s=>s.id!==id);DB.set("students",n);setDetailId(null);}
 
   function downloadExcel() {
     const headers = ["Ad Soyad", "Grup", "Veli", "Veli Tel", "Bitis Tarihi", "Aylik Ucret (TL)", "Odenen (TL)", "Kalan Borc (TL)"];
@@ -606,9 +621,9 @@ function StudentsPage({students,stockItems}){
     exportCSV("Ogrenciler_Listesi", headers, rows);
   }
 
-  const groups=["all",...new Set(validStudents.map(s=>s.groupName).filter(Boolean))];
+  const groups=["all",...new Set((students||[]).map(s=>s.groupName).filter(Boolean))];
 
-  const filtered=validStudents.filter(s=>{
+  const filtered=(students||[]).filter(s=>{
     if(!s.name.toLowerCase().includes(search.toLowerCase()))return false;
     if(statusFilter==="active"&&courseStatus(s)!=="active")return false;
     if(statusFilter==="ended"&&courseStatus(s)!=="ended")return false;
@@ -618,7 +633,7 @@ function StudentsPage({students,stockItems}){
     return true;
   });
 
-  if(student)return<StudentDetail student={student} onBack={()=>setDetailId(null)} students={validStudents} stockItems={stockItems}/>;
+  if(student)return<StudentDetail student={student} onBack={()=>setDetailId(null)} students={students} stockItems={stockItems}/>;
 
   return<div style={{padding:14}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
@@ -672,15 +687,14 @@ function StudentsPage({students,stockItems}){
 }
 
 function AttendancePage({students}){
-  const validStudents = (students||[]).filter(s=>s && s.id);
   const [date,setDate]=useState(TODAY);
   const [y, m, d] = date.split('-');
   const selectedDayIndex = new Date(y, m - 1, d).getDay();
-  const active=validStudents.filter(s=>courseStatus(s)==="active" && (s.weekDays||[]).includes(selectedDayIndex));
+  const active=(students||[]).filter(s=>courseStatus(s)==="active" && (s.weekDays||[]).includes(selectedDayIndex));
   const present=active.filter(s=>(s.attendance||{})[date]).length;
 
   function toggle(id,val){
-    const n=validStudents.map(s=>{if(s.id!==id)return s;const att={...s.attendance};if(val)att[date]=true;else delete att[date];return{...s,attendance:att}});
+    const n=(students||[]).map(s=>{if(s.id!==id)return s;const att={...s.attendance};if(val)att[date]=true;else delete att[date];return{...s,attendance:att}});
     DB.set("students",n);
   }
 
@@ -711,12 +725,11 @@ function AttendancePage({students}){
 }
 
 function PaymentsPage({students}){
-  const validStudents = (students||[]).filter(s=>s && s.id);
-  const all=validStudents.flatMap(s=>(s.payments||[]).map(p=>({...p,studentName:s.name}))).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const all=(students||[]).flatMap(s=>(s.payments||[]).map(p=>({...p,studentName:s.name}))).sort((a,b)=>new Date(b.date)-new Date(a.date));
   const total=all.reduce((t,p)=>t+Number(p.amount),0);
   const thisMonth=all.filter(p=>p.date&&p.date.startsWith(TODAY.slice(0,7))).reduce((t,p)=>t+Number(p.amount),0);
   
-  const unpaid = validStudents
+  const unpaid = (students||[])
     .filter(s => courseStatus(s) === "active" && totalPaid(s) < monthlyTotal(s))
     .sort((a, b) => new Date(a.courseStart) - new Date(b.courseStart));
 
@@ -736,9 +749,7 @@ function PaymentsPage({students}){
     {unpaid.length>0&&<>
       <SectionTitle>Eksik Ödeme Bekleyenler</SectionTitle>
       {unpaid.map(s=>{
-        const expected = monthlyTotal(s);
-        const paid = totalPaid(s);
-        const debt = expected - paid;
+        const expected = monthlyTotal(s); const paid = totalPaid(s); const debt = expected - paid;
         return (
           <Card key={s.id} accent={C.danger}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
@@ -776,7 +787,6 @@ const EMPTY_EXPENSE={id:null, title:"", amount:"", date:TODAY, category:"", isFo
 const EXP_CATS=["Fatura", "Maaş", "Kira", "Gıda", "Ekipman/Malzeme", "Temizlik", "Ulaşım", "Diğer"];
 
 function ExpensesPage({expenses}){
-  const validExpenses = (expenses||[]).filter(e=>e && e.id);
   const [show,setShow]=useState(false);
   const [f,setF]=useState(EMPTY_EXPENSE);
   const [filterMonth,setFilterMonth]=useState(TODAY.slice(0,7)); 
@@ -785,14 +795,13 @@ function ExpensesPage({expenses}){
 
   function save(){
     if(!f.title.trim() || !f.amount)return;
-    const n = f.id ? validExpenses.map(e=>e.id===f.id?{...f}:e) : [...validExpenses,{...f,id:Date.now()}];
-    DB.set("expenses", n);
-    setShow(false); setF(EMPTY_EXPENSE);
+    const n = f.id ? (expenses||[]).map(e=>e.id===f.id?{...f}:e) : [...(expenses||[]),{...f,id:Date.now()}];
+    DB.set("expenses", n); setShow(false); setF(EMPTY_EXPENSE);
   }
-  function del(id){const n=validExpenses.filter(e=>e.id!==id);DB.set("expenses",n);}
+  function del(id){const n=(expenses||[]).filter(e=>e.id!==id);DB.set("expenses",n);}
   function edit(exp){setF({...exp});setShow(true);}
 
-  const filtered = validExpenses.filter(e => e.date && e.date.startsWith(filterMonth)).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const filtered = (expenses||[]).filter(e => e.date && e.date.startsWith(filterMonth)).sort((a,b)=>new Date(b.date)-new Date(a.date));
   const totalExp = filtered.reduce((t,e)=>t+Number(e.amount),0);
 
   function downloadExcel() {
@@ -828,11 +837,8 @@ function ExpensesPage({expenses}){
       </div>
       
       {e.isFood && e.expiryDate && (
-        <div style={{fontSize:11, padding:"4px 8px", background:C.warningBg, color:C.warning, borderRadius:4, marginBottom:8, display:"inline-block"}}>
-          SKT: {fmtDate(e.expiryDate)}
-        </div>
+        <div style={{fontSize:11, padding:"4px 8px", background:C.warningBg, color:C.warning, borderRadius:4, marginBottom:8, display:"inline-block"}}>SKT: {fmtDate(e.expiryDate)}</div>
       )}
-      
       {e.note && <div style={{fontSize:12,color:C.textSub,marginBottom:8}}>{e.note}</div>}
 
       <div style={{display:"flex",gap:8}}>
@@ -850,10 +856,7 @@ function ExpensesPage({expenses}){
       </div>
       <Inp label="İşlem Tarihi" value={f.date} onChange={v=>u("date",v)} type="date"/>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderTop:`1px solid ${C.borderLight}`,marginTop:4}}>
-        <div>
-          <div style={{fontWeight:600,fontSize:13}}>Gıda / Tüketim Ürünü mü?</div>
-          <div style={{fontSize:11,color:C.textSub}}>Son kullanma tarihini takip etmek için açın</div>
-        </div>
+        <div><div style={{fontWeight:600,fontSize:13}}>Gıda / Tüketim Ürünü mü?</div><div style={{fontSize:11,color:C.textSub}}>Son kullanma tarihini takip etmek için açın</div></div>
         <Toggle checked={f.isFood} onChange={v=>u("isFood",v)}/>
       </div>
       {f.isFood && <Inp label="Son Kullanma Tarihi (SKT)" value={f.expiryDate} onChange={v=>u("expiryDate",v)} type="date"/>}
@@ -868,24 +871,20 @@ function ExpensesPage({expenses}){
 
 const EMPTY_STAFF={id:null,name:"",role:"trainer",age:"",phone:"",email:"",school:"",trainerLevel:"",notes:""};
 function StaffPage({staff}){
-  const validStaff = (staff||[]).filter(s=>s && s.id);
   const [show,setShow]=useState(false);
   const [f,setF]=useState(EMPTY_STAFF);
   const u=(k,v)=>setF(p=>({...p,[k]:v}));
 
-  function save(){if(!f.name.trim())return;const n=f.id?validStaff.map(s=>s.id===f.id?{...f}:s):[...validStaff,{...f,id:Date.now()}];DB.set("staff",n);setShow(false);setF(EMPTY_STAFF);}
-  function del(id){const n=validStaff.filter(s=>s.id!==id);DB.set("staff",n);}
+  function save(){if(!f.name.trim())return;const n=f.id?(staff||[]).map(s=>s.id===f.id?{...f}:s):[...(staff||[]),{...f,id:Date.now()}];DB.set("staff",n);setShow(false);setF(EMPTY_STAFF);}
+  function del(id){const n=(staff||[]).filter(s=>s.id!==id);DB.set("staff",n);}
   function edit(s){setF({...s});setShow(true);}
 
   return<div style={{padding:14}}>
-    <SectionTitle action={<Btn sm onClick={()=>{setF(EMPTY_STAFF);setShow(true)}}>+ Personel Ekle</Btn>}>Personel ({validStaff.length})</SectionTitle>
-    {validStaff.length===0&&<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>Henüz personel kaydı bulunmuyor</div>}
-    {validStaff.map(s=><Card key={s.id}>
+    <SectionTitle action={<Btn sm onClick={()=>{setF(EMPTY_STAFF);setShow(true)}}>+ Personel Ekle</Btn>}>Personel ({(staff||[]).length})</SectionTitle>
+    {(staff||[]).length===0&&<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>Henüz personel kaydı bulunmuyor</div>}
+    {(staff||[]).map(s=><Card key={s.id}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
-        <div>
-          <div style={{fontWeight:700,fontSize:15}}>{s.name}</div>
-          <div style={{fontSize:11,color:C.textSub,marginTop:2}}>{roleLabel(s.role)}{s.age?` · ${s.age} yaş`:""}</div>
-        </div>
+        <div><div style={{fontWeight:700,fontSize:15}}>{s.name}</div><div style={{fontSize:11,color:C.textSub,marginTop:2}}>{roleLabel(s.role)}{s.age?` · ${s.age} yaş`:""}</div></div>
         <span style={{fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:20,background:s.role==="trainer"?C.accentGlow:C.purpleBg,color:s.role==="trainer"?C.accent:C.purple}}>{roleLabel(s.role)}</span>
       </div>
       {s.trainerLevel&&<div style={{fontSize:12,color:C.textSub,marginBottom:4}}>Antrenörlük Derecesi: <span style={{color:C.text,fontWeight:600}}>{s.trainerLevel}</span></div>}
@@ -917,17 +916,7 @@ function StaffPage({staff}){
   </div>
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   SIFIRDAN YAZILMIŞ ÇÖKMEYEN ENVANTER MODÜLÜ
-═══════════════════════════════════════════════════════════════ */
-const EMPTY_ITEM={id:null,name:"",category:"",price:"",stock:"",minStock:"",supplier:"",notes:""};
-const STOCK_CATS=["Gözlük","Bone","Palet","Şamandıra","Aksesuar","Kıyafet","Temizlik","Diğer"];
-
-function InventoryPage({items,movements}){
-  // SIFIRDAN FİLTRELEME: Asla boş (null) eleman kabul etmez.
-  const validItems = (items || []).filter(i => i && i.id);
-  const validMovements = (movements || []).filter(m => m && m.id);
-
+function InventoryPage({items, movements}){
   const [show,setShow]=useState(false);
   const [f,setF]=useState(EMPTY_ITEM);
   const [editing,setEditing]=useState(null);
@@ -935,57 +924,38 @@ function InventoryPage({items,movements}){
   const [tab,setTab]=useState(0);
   const [movForm,setMovForm]=useState({itemId:"",type:"in",qty:1,note:"",date:TODAY});
   const [showMov,setShowMov]=useState(false);
-  
   const u=(k,v)=>setF(p=>({...p,[k]:v}));
 
   function save(){
-    if(!f.name.trim()) return;
-    const n = f.id ? validItems.map(i=>i.id===f.id?{...f}:i) : [...validItems,{...f,id:Date.now()}];
-    DB.set("stock",n);
-    setShow(false);
-    setEditing(null);
-    setF(EMPTY_ITEM);
+    if(!f.name.trim())return;
+    let curr = items || [];
+    const n=f.id?curr.map(i=>i.id===f.id?{...f}:i):[...curr,{...f,id:Date.now()}];
+    DB.set("stock",n);setShow(false);setEditing(null);setF(EMPTY_ITEM);
   }
-  
-  function del(id){
-    const n = validItems.filter(i=>i.id!==id);
-    DB.set("stock",n);
-  }
-
-  function edit(item){
-    setF({...item});
-    setEditing(item.id);
-    setShow(true);
-  }
-
-  function adj(id,delta){
-    const n = validItems.map(i=>i.id===id ? {...i, stock: Math.max(0, Number(i.stock||0)+delta)} : i);
-    DB.set("stock",n);
-  }
-
+  function del(id){const n=(items||[]).filter(i=>i.id!==id);DB.set("stock",n);}
+  function edit(item){setF({...item});setEditing(item.id);setShow(true);}
+  function adj(id,delta){const n=(items||[]).map(i=>i.id===id?{...i,stock:Math.max(0,Number(i.stock||0)+delta)}:i);DB.set("stock",n);}
   function addMovement(){
-    if(!movForm.itemId || !movForm.qty) return;
-    const item = validItems.find(i=>String(i.id)===String(movForm.itemId));
-    if(!item) return;
-    const delta = movForm.type==="in" ? Number(movForm.qty) : -Number(movForm.qty);
-    adj(item.id, delta);
-    const mov = {id:Date.now(), ...movForm, itemName:item.name, qty:Number(movForm.qty)};
-    DB.set("movements", [mov, ...validMovements]);
-    setMovForm({itemId:"", type:"in", qty:1, note:"", date:TODAY});
-    setShowMov(false);
+    if(!movForm.itemId||!movForm.qty)return;
+    const item=(items||[]).find(i=>String(i.id)===String(movForm.itemId));
+    if(!item)return;
+    const delta=movForm.type==="in"?Number(movForm.qty):-Number(movForm.qty);
+    adj(item.id,delta);
+    const mov={id:Date.now(),...movForm,itemName:item.name,qty:Number(movForm.qty)};
+    DB.set("movements",[mov,...(movements||[])]);
+    setMovForm({itemId:"",type:"in",qty:1,note:"",date:TODAY});setShowMov(false);
   }
-
   function downloadExcel() {
     const headers = ["Urun Adi", "Kategori", "Birim Fiyat (TL)", "Stok Miktari", "Min Stok Uyari", "Tedarikci"];
-    const rows = validItems.map(i => [i.name, i.category||"-", i.price||"0", i.stock||"0", i.minStock||"-", i.supplier||"-"]);
+    const rows = (items||[]).map(i => [i.name, i.category||"-", i.price||"0", i.stock||"0", i.minStock||"-", i.supplier||"-"]);
     exportCSV("Envanter_Stok", headers, rows);
   }
 
-  const cats=["all",...new Set(validItems.map(i=>i.category).filter(Boolean))];
-  const filtered=catFilter==="all"?validItems:validItems.filter(i=>i.category===catFilter);
-  const lowStock=validItems.filter(i=>Number(i.stock)<=Number(i.minStock||0)&&Number(i.stock)>0);
-  const outStock=validItems.filter(i=>Number(i.stock)===0);
-  const totalVal=validItems.reduce((t,i)=>t+Number(i.price||0)*Number(i.stock||0),0);
+  const cats=["all",...new Set((items||[]).map(i=>i.category).filter(Boolean))];
+  const filtered=catFilter==="all"?(items||[]):(items||[]).filter(i=>i.category===catFilter);
+  const lowStock=(items||[]).filter(i=>Number(i.stock)<=Number(i.minStock||0)&&Number(i.stock)>0);
+  const outStock=(items||[]).filter(i=>Number(i.stock)===0);
+  const totalVal=(items||[]).reduce((t,i)=>t+Number(i.price||0)*Number(i.stock||0),0);
 
   return<div style={{padding:14}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
@@ -996,72 +966,39 @@ function InventoryPage({items,movements}){
         <Btn sm onClick={()=>{setF(EMPTY_ITEM);setEditing(null);setShow(true);}}>+ Ürün</Btn>
       </div>
     </div>
-
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
-      <StatCard label="Toplam Ürün Çeşidi" value={validItems.length}/>
+      <StatCard label="Toplam Ürün Çeşidi" value={(items||[]).length}/>
       <StatCard label="Stok Değeri" value={`${totalVal.toLocaleString("tr-TR")} ₺`} col={C.success}/>
     </div>
-
-    {outStock.length>0&&<Card accent={C.danger} style={{marginBottom:8}}>
-      <div style={{fontSize:12,fontWeight:600,color:C.danger,marginBottom:4}}>Stok Bitti</div>
-      <div style={{fontSize:12,color:C.textSub}}>{outStock.map(i=>i.name).join(", ")}</div>
-    </Card>}
-    {lowStock.length>0&&<Card accent={C.warning} style={{marginBottom:10}}>
-      <div style={{fontSize:12,fontWeight:600,color:C.warning,marginBottom:4}}>Kritik Stok Seviyesi</div>
-      <div style={{fontSize:12,color:C.textSub}}>{lowStock.map(i=>`${i.name} (${i.stock})`).join(", ")}</div>
-    </Card>}
-
+    {outStock.length>0&&<Card accent={C.danger} style={{marginBottom:8}}><div style={{fontSize:12,fontWeight:600,color:C.danger,marginBottom:4}}>Stok Bitti</div><div style={{fontSize:12,color:C.textSub}}>{outStock.map(i=>i.name).join(", ")}</div></Card>}
+    {lowStock.length>0&&<Card accent={C.warning} style={{marginBottom:10}}><div style={{fontSize:12,fontWeight:600,color:C.warning,marginBottom:4}}>Kritik Stok Seviyesi</div><div style={{fontSize:12,color:C.textSub}}>{lowStock.map(i=>`${i.name} (${i.stock})`).join(", ")}</div></Card>}
+    
     <TabBar tabs={["Ürün Listesi","Stok Hareketleri"]} active={tab} onChange={setTab}/>
-
+    
     {tab===0&&<div>
-      {cats.length>1&&<div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:10}}>
-        {cats.map(c=><button key={c} onClick={()=>setCatFilter(c)} style={{padding:"4px 12px",borderRadius:20,border:`1px solid ${catFilter===c?C.accent:C.border}`,background:catFilter===c?C.accentGlow:"transparent",color:catFilter===c?C.accent:C.textSub,cursor:"pointer",fontSize:11,fontWeight:catFilter===c?600:400,fontFamily:"inherit"}}>{c==="all"?"Tümü":c}</button>)}
-      </div>}
+      {cats.length>1&&<div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:10}}>{cats.map(c=><button key={c} onClick={()=>setCatFilter(c)} style={{padding:"4px 12px",borderRadius:20,border:`1px solid ${catFilter===c?C.accent:C.border}`,background:catFilter===c?C.accentGlow:"transparent",color:catFilter===c?C.accent:C.textSub,cursor:"pointer",fontSize:11,fontWeight:catFilter===c?600:400,fontFamily:"inherit"}}>{c==="all"?"Tümü":c}</button>)}</div>}
       {filtered.length===0&&<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>Ürün bulunamadı</div>}
-      {filtered.map(item=>(
-        <Card key={item.id} accent={Number(item.stock)===0?C.danger:(Number(item.stock)<=Number(item.minStock||0)?C.warning:undefined)}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
-            <div>
-              <div style={{fontWeight:700,fontSize:15}}>{item.name}</div>
-              {item.category&&<div style={{fontSize:11,color:C.textSub,marginTop:1}}>{item.category}</div>}
-              {item.supplier&&<div style={{fontSize:11,color:C.textMuted,marginTop:1}}>Tedarikçi: {item.supplier}</div>}
-            </div>
-            <div style={{textAlign:"right"}}>
-              <div style={{fontWeight:700,color:C.success,fontSize:14}}>{Number(item.price||0).toLocaleString("tr-TR")} ₺</div>
-              <div style={{fontSize:10,color:C.textMuted}}>birim fiyat</div>
-            </div>
+      {filtered.map(item=><Card key={item.id} accent={Number(item.stock)===0?C.danger:(Number(item.stock)<=Number(item.minStock||0)?C.warning:undefined)}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
+          <div><div style={{fontWeight:700,fontSize:15}}>{item.name}</div>{item.category&&<div style={{fontSize:11,color:C.textSub,marginTop:1}}>{item.category}</div>}</div>
+          <div style={{textAlign:"right"}}><div style={{fontWeight:700,color:C.success,fontSize:14}}>{Number(item.price||0).toLocaleString("tr-TR")} ₺</div></div>
+        </div>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+          <div style={{display:"flex",alignItems:"center",gap:12}}>
+            <button onClick={()=>adj(item.id,-1)} style={{width:28,height:28,borderRadius:6,border:`1px solid ${C.border}`,background:"transparent",color:C.danger,cursor:"pointer",fontSize:16,fontWeight:700}}>−</button>
+            <div style={{textAlign:"center", fontSize:22,fontWeight:800}}>{item.stock}</div>
+            <button onClick={()=>adj(item.id,1)} style={{width:28,height:28,borderRadius:6,border:`1px solid ${C.border}`,background:"transparent",color:C.success,cursor:"pointer",fontSize:16,fontWeight:700}}>+</button>
           </div>
-          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-            <div style={{display:"flex",alignItems:"center",gap:12}}>
-              <button onClick={()=>adj(item.id,-1)} style={{width:28,height:28,borderRadius:6,border:`1px solid ${C.border}`,background:"transparent",color:C.danger,cursor:"pointer",fontSize:16,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
-              <div style={{textAlign:"center"}}>
-                <div style={{fontSize:22,fontWeight:800,color:Number(item.stock)===0?C.danger:(Number(item.stock)<=Number(item.minStock||0)?C.warning:C.text)}}>{item.stock}</div>
-                <div style={{fontSize:10,color:C.textMuted}}>adet</div>
-              </div>
-              <button onClick={()=>adj(item.id,1)} style={{width:28,height:28,borderRadius:6,border:`1px solid ${C.border}`,background:"transparent",color:C.success,cursor:"pointer",fontSize:16,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
-            </div>
-            <div style={{textAlign:"right"}}>
-              <div style={{fontSize:13,fontWeight:700,color:C.accent}}>{(Number(item.price||0)*Number(item.stock||0)).toLocaleString("tr-TR")} ₺</div>
-              <div style={{fontSize:10,color:C.textMuted}}>toplam değer</div>
-            </div>
-          </div>
-          {item.minStock&&<div style={{fontSize:11,color:C.textMuted,marginBottom:8}}>Min. stok uyarı: {item.minStock} adet</div>}
-          <div style={{display:"flex",gap:8}}>
-            <Btn variant="secondary" sm onClick={()=>edit(item)} style={{flex:1}}>Düzenle</Btn>
-            <Btn variant="danger" sm onClick={()=>{if(confirm(`${item.name} silinsin mi?`))del(item.id);}}>Sil</Btn>
-          </div>
-        </Card>
-      ))}
+        </div>
+        <div style={{display:"flex",gap:8}}><Btn variant="secondary" sm onClick={()=>edit(item)} style={{flex:1}}>Düzenle</Btn><Btn variant="danger" sm onClick={()=>{if(confirm(`${item.name} silinsin mi?`))del(item.id);}}>Sil</Btn></div>
+      </Card>)}
     </div>}
-
+    
     {tab===1&&<div>
-      {validMovements.length===0?<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>Stok hareketi bulunmuyor</div>:
+      {(movements||[]).length===0?<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>Stok hareketi bulunmuyor</div>:
       <Card>
-        {validMovements.slice(0,50).map((m,i)=><div key={m.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:i===Math.min(validMovements.length,50)-1?"none":`1px solid ${C.border}`}}>
-          <div>
-            <div style={{fontSize:13,fontWeight:600}}>{m.itemName}</div>
-            <div style={{fontSize:11,color:C.textSub}}>{fmtDate(m.date)}{m.note?` · ${m.note}`:""}</div>
-          </div>
+        {(movements||[]).slice(0,50).map((m,i)=><div key={m.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:i===Math.min((movements||[]).length,50)-1?"none":`1px solid ${C.border}`}}>
+          <div><div style={{fontSize:13,fontWeight:600}}>{m.itemName}</div><div style={{fontSize:11,color:C.textSub}}>{fmtDate(m.date)}{m.note?` · ${m.note}`:""}</div></div>
           <span style={{fontWeight:700,fontSize:14,color:m.type==="in"?C.success:C.danger}}>{m.type==="in"?"+":"-"}{m.qty}</span>
         </div>)}
       </Card>}
@@ -1079,105 +1016,191 @@ function InventoryPage({items,movements}){
         <div style={{flex:1}}><Inp label="Tedarikçi" value={f.supplier} onChange={v=>u("supplier",v)}/></div>
       </div>
       <Inp label="Notlar" value={f.notes} onChange={v=>u("notes",v)} rows={2}/>
-      <div style={{display:"flex",gap:8,marginTop:8}}>
-        <Btn variant="secondary" onClick={()=>{setShow(false);setF(EMPTY_ITEM);}} style={{flex:1}}>İptal</Btn>
-        <Btn onClick={save} style={{flex:1}}>Kaydet</Btn>
-      </div>
+      <div style={{display:"flex",gap:8,marginTop:8}}><Btn variant="secondary" onClick={()=>{setShow(false);setF(EMPTY_ITEM);}} style={{flex:1}}>İptal</Btn><Btn onClick={save} style={{flex:1}}>Kaydet</Btn></div>
     </Modal>
 
     <Modal show={showMov} onClose={()=>setShowMov(false)} title="Stok Hareketi Ekle">
-      <Sel label="Ürün *" value={movForm.itemId} onChange={v=>setMovForm(p=>({...p,itemId:v}))} options={validItems.map(i=>({value:String(i.id),label:i.name}))}/>
+      <Sel label="Ürün *" value={movForm.itemId} onChange={v=>setMovForm(p=>({...p,itemId:v}))} options={(items||[]).map(i=>({value:String(i.id),label:i.name}))}/>
       <Sel label="İşlem Türü" value={movForm.type} onChange={v=>setMovForm(p=>({...p,type:v}))} options={[{value:"in",label:"Stok Girişi"},{value:"out",label:"Stok Çıkışı"}]}/>
       <div style={{display:"flex",gap:8}}>
         <div style={{flex:1}}><Inp label="Miktar" value={movForm.qty} onChange={v=>setMovForm(p=>({...p,qty:v}))} type="number"/></div>
         <div style={{flex:1}}><Inp label="Tarih" value={movForm.date} onChange={v=>setMovForm(p=>({...p,date:v}))} type="date"/></div>
       </div>
       <Inp label="Not" value={movForm.note} onChange={v=>setMovForm(p=>({...p,note:v}))} placeholder="Açıklama..."/>
-      <div style={{display:"flex",gap:8,marginTop:8}}>
-        <Btn variant="secondary" onClick={()=>setShowMov(false)} style={{flex:1}}>İptal</Btn>
-        <Btn onClick={addMovement} style={{flex:1}}>Kaydet</Btn>
-      </div>
+      <div style={{display:"flex",gap:8,marginTop:8}}><Btn variant="secondary" onClick={()=>setShowMov(false)} style={{flex:1}}>İptal</Btn><Btn onClick={addMovement} style={{flex:1}}>Kaydet</Btn></div>
     </Modal>
   </div>
 }
 
-function Dashboard({students,stockItems,expenses}){
-  const safeStudents = (students||[]).filter(s=>s && s.id);
-  const safeExpenses = (expenses||[]).filter(e=>e && e.id);
-  const validStock = (stockItems||[]).filter(i=>i && i.id);
+/* ═══════════════════════════════════════════════════════════════
+   YENİ: WHATSAPP YÖNETİM MERKEZİ
+═══════════════════════════════════════════════════════════════ */
+function WhatsAppPage({students, waGroupLink, setWaGroupLink}) {
+  const [linkInput, setLinkInput] = useState(waGroupLink || "");
+  const [saveMsg, setSaveMsg] = useState("");
 
-  const active=safeStudents.filter(s=>courseStatus(s)==="active");
-  const presentToday=safeStudents.filter(s=>(s.attendance||{})[TODAY]).length;
+  const activeStudents = (students||[]).filter(s => courseStatus(s) === "active" && s.guardianPhone1);
+
+  function saveLink() {
+    DB.set("waGroupLink", linkInput);
+    setWaGroupLink(linkInput);
+    setSaveMsg("Grup davet bağlantısı kaydedildi!");
+    setTimeout(() => setSaveMsg(""), 3000);
+  }
+
+  function sendInvite(student) {
+    if(!waGroupLink) { alert("Lütfen önce yukarıya WhatsApp grup bağlantınızı kaydedin."); return; }
+    const msg = `Sayın velimiz, ${student.name} isimli öğrencimizin antrenman ve duyuru takibi için kulübümüzün resmi WhatsApp grubuna aşağıdaki linkten katılabilirsiniz:\n\n${waGroupLink}`;
+    openWA(student.guardianPhone1, msg);
+  }
+
+  return <div style={{padding:14}}>
+    <SectionTitle>WhatsApp Entegrasyonu</SectionTitle>
+
+    <Card style={{marginBottom:16}}>
+      <div style={{display:"flex", alignItems:"center", gap:12, marginBottom:10}}>
+        <div style={{width:40, height:40, borderRadius:"50%", background:C.whatsappBg, display:"flex", alignItems:"center", justifyContent:"center", color:C.whatsapp}}>
+          <svg width={22} height={22} viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.482-1.46-1.656-1.758-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z M12 22C6.477 22 2 17.523 2 12c0-1.76.452-3.414 1.25-4.832L2 2l5.344 1.156C8.683 2.43 10.297 2 12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10z"/></svg>
+        </div>
+        <div>
+          <div style={{fontWeight:700, fontSize:15}}>WhatsApp Web Girişi</div>
+          <div style={{fontSize:11, color:C.textSub}}>Güvenlik nedeniyle işlemler yeni sekmede açılır.</div>
+        </div>
+      </div>
+      <Btn full style={{background:C.whatsapp, color:"#fff", border:"none"}} onClick={()=>window.open("https://web.whatsapp.com", "_blank")}>WhatsApp Web'i Aç</Btn>
+    </Card>
+
+    <SectionTitle>Grup Davet İşlemleri</SectionTitle>
+    <Card style={{marginBottom:16}}>
+      <div style={{fontSize:12, color:C.textSub, marginBottom:12, lineHeight:1.5}}>WhatsApp grubunuzun "Bağlantı ile davet et" seçeneğindeki linki buraya kaydedin. Ardından öğrencilere tek tıkla gruba katılma mesajı gönderebilirsiniz.</div>
+      <div style={{display:"flex", gap:8}}>
+        <input style={{flex:1, padding:"9px 11px", background:C.bg, border:`1px solid ${C.border}`, borderRadius:8, color:C.text, fontSize:13, outline:"none"}} value={linkInput} onChange={e=>setLinkInput(e.target.value)} placeholder="https://chat.whatsapp.com/..." />
+        <Btn onClick={saveLink}>Kaydet</Btn>
+      </div>
+      {saveMsg && <div style={{fontSize:12, color:C.success, marginTop:8, fontWeight:600}}>{saveMsg}</div>}
+    </Card>
+
+    {activeStudents.length > 0 && (
+      <div>
+        <div style={{fontSize:12, fontWeight:600, color:C.textSub, marginBottom:8, textTransform:"uppercase"}}>Grup Daveti Bekleyenler ({activeStudents.length})</div>
+        <Card>
+          {activeStudents.map((s, i) => (
+            <div key={s.id} style={{display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 0", borderBottom:i===activeStudents.length-1?"none":`1px solid ${C.borderLight}`}}>
+              <div>
+                <div style={{fontWeight:600, fontSize:14}}>{s.name}</div>
+                <div style={{fontSize:11, color:C.textMuted}}>Veli: {s.guardianPhone1}</div>
+              </div>
+              <Btn sm style={{background:C.whatsappBg, color:C.whatsapp, border:"none"}} onClick={()=>sendInvite(s)}>Davet Gönder</Btn>
+            </div>
+          ))}
+        </Card>
+      </div>
+    )}
+  </div>
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GELİŞMİŞ KURUMSAL DASHBOARD
+═══════════════════════════════════════════════════════════════ */
+function Dashboard({students,stockItems,expenses}){
+  const active=(students||[]).filter(s=>courseStatus(s)==="active");
+  const presentToday=(students||[]).filter(s=>(s.attendance||{})[TODAY]).length;
   
-  const totalRev=safeStudents.reduce((t,s)=>t+totalPaid(s),0);
-  const totalExp=safeExpenses.reduce((t,e)=>t+Number(e.amount||0),0);
+  const totalRev=(students||[]).reduce((t,s)=>t+totalPaid(s),0);
+  const totalExp=(expenses||[]).reduce((t,e)=>t+Number(e.amount||0),0);
   const netProfit = totalRev - totalExp;
 
-  const unpaid=active.filter(s=>totalPaid(s)<monthlyTotal(s)).length;
-  const endingSoon=active.filter(s=>{const d=daysLeft(s);return d>=0&&d<=14;}).sort((a,b)=>daysLeft(a)-daysLeft(b));
-  const outStock=validStock.filter(i=>Number(i.stock)===0);
+  // Özel Filtreler
+  const recentRegistrations = [...(students||[])].sort((a,b) => b.id - a.id).slice(0, 5);
+  const recentPay = (students||[]).flatMap(s=>(s.payments||[]).map(p=>({...p,studentName:s.name}))).sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
+  const endingSoon = active.filter(s=>{const d=daysLeft(s);return d>=0&&d<=14;}).sort((a,b)=>daysLeft(a)-daysLeft(b)).slice(0,5);
   
-  const foodWarnings = safeExpenses.filter(e => {
+  const foodWarnings = (expenses||[]).filter(e => {
     if(!e.isFood || !e.expiryDate) return false;
     const days = Math.ceil((new Date(e.expiryDate) - new Date(TODAY))/86400000);
     return days <= 7;
   }).sort((a,b)=>new Date(a.expiryDate)-new Date(b.expiryDate));
 
   return<div style={{padding:14}}>
-    <SectionTitle>Genel Bakış</SectionTitle>
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
-      <StatCard label="Toplam Öğrenci" value={safeStudents.length}/>
-      <StatCard label="Aktif Kurs" value={active.length}/>
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:16}}>
+      <StatCard label="Aktif Öğrenci" value={active.length}/>
       <StatCard label="Bugün Mevcut" value={`${presentToday} / ${active.length}`} col={C.success}/>
-      <StatCard label="Toplam Tahsilat" value={`${totalRev.toLocaleString("tr-TR")} ₺`} col={C.accent}/>
     </div>
 
+    {/* NET KAR ÖZETİ */}
     <Card accent={netProfit >= 0 ? C.success : C.danger} style={{marginBottom:16}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-        <div style={{fontSize:13, color:C.textSub, fontWeight:600}}>Net Kâr / Kasa Durumu</div>
-        <div style={{fontSize:22, fontWeight:800, color:netProfit >= 0 ? C.success : C.danger}}>
-          {netProfit >= 0 ? "+" : ""}{netProfit.toLocaleString("tr-TR")} ₺
-        </div>
+        <div style={{fontSize:13, color:C.textSub, fontWeight:600}}>Net Kasa (Kâr/Zarar)</div>
+        <div style={{fontSize:22, fontWeight:800, color:netProfit >= 0 ? C.success : C.danger}}>{netProfit >= 0 ? "+" : ""}{netProfit.toLocaleString("tr-TR")} ₺</div>
       </div>
       <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.textMuted}}>
-        <span>Tahsilat: {totalRev.toLocaleString("tr-TR")} ₺</span>
-        <span>Giderler: {totalExp.toLocaleString("tr-TR")} ₺</span>
-      </div>
-      <div style={{height:6, background:C.borderLight, borderRadius:3, marginTop:8, overflow:"hidden"}}>
-         <div style={{height:"100%", width:`${totalRev===0?0:Math.min(100,(totalRev/(totalRev+totalExp))*100)}%`, background:C.success, float:"left"}}></div>
-         <div style={{height:"100%", width:`${totalExp===0?0:Math.min(100,(totalExp/(totalRev+totalExp))*100)}%`, background:C.danger, float:"right"}}></div>
+        <span>Giren: {totalRev.toLocaleString("tr-TR")} ₺</span>
+        <span>Çıkan: {totalExp.toLocaleString("tr-TR")} ₺</span>
       </div>
     </Card>
 
-    {(unpaid>0||outStock.length>0||foodWarnings.length>0)&&<div style={{marginBottom:12}}>
+    {/* UYARILAR */}
+    {foodWarnings.length>0&&<div style={{marginBottom:12}}>
       {foodWarnings.map(f=>{
          const d = Math.ceil((new Date(f.expiryDate)-new Date(TODAY))/86400000);
          return <Card key={f.id} accent={d<0?C.danger:C.warning} style={{marginBottom:8}}>
-           <div style={{fontSize:13,fontWeight:600,color:d<0?C.danger:C.warning}}>
-             SKT Uyarısı: {f.title} ({d<0 ? "Tarihi Geçti!" : `${d} Gün Kaldı`})
-           </div>
+           <div style={{fontSize:13,fontWeight:600,color:d<0?C.danger:C.warning}}>⚠️ SKT Uyarısı: {f.title} ({d<0 ? "Tarihi Geçti!" : `${d} Gün Kaldı`})</div>
          </Card>
       })}
-      {unpaid>0&&<Card accent={C.danger} style={{marginBottom:8}}>
-        <div style={{fontSize:13,fontWeight:600,color:C.danger}}>{unpaid} aktif öğrencinin eksik ödemesi bulunuyor</div>
-      </Card>}
-      {outStock.length>0&&<Card accent={C.warning}>
-        <div style={{fontSize:13,fontWeight:600,color:C.warning}}>Stok bitti: {outStock.map(i=>i.name).join(", ")}</div>
-      </Card>}
     </div>}
 
-    {endingSoon.length>0&&<>
-      <SectionTitle>Kursu Bitenler (14 gün)</SectionTitle>
-      {endingSoon.map(s=><Card key={s.id} accent={C.warning}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <div>
-            <div style={{fontWeight:600,fontSize:14}}>{s.name}</div>
-            <div style={{fontSize:11,color:C.textSub,marginTop:2}}>Bitiş: {fmtDate(s.courseEnd)}</div>
+    {/* KURUMSAL TABLO: SON KAYITLAR */}
+    <SectionTitle>Son Kayıt Olanlar</SectionTitle>
+    <Card style={{padding:"8px 14px"}}>
+      <div className="data-row data-header">
+        <div>Öğrenci Adı</div><div>Kayıt Trh.</div><div className="data-col-right">Grup</div>
+      </div>
+      {recentRegistrations.length === 0 ? <div style={{padding:"10px 0", fontSize:12, color:C.textMuted, textAlign:"center"}}>Kayıt yok.</div> :
+        recentRegistrations.map(s => (
+          <div className="data-row" key={`reg-${s.id}`}>
+            <div className="data-col" style={{fontWeight:600}}>{s.name}</div>
+            <div className="data-col data-col-sub">{fmtDate(s.courseStart)}</div>
+            <div className="data-col data-col-right" style={{color:C.accent}}>{s.groupName || "-"}</div>
           </div>
-          <span style={{color:C.warning,fontWeight:700,fontSize:13}}>{daysLeft(s)} gün</span>
-        </div>
-      </Card>)}
-    </>}
+        ))
+      }
+    </Card>
+
+    {/* KURUMSAL TABLO: SON ÖDEMELER */}
+    <SectionTitle>Son Ödemeler</SectionTitle>
+    <Card style={{padding:"8px 14px"}}>
+      <div className="data-row data-header">
+        <div>Öğrenci Adı</div><div>İşlem Trh.</div><div className="data-col-right">Tutar</div>
+      </div>
+      {recentPay.length === 0 ? <div style={{padding:"10px 0", fontSize:12, color:C.textMuted, textAlign:"center"}}>Ödeme kaydı yok.</div> :
+        recentPay.map((p, i) => (
+          <div className="data-row" key={`pay-${i}`}>
+            <div className="data-col" style={{fontWeight:600}}>{p.studentName}</div>
+            <div className="data-col data-col-sub">{fmtDate(p.date)}</div>
+            <div className="data-col data-col-right" style={{color:C.success}}>+{Number(p.amount).toLocaleString("tr-TR")} ₺</div>
+          </div>
+        ))
+      }
+    </Card>
+
+    {/* KURUMSAL TABLO: BİTİŞİ YAKLAŞANLAR */}
+    {endingSoon.length > 0 && (
+      <>
+        <SectionTitle>Kayıt Bitişi Yaklaşanlar</SectionTitle>
+        <Card style={{padding:"8px 14px", border:`1px solid ${C.warning}40`}}>
+          <div className="data-row data-header">
+            <div>Öğrenci Adı</div><div>Bitiş Trh.</div><div className="data-col-right">Kalan</div>
+          </div>
+          {endingSoon.map(s => (
+            <div className="data-row" key={`end-${s.id}`}>
+              <div className="data-col" style={{fontWeight:600}}>{s.name}</div>
+              <div className="data-col data-col-sub">{fmtDate(s.courseEnd)}</div>
+              <div className="data-col data-col-right" style={{color:C.warning}}>{daysLeft(s)} Gün</div>
+            </div>
+          ))}
+        </Card>
+      </>
+    )}
   </div>
 }
 
@@ -1201,21 +1224,14 @@ function SettingsPage({navItems, clubName, logoUrl, themeColor, sidebarColor, ca
   const [secMsg, setSecMsg] = useState(null);
 
   useEffect(() => {
-    setNameVal(clubName);
-    setLogoVal(logoUrl);
-    setColorVal(themeColor);
-    setSidebarColorVal(sidebarColor);
-    setCardColorVal(cardColor);
+    setNameVal(clubName); setLogoVal(logoUrl); setColorVal(themeColor);
+    setSidebarColorVal(sidebarColor); setCardColorVal(cardColor);
   }, [clubName, logoUrl, themeColor, sidebarColor, cardColor]);
 
   function saveGeneral(){
-    DB.set("clubName", nameVal);
-    DB.set("logoUrl", logoVal);
-    DB.set("themeColor", colorVal);
-    DB.set("sidebarColor", sidebarColorVal);
-    DB.set("cardColor", cardColorVal);
-    setSaveMsg("Ayarlar başarıyla kaydedildi.");
-    setTimeout(()=>setSaveMsg(""), 3000);
+    DB.set("clubName", nameVal); DB.set("logoUrl", logoVal); DB.set("themeColor", colorVal);
+    DB.set("sidebarColor", sidebarColorVal); DB.set("cardColor", cardColorVal);
+    setSaveMsg("Ayarlar başarıyla kaydedildi."); setTimeout(()=>setSaveMsg(""), 3000);
   }
 
   function changePin(){
@@ -1223,16 +1239,10 @@ function SettingsPage({navItems, clubName, logoUrl, themeColor, sidebarColor, ca
     if(newPin.length !== 4) { setSecMsg({type:"error", text:"Yeni PIN 4 haneli olmalı!"}); return; }
     if(newPin !== confirmPin) { setSecMsg({type:"error", text:"Yeni PIN'ler eşleşmiyor!"}); return; }
     if(oldPin === newPin) { setSecMsg({type:"error", text:"Yeni PIN eskisiyle aynı olamaz!"}); return; }
-    
-    if(secAnswer.trim().toLowerCase() !== clubName.trim().toLowerCase()) { 
-      setSecMsg({type:"error", text:"Güvenlik doğrulaması başarısız! Kulüp adını hatalı girdiniz."}); 
-      return; 
-    }
-
+    if(secAnswer.trim().toLowerCase() !== clubName.trim().toLowerCase()) { setSecMsg({type:"error", text:"Güvenlik doğrulaması başarısız!"}); return; }
     DB.set("pinCode", newPin);
     setSecMsg({type:"success", text:"PIN başarıyla güncellendi!"});
-    setOldPin(""); setNewPin(""); setConfirmPin(""); setSecAnswer("");
-    setTimeout(()=>setSecMsg(null), 3000);
+    setOldPin(""); setNewPin(""); setConfirmPin(""); setSecAnswer(""); setTimeout(()=>setSecMsg(null), 3000);
   }
 
   function moveUp(i){if(i===0)return;const n=[...navItems];[n[i-1],n[i]]=[n[i],n[i-1]];DB.set("navItems",n);}
@@ -1240,16 +1250,10 @@ function SettingsPage({navItems, clubName, logoUrl, themeColor, sidebarColor, ca
   function toggleVis(id){const n=navItems.map(t=>t.id===id?{...t,visible:!t.visible}:t);DB.set("navItems",n);}
   function editLabel(id,label){const n=navItems.map(t=>t.id===id?{...t,label}:t);DB.set("navItems",n);}
   function resetAll(){if(!confirm("Menü ayarları sıfırlansın mı?"))return;DB.set("navItems",NAV_ITEMS);}
-  
-  function resetColors(){
-    setColorVal("#070D1A");
-    setSidebarColorVal("#090F1E");
-    setCardColorVal("#101E35");
-  }
+  function resetColors(){setColorVal("#070D1A"); setSidebarColorVal("#090F1E"); setCardColorVal("#101E35");}
 
   return<div style={{padding:14}}>
     <TabBar tabs={["Genel & Görünüm", "Menü Düzenleme", "Güvenlik"]} active={tab} onChange={setTab}/>
-
     {tab === 0 && (
       <div>
         <SectionTitle>Genel Ayarlar</SectionTitle>
@@ -1257,46 +1261,27 @@ function SettingsPage({navItems, clubName, logoUrl, themeColor, sidebarColor, ca
           <Inp label="Kulüp Adı" value={nameVal} onChange={setNameVal} placeholder="Örn: AquaClub Pro"/>
           <Inp label="Logo URL (İsteğe Bağlı)" value={logoVal} onChange={setLogoVal} placeholder="Örn: https://site.com/logo.png"/>
         </Card>
-
         <SectionTitle action={<Btn sm variant="ghost" onClick={resetColors}>Varsayılana Dön</Btn>}>Renk Teması</SectionTitle>
         <Card>
           <div style={{display:"grid", gridTemplateColumns:"1fr", gap:12}}>
-            
             <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
-              <div>
-                <div style={{fontSize:13, fontWeight:600}}>Ana Arkaplan</div>
-                <div style={{fontSize:11, color:C.textMuted}}>Orta sayfa alanı</div>
-              </div>
-              <input type="color" value={colorVal} onChange={e=>setColorVal(e.target.value)} 
-                style={{width:44, height:44, padding:0, border:`2px solid ${C.borderLight}`, borderRadius:8, cursor:"pointer", background:"none"}}/>
+              <div><div style={{fontSize:13, fontWeight:600}}>Ana Arkaplan</div><div style={{fontSize:11, color:C.textMuted}}>Orta sayfa alanı</div></div>
+              <input type="color" value={colorVal} onChange={e=>setColorVal(e.target.value)} style={{width:44, height:44, padding:0, border:`2px solid ${C.borderLight}`, borderRadius:8, cursor:"pointer", background:"none"}}/>
             </div>
-            
             <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
-              <div>
-                <div style={{fontSize:13, fontWeight:600}}>Yan Menü (Sidebar)</div>
-                <div style={{fontSize:11, color:C.textMuted}}>Sol menü alanı</div>
-              </div>
-              <input type="color" value={sidebarColorVal} onChange={e=>setSidebarColorVal(e.target.value)} 
-                style={{width:44, height:44, padding:0, border:`2px solid ${C.borderLight}`, borderRadius:8, cursor:"pointer", background:"none"}}/>
+              <div><div style={{fontSize:13, fontWeight:600}}>Yan Menü (Sidebar)</div><div style={{fontSize:11, color:C.textMuted}}>Sol menü alanı</div></div>
+              <input type="color" value={sidebarColorVal} onChange={e=>setSidebarColorVal(e.target.value)} style={{width:44, height:44, padding:0, border:`2px solid ${C.borderLight}`, borderRadius:8, cursor:"pointer", background:"none"}}/>
             </div>
-
             <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
-              <div>
-                <div style={{fontSize:13, fontWeight:600}}>Kart / Kutu Rengi</div>
-                <div style={{fontSize:11, color:C.textMuted}}>Veri kutucukları ve Modallar</div>
-              </div>
-              <input type="color" value={cardColorVal} onChange={e=>setCardColorVal(e.target.value)} 
-                style={{width:44, height:44, padding:0, border:`2px solid ${C.borderLight}`, borderRadius:8, cursor:"pointer", background:"none"}}/>
+              <div><div style={{fontSize:13, fontWeight:600}}>Kart / Kutu Rengi</div><div style={{fontSize:11, color:C.textMuted}}>Veri kutucukları</div></div>
+              <input type="color" value={cardColorVal} onChange={e=>setCardColorVal(e.target.value)} style={{width:44, height:44, padding:0, border:`2px solid ${C.borderLight}`, borderRadius:8, cursor:"pointer", background:"none"}}/>
             </div>
-
           </div>
         </Card>
-
         <Btn full onClick={saveGeneral} style={{marginTop:8}}>Değişiklikleri Kaydet</Btn>
         {saveMsg && <div style={{marginTop:12, fontSize:13, color:C.success, textAlign:"center", fontWeight:600}}>{saveMsg}</div>}
       </div>
     )}
-
     {tab === 1 && (
       <div>
         <SectionTitle>Menü Özelleştirme</SectionTitle>
@@ -1314,28 +1299,21 @@ function SettingsPage({navItems, clubName, logoUrl, themeColor, sidebarColor, ca
         <Btn variant="danger" full onClick={resetAll} style={{marginTop:4}}>Menü Ayarlarını Sıfırla</Btn>
       </div>
     )}
-
     {tab === 2 && (
       <div>
         <SectionTitle>Güvenlik Ayarları (PIN Değiştirme)</SectionTitle>
         <Card>
-          <div style={{fontSize:12,color:C.textSub,marginBottom:14,lineHeight:1.6}}>Panele giriş için kullandığınız 4 haneli PIN kodunu değiştirin.</div>
-          
           <Inp label="Mevcut PIN" value={oldPin} onChange={setOldPin} type="password" placeholder="••••" style={{letterSpacing:8, fontSize:16}}/>
-          
           <div style={{display:"flex", gap:8}}>
             <Inp label="Yeni PIN" value={newPin} onChange={setNewPin} type="password" placeholder="••••" half style={{letterSpacing:8, fontSize:16}}/>
             <Inp label="Yeni PIN (Tekrar)" value={confirmPin} onChange={setConfirmPin} type="password" placeholder="••••" half style={{letterSpacing:8, fontSize:16}}/>
           </div>
-          
           <div style={{height:1,background:C.border,margin:"12px 0 16px"}}/>
-          
           <div style={{background:C.warningBg, border:`1px solid ${C.warning}40`, padding:12, borderRadius:8, marginBottom:12}}>
             <div style={{fontSize:11, color:C.warning, fontWeight:700, marginBottom:4}}>GÜVENLİK DOĞRULAMASI</div>
             <div style={{fontSize:12, color:C.textSub, marginBottom:8}}>Yetkisiz işlemi önlemek için onay sorusunu yanıtlayın. Lütfen kulübünüzün şu anki adını (<strong style={{color:C.text}}>{clubName}</strong>) kutucuğa yazın.</div>
             <Inp value={secAnswer} onChange={setSecAnswer} placeholder="Kulüp adını yazın..." />
           </div>
-
           <Btn full onClick={changePin}>PIN Kodunu Güncelle</Btn>
           {secMsg && <div style={{marginTop:12, fontSize:13, color:secMsg.type==="error"?C.danger:C.success, textAlign:"center", fontWeight:600}}>{secMsg.text}</div>}
         </Card>
@@ -1351,7 +1329,6 @@ function App(){
   const [isAuthenticated, setIsAuthenticated] = useState(() => sessionStorage.getItem("aqua_auth") === "1");
   const [isDbLoaded, setIsDbLoaded] = useState(false);
 
-  // Başlangıçta boş state
   const [students,setStudents]=useState([]);
   const [staff,setStaff]=useState([]);
   const [stockItems,setStockItems]=useState([]);
@@ -1366,6 +1343,7 @@ function App(){
   const [sidebarColor,setSidebarColor]=useState("#090F1E");
   const [cardColor,setCardColor]=useState("#101E35");
   const [logoUrl,setLogoUrl]=useState("");
+  const [waGroupLink,setWaGroupLink]=useState("");
   
   const [activeTab,setActiveTab]=useState("dashboard");
   const [sidebarOpen,setSidebarOpen]=useState(false);
@@ -1382,21 +1360,30 @@ function App(){
     const unsub = db.collection("appData").doc("main").onSnapshot((doc) => {
       if (doc.exists) {
         const d = doc.data();
-        
-        // Zırhlı atamalar tamamen kaldırıldı, doğrudan sade atama yapıldı.
         if (d.students) setStudents(d.students);
         if (d.staff) setStaff(d.staff);
         if (d.stock) setStockItems(d.stock);
         if (d.movements) setMovements(d.movements);
         if (d.expenses) setExpenses(d.expenses);
-        
         if (d.clubName) setClubName(d.clubName);
         if (d.pinCode) setPinCode(d.pinCode);
         if (d.themeColor) setThemeColor(d.themeColor);
         if (d.sidebarColor) setSidebarColor(d.sidebarColor);
         if (d.cardColor) setCardColor(d.cardColor);
         if (d.logoUrl) setLogoUrl(d.logoUrl);
-        if (d.navItems) setNavItems(d.navItems);
+        if (d.waGroupLink) setWaGroupLink(d.waGroupLink);
+        
+        if (d.navItems) {
+           let loadedNav = d.navItems;
+           let updated = false;
+           NAV_ITEMS.forEach(baseItem => {
+              if(!loadedNav.find(n => n.id === baseItem.id)) {
+                 loadedNav.push(baseItem); updated = true;
+              }
+           });
+           setNavItems(loadedNav);
+           if(updated) DB.set("navItems", loadedNav);
+        }
       }
       setIsDbLoaded(true);
     }, (error) => {
@@ -1435,7 +1422,6 @@ function App(){
   const sidebar=<div style={{width:C.sidebarW,background:"var(--sidebar-bg)",borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",height:"100vh",position:"sticky",top:0,flexShrink:0}}>
     <div style={{padding:"20px 16px 16px",borderBottom:`1px solid ${C.border}`}}>
       <div style={{display:"flex",alignItems:"center",gap:10}}>
-        
         <div style={{width:34,height:34,borderRadius:9,background:`linear-gradient(135deg,${C.accent},#38BDF8)`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,overflow:"hidden"}}>
           {logoUrl ? <img src={logoUrl} alt="Logo" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.style.display='none'}}/> :
           <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1443,7 +1429,6 @@ function App(){
             <path d="M2 18c2-4 4-4 6 0s4 4 6 0 4-4 6 0"/>
           </svg>}
         </div>
-
         <div>
           <div style={{fontSize:14,fontWeight:800,letterSpacing:-0.3}}>{clubName}</div>
           <div style={{fontSize:10,color:C.textMuted,fontWeight:500}}>Yönetim Paneli</div>
@@ -1454,7 +1439,7 @@ function App(){
       {visibleNav.map(item=><NavItem key={item.id} item={item}/>)}
     </div>
     <div style={{padding:"12px 16px",borderTop:`1px solid ${C.border}`}}>
-      <div style={{fontSize:11,color:C.textMuted,fontWeight:500}}>AquaClub Pro v2.5</div>
+      <div style={{fontSize:11,color:C.textMuted,fontWeight:500}}>AquaClub Pro v2.6</div>
     </div>
   </div>;
 
@@ -1483,7 +1468,7 @@ function App(){
         {activeTab==="expenses"&&<ExpensesPage expenses={expenses}/>}
         {activeTab==="staff"&&<StaffPage staff={staff}/>}
         {activeTab==="inventory"&&<InventoryPage items={stockItems} movements={movements}/>}
-        
+        {activeTab==="whatsapp"&&<WhatsAppPage students={students} waGroupLink={waGroupLink} setWaGroupLink={setWaGroupLink} />}
         {activeTab==="settings"&&
           <SettingsPage 
             navItems={navItems} clubName={clubName} logoUrl={logoUrl} 
@@ -1499,9 +1484,6 @@ function App(){
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
-</script>
-<script>
-if('serviceWorker'in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));}
 </script>
 </body>
 </html>

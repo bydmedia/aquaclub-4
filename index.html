@@ -58,7 +58,6 @@ const firebaseConfig = {
   measurementId: "G-2YQYQ8PHMG"
 };
 
-// Firebase'i Başlat
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
@@ -80,11 +79,20 @@ const C={
 };
 
 /* ═══════════════════════════════════════════════════════════════
-   BULUT VERİTABANI BAĞLANTISI
+   BULUT VERİTABANI BAĞLANTISI VE ZIRHLI FİLTRE
 ═══════════════════════════════════════════════════════════════ */
+// Çökmeyi engelleyen hayat kurtarıcı fonksiyon. Boş/null değerleri siler.
+function safeArr(val) { 
+  if (!val) return [];
+  const arr = Array.isArray(val) ? val : Object.values(val);
+  return arr.filter(item => item !== null && item !== undefined);
+}
+
 const DB={
   set:(k,v)=>{
-    db.collection("appData").doc("main").set({ [k]: v }, { merge: true })
+    // Veriyi kaydederken de bozuklukları temizle
+    const cleanV = Array.isArray(v) ? v.filter(i => i !== null && i !== undefined) : v;
+    db.collection("appData").doc("main").set({ [k]: cleanV }, { merge: true })
       .catch(err => console.error("Firebase kayıt hatası:", err));
   }
 };
@@ -97,6 +105,7 @@ const NAV_ITEMS=[
   {id:"students",label:"Öğrenciler",icon:"M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 7a4 4 0 100 8 4 4 0 000-8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"},
   {id:"attendance",label:"Yoklama",icon:"M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"},
   {id:"payments",label:"Ödemeler",icon:"M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"},
+  {id:"expenses",label:"Giderler",icon:"M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"},
   {id:"staff",label:"Personel",icon:"M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197"},
   {id:"inventory",label:"Envanter",icon:"M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"},
   {id:"settings",label:"Ayarlar",icon:"M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"},
@@ -107,22 +116,13 @@ const DAYS_FULL=["Pazar","Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cu
 const TODAY=new Date().toISOString().split("T")[0];
 
 /* ═══════════════════════════════════════════════════════════════
-   UTILS (Güvenli Veri Çekme, WhatsApp ve Excel)
+   UTILS 
 ═══════════════════════════════════════════════════════════════ */
 function fmtDate(d){if(!d)return"—";const[y,m,day]=d.split("-");return`${day}.${m}.${y}`}
 
-// GÜVENLİK ZIRHI: Firebase dizileri obje olarak kaydederse onları onarır
-function safeArr(val) { return Array.isArray(val) ? val : Object.values(val || {}); }
-
-function totalPaid(s){
-  return safeArr(s.payments).reduce((t,p)=>t+Number(p.amount||0),0);
-}
-function equipmentTotal(s){
-  return safeArr(s.equipment).reduce((t,e)=>t+Number(e.price||0),0);
-}
-function monthlyTotal(s){
-  return Number(s.monthlyFee||0)-Number(s.discount||0)+equipmentTotal(s)+(s.hasTransport?Number(s.transportFee||0):0);
-}
+function totalPaid(s){return safeArr(s.payments).reduce((t,p)=>t+Number(p.amount||0),0);}
+function equipmentTotal(s){return safeArr(s.equipment).reduce((t,e)=>t+Number(e.price||0),0);}
+function monthlyTotal(s){return Number(s.monthlyFee||0)-Number(s.discount||0)+equipmentTotal(s)+(s.hasTransport?Number(s.transportFee||0):0);}
 function courseStatus(s){
   if(!s.courseStart||!s.courseEnd)return"unknown";
   const now=new Date(TODAY),st=new Date(s.courseStart),en=new Date(s.courseEnd);
@@ -152,7 +152,7 @@ function openWA(phone, text) {
 
 // Excel (CSV) Çıktı
 function exportCSV(filename, headers, rows) {
-  const bom = "\uFEFF"; // Türkçe karakter (UTF-8) uyumu
+  const bom = "\uFEFF"; 
   const csv = [headers.join(","), ...rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(","))].join("\n");
   const blob = new Blob([bom + csv], { type: "text/csv;charset=utf-8;" });
   const link = document.createElement("a");
@@ -478,14 +478,14 @@ function StudentDetail({student,onBack,students,stockItems}){
   const safeEqs = safeArr(student.equipment);
   const safeDays = safeArr(student.weekDays);
 
-  function save(f){const n=students.map(s=>s.id===student.id?{...s,...f,id:s.id}:s);DB.set("students",n);setEditing(false);}
+  function save(f){const n=safeArr(students).map(s=>s.id===student.id?{...s,...f,id:s.id}:s);DB.set("students",n);setEditing(false);}
   function addPay(){
     if(!payForm.amount)return;
-    const n=students.map(s=>s.id===student.id?{...s,payments:[...safeArr(s.payments),{id:Date.now(),...payForm,amount:Number(payForm.amount)}]}:s);
+    const n=safeArr(students).map(s=>s.id===student.id?{...s,payments:[...safeArr(s.payments),{id:Date.now(),...payForm,amount:Number(payForm.amount)}]}:s);
     DB.set("students",n);
     setPayForm({amount:"",date:TODAY,note:""});setShowPay(false);
   }
-  function delPay(pid){const n=students.map(s=>s.id===student.id?{...s,payments:safeArr(s.payments).filter(p=>p.id!==pid)}:s);DB.set("students",n);}
+  function delPay(pid){const n=safeArr(students).map(s=>s.id===student.id?{...s,payments:safeArr(s.payments).filter(p=>p.id!==pid)}:s);DB.set("students",n);}
 
   if(editing)return<div style={{padding:14}}>
     <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
@@ -612,7 +612,7 @@ function StudentDetail({student,onBack,students,stockItems}){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   PAGES (STUDENTS, ATTENDANCE, PAYMENTS, STAFF, INVENTORY)
+   PAGES
 ═══════════════════════════════════════════════════════════════ */
 function StudentsPage({students,stockItems}){
   const [search,setSearch]=useState("");
@@ -621,17 +621,17 @@ function StudentsPage({students,stockItems}){
   const [statusFilter,setStatusFilter]=useState("all");
   const [groupFilter,setGroupFilter]=useState("all");
 
-  const student=detailId?students.find(s=>s.id===detailId):null;
+  const safeStudents = safeArr(students);
+  const student=detailId?safeStudents.find(s=>s.id===detailId):null;
 
   function save(f){
     let n;
-    if(f.id){n=students.map(s=>s.id===f.id?{...f}:s);}
-    else{n=[...students,{...f,id:Date.now(),payments:[],attendance:{},equipment:safeArr(f.equipment)}];}
+    if(f.id){n=safeStudents.map(s=>s.id===f.id?{...f}:s);}
+    else{n=[...safeStudents,{...f,id:Date.now(),payments:[],attendance:{},equipment:safeArr(f.equipment)}];}
     DB.set("students",n);setShowAdd(false);
   }
-  function del(id){const n=students.filter(s=>s.id!==id);DB.set("students",n);setDetailId(null);}
+  function del(id){const n=safeStudents.filter(s=>s.id!==id);DB.set("students",n);setDetailId(null);}
 
-  // EXCEL ÇIKTISI
   function downloadExcel() {
     const headers = ["Ad Soyad", "Grup", "Veli", "Veli Tel", "Bitis Tarihi", "Aylik Ucret (TL)", "Odenen (TL)", "Kalan Borc (TL)"];
     const rows = filtered.map(s => {
@@ -642,9 +642,9 @@ function StudentsPage({students,stockItems}){
     exportCSV("Ogrenciler_Listesi", headers, rows);
   }
 
-  const groups=["all",...new Set(students.map(s=>s.groupName).filter(Boolean))];
+  const groups=["all",...new Set(safeStudents.map(s=>s.groupName).filter(Boolean))];
 
-  const filtered=students.filter(s=>{
+  const filtered=safeStudents.filter(s=>{
     if(!s.name.toLowerCase().includes(search.toLowerCase()))return false;
     if(statusFilter==="active"&&courseStatus(s)!=="active")return false;
     if(statusFilter==="ended"&&courseStatus(s)!=="ended")return false;
@@ -654,7 +654,7 @@ function StudentsPage({students,stockItems}){
     return true;
   });
 
-  if(student)return<StudentDetail student={student} onBack={()=>setDetailId(null)} students={students} stockItems={stockItems}/>;
+  if(student)return<StudentDetail student={student} onBack={()=>setDetailId(null)} students={safeStudents} stockItems={stockItems}/>;
 
   return<div style={{padding:14}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
@@ -708,18 +708,18 @@ function StudentsPage({students,stockItems}){
 }
 
 function AttendancePage({students}){
+  const safeStudents = safeArr(students);
   const [date,setDate]=useState(TODAY);
   const [y, m, d] = date.split('-');
   const selectedDayIndex = new Date(y, m - 1, d).getDay();
-  const active=students.filter(s=>courseStatus(s)==="active" && safeArr(s.weekDays).includes(selectedDayIndex));
+  const active=safeStudents.filter(s=>courseStatus(s)==="active" && safeArr(s.weekDays).includes(selectedDayIndex));
   const present=active.filter(s=>(s.attendance||{})[date]).length;
 
   function toggle(id,val){
-    const n=students.map(s=>{if(s.id!==id)return s;const att={...s.attendance};if(val)att[date]=true;else delete att[date];return{...s,attendance:att}});
+    const n=safeStudents.map(s=>{if(s.id!==id)return s;const att={...s.attendance};if(val)att[date]=true;else delete att[date];return{...s,attendance:att}});
     DB.set("students",n);
   }
 
-  // EXCEL ÇIKTISI
   function downloadExcel() {
     const headers = ["Ad Soyad", "Grup", "Yoklama Durumu"];
     const rows = active.map(s => [s.name, s.groupName||"-", (s.attendance||{})[date] ? "Katildi" : "Katilmadi"]);
@@ -747,15 +747,15 @@ function AttendancePage({students}){
 }
 
 function PaymentsPage({students}){
-  const all=students.flatMap(s=>safeArr(s.payments).map(p=>({...p,studentName:s.name}))).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const safeStudents = safeArr(students);
+  const all=safeStudents.flatMap(s=>safeArr(s.payments).map(p=>({...p,studentName:s.name}))).sort((a,b)=>new Date(b.date)-new Date(a.date));
   const total=all.reduce((t,p)=>t+Number(p.amount),0);
   const thisMonth=all.filter(p=>p.date&&p.date.startsWith(TODAY.slice(0,7))).reduce((t,p)=>t+Number(p.amount),0);
   
-  const unpaid = students
+  const unpaid = safeStudents
     .filter(s => courseStatus(s) === "active" && totalPaid(s) < monthlyTotal(s))
     .sort((a, b) => new Date(a.courseStart) - new Date(b.courseStart));
 
-  // EXCEL ÇIKTISI
   function downloadExcel() {
     const headers = ["Ogrenci Ad Soyad", "Tutar (TL)", "Islem Tarihi", "Not"];
     const rows = all.map(p => [p.studentName, p.amount, fmtDate(p.date), p.note||"-"]);
@@ -808,20 +808,123 @@ function PaymentsPage({students}){
   </div>
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   YENİ EKLENEN: GİDERLER (EXPENSES)
+═══════════════════════════════════════════════════════════════ */
+const EMPTY_EXPENSE={id:null, title:"", amount:"", date:TODAY, category:"", isFood:false, expiryDate:"", note:"", qty:""};
+const EXP_CATS=["Fatura", "Maaş", "Kira", "Gıda", "Ekipman/Malzeme", "Temizlik", "Ulaşım", "Diğer"];
+
+function ExpensesPage({expenses}){
+  const safeExpenses = safeArr(expenses);
+  const [show,setShow]=useState(false);
+  const [f,setF]=useState(EMPTY_EXPENSE);
+  const [filterMonth,setFilterMonth]=useState(TODAY.slice(0,7)); 
+  
+  const u=(k,v)=>setF(p=>({...p,[k]:v}));
+
+  function save(){
+    if(!f.title.trim() || !f.amount)return;
+    const n = f.id ? safeExpenses.map(e=>e.id===f.id?{...f}:e) : [...safeExpenses,{...f,id:Date.now()}];
+    DB.set("expenses", n);
+    setShow(false); setF(EMPTY_EXPENSE);
+  }
+  function del(id){const n=safeExpenses.filter(e=>e.id!==id);DB.set("expenses",n);}
+  function edit(exp){setF({...exp});setShow(true);}
+
+  function downloadExcel() {
+    const headers = ["Gider Adi", "Miktar/Adet", "Kategori", "Tutar (TL)", "Islem Tarihi", "Gida mi?", "SKT", "Not"];
+    const rows = filtered.map(e => [e.title, e.qty||"-", e.category||"-", e.amount, fmtDate(e.date), e.isFood?"Evet":"Hayir", e.expiryDate?fmtDate(e.expiryDate):"-", e.note||"-"]);
+    exportCSV(`Giderler_${filterMonth}`, headers, rows);
+  }
+
+  const filtered = safeExpenses.filter(e => e.date && e.date.startsWith(filterMonth)).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const totalExp = filtered.reduce((t,e)=>t+Number(e.amount),0);
+
+  return<div style={{padding:14}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+      <div style={{fontSize:11,fontWeight:700,color:C.accent,textTransform:"uppercase",letterSpacing:1}}>Gider & Harcama Takibi</div>
+      <div style={{display:"flex", gap:6}}>
+        <Btn sm variant="secondary" onClick={downloadExcel}>⬇️ Excel</Btn>
+        <Btn sm onClick={()=>{setF(EMPTY_EXPENSE);setShow(true);}}>+ Gider</Btn>
+      </div>
+    </div>
+
+    <div style={{display:"flex",gap:10,marginBottom:12}}>
+      <Inp label="Ay Seçimi" type="month" value={filterMonth} onChange={setFilterMonth} style={{flex:1}}/>
+      <StatCard label="Aylık Toplam Gider" value={`${totalExp.toLocaleString("tr-TR")} ₺`} col={C.danger} span2/>
+    </div>
+
+    {filtered.length===0&&<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>Seçili ay için gider kaydı bulunamadı</div>}
+
+    {filtered.map(e=><Card key={e.id} accent={e.isFood?C.warning:undefined}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+        <div>
+          <div style={{fontWeight:700,fontSize:15}}>{e.title}</div>
+          <div style={{fontSize:11,color:C.textSub,marginTop:2}}>{e.category||"Kategori Yok"} • {fmtDate(e.date)}</div>
+          {e.qty && <div style={{fontSize:11,color:C.textMuted}}>Miktar: {e.qty}</div>}
+        </div>
+        <span style={{fontSize:16,fontWeight:800,color:C.danger}}>-{Number(e.amount).toLocaleString("tr-TR")} ₺</span>
+      </div>
+      
+      {e.isFood && e.expiryDate && (
+        <div style={{fontSize:11, padding:"4px 8px", background:C.warningBg, color:C.warning, borderRadius:4, marginBottom:8, display:"inline-block"}}>
+          SKT: {fmtDate(e.expiryDate)}
+        </div>
+      )}
+      
+      {e.note && <div style={{fontSize:12,color:C.textSub,marginBottom:8}}>{e.note}</div>}
+
+      <div style={{display:"flex",gap:8}}>
+        <Btn variant="secondary" sm onClick={()=>edit(e)} style={{flex:1}}>Düzenle</Btn>
+        <Btn variant="danger" sm onClick={()=>{if(confirm(`${e.title} silinsin mi?`))del(e.id);}}>Sil</Btn>
+      </div>
+    </Card>)}
+
+    <Modal show={show} onClose={()=>{setShow(false);setF(EMPTY_EXPENSE);}} title={f.id?"Gider Düzenle":"Yeni Gider Ekle"}>
+      <Inp label="Gider / Ürün Adı *" value={f.title} onChange={v=>u("title",v)} placeholder="Örn: 19 LT Damacana Su, Tesisat Tamiri..."/>
+      <Sel label="Kategori" value={f.category} onChange={v=>u("category",v)} options={EXP_CATS.map(c=>({value:c,label:c}))}/>
+      
+      <div style={{display:"flex",gap:8}}>
+        <div style={{flex:1}}><Inp label="Miktar / Adet (İsteğe Bağlı)" value={f.qty} onChange={v=>u("qty",v)} placeholder="Örn: 5 Adet, 2 Kg"/></div>
+        <div style={{flex:1}}><Inp label="Toplam Tutar (₺) *" value={f.amount} onChange={v=>u("amount",v)} type="number"/></div>
+      </div>
+      <Inp label="İşlem Tarihi" value={f.date} onChange={v=>u("date",v)} type="date"/>
+      
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderTop:`1px solid ${C.borderLight}`,marginTop:4}}>
+        <div>
+          <div style={{fontWeight:600,fontSize:13}}>Gıda / Tüketim Ürünü mü?</div>
+          <div style={{fontSize:11,color:C.textSub}}>Son kullanma tarihini takip etmek için açın</div>
+        </div>
+        <Toggle checked={f.isFood} onChange={v=>u("isFood",v)}/>
+      </div>
+      
+      {f.isFood && <Inp label="Son Kullanma Tarihi (SKT)" value={f.expiryDate} onChange={v=>u("expiryDate",v)} type="date"/>}
+      
+      <Inp label="Notlar" value={f.note} onChange={v=>u("note",v)} rows={2} placeholder="Ek açıklama..."/>
+      
+      <div style={{display:"flex",gap:8,marginTop:8}}>
+        <Btn variant="secondary" onClick={()=>{setShow(false);setF(EMPTY_EXPENSE);}} style={{flex:1}}>İptal</Btn>
+        <Btn onClick={save} style={{flex:1}}>Kaydet</Btn>
+      </div>
+    </Modal>
+  </div>
+}
+
 const EMPTY_STAFF={id:null,name:"",role:"trainer",age:"",phone:"",email:"",school:"",trainerLevel:"",notes:""};
 function StaffPage({staff}){
+  const safeStaff = safeArr(staff);
   const [show,setShow]=useState(false);
   const [f,setF]=useState(EMPTY_STAFF);
   const u=(k,v)=>setF(p=>({...p,[k]:v}));
 
-  function save(){if(!f.name.trim())return;const n=f.id?staff.map(s=>s.id===f.id?{...f}:s):[...staff,{...f,id:Date.now()}];DB.set("staff",n);setShow(false);setF(EMPTY_STAFF);}
-  function del(id){const n=staff.filter(s=>s.id!==id);DB.set("staff",n);}
+  function save(){if(!f.name.trim())return;const n=f.id?safeStaff.map(s=>s.id===f.id?{...f}:s):[...safeStaff,{...f,id:Date.now()}];DB.set("staff",n);setShow(false);setF(EMPTY_STAFF);}
+  function del(id){const n=safeStaff.filter(s=>s.id!==id);DB.set("staff",n);}
   function edit(s){setF({...s});setShow(true);}
 
   return<div style={{padding:14}}>
-    <SectionTitle action={<Btn sm onClick={()=>{setF(EMPTY_STAFF);setShow(true)}}>+ Personel Ekle</Btn>}>Personel ({staff.length})</SectionTitle>
-    {staff.length===0&&<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>Henüz personel kaydı bulunmuyor</div>}
-    {staff.map(s=><Card key={s.id}>
+    <SectionTitle action={<Btn sm onClick={()=>{setF(EMPTY_STAFF);setShow(true)}}>+ Personel Ekle</Btn>}>Personel ({safeStaff.length})</SectionTitle>
+    {safeStaff.length===0&&<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>Henüz personel kaydı bulunmuyor</div>}
+    {safeStaff.map(s=><Card key={s.id}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
         <div>
           <div style={{fontWeight:700,fontSize:15}}>{s.name}</div>
@@ -859,6 +962,9 @@ function StaffPage({staff}){
 }
 
 function InventoryPage({items,movements}){
+  const safeItems = safeArr(items);
+  const safeMovements = safeArr(movements);
+  
   const [show,setShow]=useState(false);
   const [f,setF]=useState(EMPTY_ITEM);
   const [editing,setEditing]=useState(null);
@@ -870,39 +976,38 @@ function InventoryPage({items,movements}){
 
   function save(){
     if(!f.name.trim())return;
-    const n=f.id?items.map(i=>i.id===f.id?{...f}:i):[...items,{...f,id:Date.now()}];
+    const n=f.id?safeItems.map(i=>i.id===f.id?{...f}:i):[...safeItems,{...f,id:Date.now()}];
     DB.set("stock",n);setShow(false);setEditing(null);setF(EMPTY_ITEM);
   }
-  function del(id){const n=items.filter(i=>i.id!==id);DB.set("stock",n);}
+  function del(id){const n=safeItems.filter(i=>i.id!==id);DB.set("stock",n);}
   function edit(item){setF({...item});setEditing(item.id);setShow(true);}
   function adj(id,delta){
-    const n=items.map(i=>i.id===id?{...i,stock:Math.max(0,Number(i?.stock||0)+delta)}:i);
+    const n=safeItems.map(i=>i.id===id?{...i,stock:Math.max(0,Number(i.stock||0)+delta)}:i);
     DB.set("stock",n);
   }
   function addMovement(){
     if(!movForm.itemId||!movForm.qty)return;
-    const item=items.find(i=>String(i.id)===String(movForm.itemId));
+    const item=safeItems.find(i=>String(i.id)===String(movForm.itemId));
     if(!item)return;
     const delta=movForm.type==="in"?Number(movForm.qty):-Number(movForm.qty);
     adj(item.id,delta);
     const mov={id:Date.now(),...movForm,itemName:item.name,qty:Number(movForm.qty)};
-    const n=[mov,...movements];
+    const n=[mov,...safeMovements];
     DB.set("movements",n);
     setMovForm({itemId:"",type:"in",qty:1,note:"",date:TODAY});setShowMov(false);
   }
 
-  // EXCEL ÇIKTISI
   function downloadExcel() {
     const headers = ["Urun Adi", "Kategori", "Birim Fiyat (TL)", "Stok Miktari", "Min Stok Uyari", "Tedarikci"];
-    const rows = items.map(i => [i.name, i.category||"-", i.price||"0", i.stock||"0", i.minStock||"-", i.supplier||"-"]);
+    const rows = safeItems.map(i => [i.name, i.category||"-", i.price||"0", i.stock||"0", i.minStock||"-", i.supplier||"-"]);
     exportCSV("Envanter_Stok", headers, rows);
   }
 
-  const cats=["all",...new Set(items.map(i=>i?.category).filter(Boolean))];
-  const filtered=catFilter==="all"?items:items.filter(i=>i?.category===catFilter);
-  const lowStock=items.filter(i=>Number(i?.stock)<=Number(i?.minStock||0)&&Number(i?.stock)>0);
-  const outStock=items.filter(i=>Number(i?.stock)===0);
-  const totalVal=items.reduce((t,i)=>t+Number(i?.price||0)*Number(i?.stock||0),0);
+  const cats=["all",...new Set(safeItems.map(i=>i.category).filter(Boolean))];
+  const filtered=catFilter==="all"?safeItems:safeItems.filter(i=>i.category===catFilter);
+  const lowStock=safeItems.filter(i=>Number(i.stock)<=Number(i.minStock||0)&&Number(i.stock)>0);
+  const outStock=safeItems.filter(i=>Number(i.stock)===0);
+  const totalVal=safeItems.reduce((t,i)=>t+Number(i.price||0)*Number(i.stock||0),0);
 
   return<div style={{padding:14}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
@@ -915,7 +1020,7 @@ function InventoryPage({items,movements}){
     </div>
 
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
-      <StatCard label="Toplam Ürün Çeşidi" value={items.length}/>
+      <StatCard label="Toplam Ürün Çeşidi" value={safeItems.length}/>
       <StatCard label="Stok Değeri" value={`${totalVal.toLocaleString("tr-TR")} ₺`} col={C.success}/>
     </div>
 
@@ -936,8 +1041,8 @@ function InventoryPage({items,movements}){
       </div>}
       {filtered.length===0&&<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>Ürün bulunamadı</div>}
       {filtered.map(item=>{
-        const isOut=Number(item?.stock)===0;
-        const isLow=!isOut&&Number(item?.stock)<=Number(item?.minStock||0);
+        const isOut=Number(item.stock)===0;
+        const isLow=!isOut&&Number(item.stock)<=Number(item.minStock||0);
         return<Card key={item.id} accent={isOut?C.danger:isLow?C.warning:undefined}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
             <div>
@@ -974,9 +1079,9 @@ function InventoryPage({items,movements}){
     </div>}
 
     {tab===1&&<div>
-      {movements.length===0?<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>Stok hareketi bulunmuyor</div>:
+      {safeMovements.length===0?<div style={{textAlign:"center",padding:"40px 0",color:C.textMuted}}>Stok hareketi bulunmuyor</div>:
       <Card>
-        {movements.slice(0,50).map((m,i)=><div key={m.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:i===Math.min(movements.length,50)-1?"none":`1px solid ${C.border}`}}>
+        {safeMovements.slice(0,50).map((m,i)=><div key={m.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:i===Math.min(safeMovements.length,50)-1?"none":`1px solid ${C.border}`}}>
           <div>
             <div style={{fontSize:13,fontWeight:600}}>{m.itemName}</div>
             <div style={{fontSize:11,color:C.textSub}}>{fmtDate(m.date)}{m.note?` · ${m.note}`:""}</div>
@@ -1005,7 +1110,7 @@ function InventoryPage({items,movements}){
     </Modal>
 
     <Modal show={showMov} onClose={()=>setShowMov(false)} title="Stok Hareketi Ekle">
-      <Sel label="Ürün *" value={movForm.itemId} onChange={v=>setMovForm(p=>({...p,itemId:v}))} options={items.map(i=>({value:String(i.id),label:i.name}))}/>
+      <Sel label="Ürün *" value={movForm.itemId} onChange={v=>setMovForm(p=>({...p,itemId:v}))} options={safeItems.map(i=>({value:String(i.id),label:i.name}))}/>
       <Sel label="İşlem Türü" value={movForm.type} onChange={v=>setMovForm(p=>({...p,type:v}))} options={[{value:"in",label:"Stok Girişi"},{value:"out",label:"Stok Çıkışı"}]}/>
       <div style={{display:"flex",gap:8}}>
         <div style={{flex:1}}><Inp label="Miktar" value={movForm.qty} onChange={v=>setMovForm(p=>({...p,qty:v}))} type="number"/></div>
@@ -1020,27 +1125,65 @@ function InventoryPage({items,movements}){
   </div>
 }
 
-function Dashboard({students,staff,stockItems}){
-  const active=students.filter(s=>courseStatus(s)==="active");
-  const presentToday=students.filter(s=>(s.attendance||{})[TODAY]).length;
-  const totalRev=students.reduce((t,s)=>t+totalPaid(s),0);
+function Dashboard({students,stockItems,expenses}){
+  const safeStudents = safeArr(students);
+  const safeExpenses = safeArr(expenses);
+  const active=safeStudents.filter(s=>courseStatus(s)==="active");
+  const presentToday=safeStudents.filter(s=>(s.attendance||{})[TODAY]).length;
   
+  // Gelir ve Kâr Hesaplamaları
+  const totalRev=safeStudents.reduce((t,s)=>t+totalPaid(s),0);
+  const totalExp=safeExpenses.reduce((t,e)=>t+Number(e.amount||0),0);
+  const netProfit = totalRev - totalExp;
+
   const unpaid=active.filter(s=>totalPaid(s)<monthlyTotal(s)).length;
   const endingSoon=active.filter(s=>{const d=daysLeft(s);return d>=0&&d<=14;}).sort((a,b)=>daysLeft(a)-daysLeft(b));
-  const outStock=stockItems.filter(i=>Number(i?.stock)===0);
-  const recentPay=students.flatMap(s=>safeArr(s.payments).map(p=>({...p,studentName:s.name}))).sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
-  const thisMonth=students.flatMap(s=>safeArr(s.payments).filter(p=>p.date&&p.date.startsWith(TODAY.slice(0,7)))).reduce((t,p)=>t+Number(p.amount),0);
+  const outStock=safeArr(stockItems).filter(i=>Number(i.stock)===0);
+  
+  // Gıda SKT Uyarıları
+  const foodWarnings = safeExpenses.filter(e => {
+    if(!e.isFood || !e.expiryDate) return false;
+    const days = Math.ceil((new Date(e.expiryDate) - new Date(TODAY))/86400000);
+    return days <= 7; // 7 günden az kalanlar veya geçenler
+  }).sort((a,b)=>new Date(a.expiryDate)-new Date(b.expiryDate));
 
   return<div style={{padding:14}}>
     <SectionTitle>Genel Bakış</SectionTitle>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
-      <StatCard label="Toplam Öğrenci" value={students.length}/>
+      <StatCard label="Toplam Öğrenci" value={safeStudents.length}/>
       <StatCard label="Aktif Kurs" value={active.length}/>
       <StatCard label="Bugün Mevcut" value={`${presentToday} / ${active.length}`} col={C.success}/>
-      <StatCard label="Bu Ay Tahsilat" value={`${thisMonth.toLocaleString("tr-TR")} ₺`} col={C.accent}/>
+      <StatCard label="Toplam Tahsilat" value={`${totalRev.toLocaleString("tr-TR")} ₺`} col={C.accent}/>
     </div>
 
-    {(unpaid>0||outStock.length>0)&&<div style={{marginBottom:12}}>
+    {/* NET KAR ÖZETİ */}
+    <Card accent={netProfit >= 0 ? C.success : C.danger} style={{marginBottom:16}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+        <div style={{fontSize:13, color:C.textSub, fontWeight:600}}>Net Kâr / Kasa Durumu</div>
+        <div style={{fontSize:22, fontWeight:800, color:netProfit >= 0 ? C.success : C.danger}}>
+          {netProfit >= 0 ? "+" : ""}{netProfit.toLocaleString("tr-TR")} ₺
+        </div>
+      </div>
+      <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:C.textMuted}}>
+        <span>Tahsilat: {totalRev.toLocaleString("tr-TR")} ₺</span>
+        <span>Giderler: {totalExp.toLocaleString("tr-TR")} ₺</span>
+      </div>
+      <div style={{height:6, background:C.borderLight, borderRadius:3, marginTop:8, overflow:"hidden"}}>
+         <div style={{height:"100%", width:`${totalRev===0?0:Math.min(100,(totalRev/(totalRev+totalExp))*100)}%`, background:C.success, float:"left"}}></div>
+         <div style={{height:"100%", width:`${totalExp===0?0:Math.min(100,(totalExp/(totalRev+totalExp))*100)}%`, background:C.danger, float:"right"}}></div>
+      </div>
+    </Card>
+
+    {/* UYARILAR */}
+    {(unpaid>0||outStock.length>0||foodWarnings.length>0)&&<div style={{marginBottom:12}}>
+      {foodWarnings.map(f=>{
+         const d = Math.ceil((new Date(f.expiryDate)-new Date(TODAY))/86400000);
+         return <Card key={f.id} accent={d<0?C.danger:C.warning} style={{marginBottom:8}}>
+           <div style={{fontSize:13,fontWeight:600,color:d<0?C.danger:C.warning}}>
+             SKT Uyarısı: {f.title} ({d<0 ? "Tarihi Geçti!" : `${d} Gün Kaldı`})
+           </div>
+         </Card>
+      })}
       {unpaid>0&&<Card accent={C.danger} style={{marginBottom:8}}>
         <div style={{fontSize:13,fontWeight:600,color:C.danger}}>{unpaid} aktif öğrencinin eksik ödemesi bulunuyor</div>
       </Card>}
@@ -1061,29 +1204,6 @@ function Dashboard({students,staff,stockItems}){
         </div>
       </Card>)}
     </>}
-
-    {recentPay.length>0&&<>
-      <SectionTitle>Son Ödemeler</SectionTitle>
-      <Card>
-        {recentPay.map((p,i)=><div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 0",borderBottom:i===recentPay.length-1?"none":`1px solid ${C.border}`}}>
-          <div>
-            <div style={{fontSize:13,fontWeight:600}}>{p.studentName}</div>
-            <div style={{fontSize:11,color:C.textSub}}>{fmtDate(p.date)}</div>
-          </div>
-          <span style={{color:C.success,fontWeight:700}}>+{Number(p.amount).toLocaleString("tr-TR")} ₺</span>
-        </div>)}
-      </Card>
-    </>}
-
-    <SectionTitle>Sistem Özeti</SectionTitle>
-    <Card>
-      <Row label="Toplam Öğrenci" val={students.length}/>
-      <Row label="Aktif Öğrenci" val={active.length}/>
-      <Row label="Personel Sayısı" val={staff.length}/>
-      <Row label="Ürün Çeşidi" val={stockItems.length}/>
-      <Row label="Servis Kullanan" val={students.filter(s=>s.hasTransport).length}/>
-      <Row label="Toplam Tahsilat" val={`${totalRev.toLocaleString("tr-TR")} ₺`} col={C.success}/>
-    </Card>
   </div>
 }
 
@@ -1129,11 +1249,7 @@ function SettingsPage({navItems, clubName, logoUrl, themeColor, sidebarColor, ca
     if(newPin.length !== 4) { setSecMsg({type:"error", text:"Yeni PIN 4 haneli olmalı!"}); return; }
     if(newPin !== confirmPin) { setSecMsg({type:"error", text:"Yeni PIN'ler eşleşmiyor!"}); return; }
     if(oldPin === newPin) { setSecMsg({type:"error", text:"Yeni PIN eskisiyle aynı olamaz!"}); return; }
-    
-    if(secAnswer.trim().toLowerCase() !== clubName.trim().toLowerCase()) { 
-      setSecMsg({type:"error", text:"Güvenlik doğrulaması başarısız! Kulüp adını hatalı girdiniz."}); 
-      return; 
-    }
+    if(secAnswer.trim().toLowerCase() !== clubName.trim().toLowerCase()) { setSecMsg({type:"error", text:"Güvenlik doğrulaması başarısız!"}); return; }
 
     DB.set("pinCode", newPin);
     setSecMsg({type:"success", text:"PIN başarıyla güncellendi!"});
@@ -1145,13 +1261,8 @@ function SettingsPage({navItems, clubName, logoUrl, themeColor, sidebarColor, ca
   function moveDown(i){if(i===navItems.length-1)return;const n=[...navItems];[n[i],n[i+1]]=[n[i+1],n[i]];DB.set("navItems",n);}
   function toggleVis(id){const n=navItems.map(t=>t.id===id?{...t,visible:!t.visible}:t);DB.set("navItems",n);}
   function editLabel(id,label){const n=navItems.map(t=>t.id===id?{...t,label}:t);DB.set("navItems",n);}
-  function resetAll(){if(!confirm("Menü ayarları sıfırlansın mı?"))return;const n=NAV_ITEMS.map(i=>({...i,visible:true}));DB.set("navItems",n);}
-  
-  function resetColors(){
-    setColorVal("#070D1A");
-    setSidebarColorVal("#090F1E");
-    setCardColorVal("#101E35");
-  }
+  function resetAll(){if(!confirm("Menü ayarları sıfırlansın mı?"))return;DB.set("navItems",NAV_ITEMS);}
+  function resetColors(){setColorVal("#070D1A"); setSidebarColorVal("#090F1E"); setCardColorVal("#101E35");}
 
   return<div style={{padding:14}}>
     <TabBar tabs={["Genel & Görünüm", "Menü Düzenleme", "Güvenlik"]} active={tab} onChange={setTab}/>
@@ -1167,37 +1278,20 @@ function SettingsPage({navItems, clubName, logoUrl, themeColor, sidebarColor, ca
         <SectionTitle action={<Btn sm variant="ghost" onClick={resetColors}>Varsayılana Dön</Btn>}>Renk Teması</SectionTitle>
         <Card>
           <div style={{display:"grid", gridTemplateColumns:"1fr", gap:12}}>
-            
             <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
-              <div>
-                <div style={{fontSize:13, fontWeight:600}}>Ana Arkaplan</div>
-                <div style={{fontSize:11, color:C.textMuted}}>Orta sayfa alanı</div>
-              </div>
-              <input type="color" value={colorVal} onChange={e=>setColorVal(e.target.value)} 
-                style={{width:44, height:44, padding:0, border:`2px solid ${C.borderLight}`, borderRadius:8, cursor:"pointer", background:"none"}}/>
+              <div><div style={{fontSize:13, fontWeight:600}}>Ana Arkaplan</div><div style={{fontSize:11, color:C.textMuted}}>Orta sayfa alanı</div></div>
+              <input type="color" value={colorVal} onChange={e=>setColorVal(e.target.value)} style={{width:44, height:44, padding:0, border:`2px solid ${C.borderLight}`, borderRadius:8, cursor:"pointer", background:"none"}}/>
             </div>
-            
             <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
-              <div>
-                <div style={{fontSize:13, fontWeight:600}}>Yan Menü (Sidebar)</div>
-                <div style={{fontSize:11, color:C.textMuted}}>Sol menü alanı</div>
-              </div>
-              <input type="color" value={sidebarColorVal} onChange={e=>setSidebarColorVal(e.target.value)} 
-                style={{width:44, height:44, padding:0, border:`2px solid ${C.borderLight}`, borderRadius:8, cursor:"pointer", background:"none"}}/>
+              <div><div style={{fontSize:13, fontWeight:600}}>Yan Menü (Sidebar)</div><div style={{fontSize:11, color:C.textMuted}}>Sol menü alanı</div></div>
+              <input type="color" value={sidebarColorVal} onChange={e=>setSidebarColorVal(e.target.value)} style={{width:44, height:44, padding:0, border:`2px solid ${C.borderLight}`, borderRadius:8, cursor:"pointer", background:"none"}}/>
             </div>
-
             <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
-              <div>
-                <div style={{fontSize:13, fontWeight:600}}>Kart / Kutu Rengi</div>
-                <div style={{fontSize:11, color:C.textMuted}}>Veri kutucukları ve Modallar</div>
-              </div>
-              <input type="color" value={cardColorVal} onChange={e=>setCardColorVal(e.target.value)} 
-                style={{width:44, height:44, padding:0, border:`2px solid ${C.borderLight}`, borderRadius:8, cursor:"pointer", background:"none"}}/>
+              <div><div style={{fontSize:13, fontWeight:600}}>Kart / Kutu Rengi</div><div style={{fontSize:11, color:C.textMuted}}>Veri kutucukları</div></div>
+              <input type="color" value={cardColorVal} onChange={e=>setCardColorVal(e.target.value)} style={{width:44, height:44, padding:0, border:`2px solid ${C.borderLight}`, borderRadius:8, cursor:"pointer", background:"none"}}/>
             </div>
-
           </div>
         </Card>
-
         <Btn full onClick={saveGeneral} style={{marginTop:8}}>Değişiklikleri Kaydet</Btn>
         {saveMsg && <div style={{marginTop:12, fontSize:13, color:C.success, textAlign:"center", fontWeight:600}}>{saveMsg}</div>}
       </div>
@@ -1225,23 +1319,17 @@ function SettingsPage({navItems, clubName, logoUrl, themeColor, sidebarColor, ca
       <div>
         <SectionTitle>Güvenlik Ayarları (PIN Değiştirme)</SectionTitle>
         <Card>
-          <div style={{fontSize:12,color:C.textSub,marginBottom:14,lineHeight:1.6}}>Panele giriş için kullandığınız 4 haneli PIN kodunu değiştirin.</div>
-          
           <Inp label="Mevcut PIN" value={oldPin} onChange={setOldPin} type="password" placeholder="••••" style={{letterSpacing:8, fontSize:16}}/>
-          
           <div style={{display:"flex", gap:8}}>
             <Inp label="Yeni PIN" value={newPin} onChange={setNewPin} type="password" placeholder="••••" half style={{letterSpacing:8, fontSize:16}}/>
             <Inp label="Yeni PIN (Tekrar)" value={confirmPin} onChange={setConfirmPin} type="password" placeholder="••••" half style={{letterSpacing:8, fontSize:16}}/>
           </div>
-          
           <div style={{height:1,background:C.border,margin:"12px 0 16px"}}/>
-          
           <div style={{background:C.warningBg, border:`1px solid ${C.warning}40`, padding:12, borderRadius:8, marginBottom:12}}>
             <div style={{fontSize:11, color:C.warning, fontWeight:700, marginBottom:4}}>GÜVENLİK DOĞRULAMASI</div>
             <div style={{fontSize:12, color:C.textSub, marginBottom:8}}>Yetkisiz işlemi önlemek için onay sorusunu yanıtlayın. Lütfen kulübünüzün şu anki adını (<strong style={{color:C.text}}>{clubName}</strong>) kutucuğa yazın.</div>
             <Inp value={secAnswer} onChange={setSecAnswer} placeholder="Kulüp adını yazın..." />
           </div>
-
           <Btn full onClick={changePin}>PIN Kodunu Güncelle</Btn>
           {secMsg && <div style={{marginTop:12, fontSize:13, color:secMsg.type==="error"?C.danger:C.success, textAlign:"center", fontWeight:600}}>{secMsg.text}</div>}
         </Card>
@@ -1261,53 +1349,59 @@ function App(){
   const [staff,setStaff]=useState([]);
   const [stockItems,setStockItems]=useState([]);
   const [movements,setMovements]=useState([]);
+  const [expenses,setExpenses]=useState([]);
   
-  // Sistem Ayarları State'leri
   const [clubName,setClubName]=useState("AquaClub");
-  const [navItems,setNavItems]=useState(NAV_ITEMS.map(i=>({...i,visible:true})));
+  const [navItems,setNavItems]=useState(NAV_ITEMS);
   const [pinCode,setPinCode]=useState("0309");
   
-  // Renk State'leri
   const [themeColor,setThemeColor]=useState("#070D1A");
   const [sidebarColor,setSidebarColor]=useState("#090F1E");
   const [cardColor,setCardColor]=useState("#101E35");
-  
   const [logoUrl,setLogoUrl]=useState("");
   
   const [activeTab,setActiveTab]=useState("dashboard");
   const [sidebarOpen,setSidebarOpen]=useState(false);
 
-  // Tema CSS Güncellemesi
   useEffect(() => {
     document.documentElement.style.setProperty('--bg-color', themeColor);
     document.documentElement.style.setProperty('--sidebar-bg', sidebarColor);
     document.documentElement.style.setProperty('--card-bg', cardColor);
-    
     const metaTheme = document.querySelector('meta[name="theme-color"]');
     if(metaTheme) metaTheme.setAttribute("content", themeColor);
   }, [themeColor, sidebarColor, cardColor]);
 
-  // Firebase Canlı Dinleyici
   useEffect(() => {
     const unsub = db.collection("appData").doc("main").onSnapshot((doc) => {
       if (doc.exists) {
         const d = doc.data();
         
-        // Zırhlı Veri Atamaları (Obje olarak kaydedilmişse bile diziye çevirir)
+        // ZIRHLI ATAMALAR
         if (d.students) setStudents(safeArr(d.students));
         if (d.staff) setStaff(safeArr(d.staff));
         if (d.stock) setStockItems(safeArr(d.stock));
         if (d.movements) setMovements(safeArr(d.movements));
+        if (d.expenses) setExpenses(safeArr(d.expenses));
         
         if (d.clubName) setClubName(d.clubName);
-        if (d.navItems) setNavItems(safeArr(d.navItems));
         if (d.pinCode) setPinCode(d.pinCode);
-        
         if (d.themeColor) setThemeColor(d.themeColor);
         if (d.sidebarColor) setSidebarColor(d.sidebarColor);
         if (d.cardColor) setCardColor(d.cardColor);
-        
         if (d.logoUrl) setLogoUrl(d.logoUrl);
+        
+        // Menü Güncelleme Koruması (Yeni eklenen sekmelerin kaybolmaması için)
+        if (d.navItems) {
+           let loadedNav = safeArr(d.navItems);
+           let updated = false;
+           NAV_ITEMS.forEach(baseItem => {
+              if(!loadedNav.find(n => n.id === baseItem.id)) {
+                 loadedNav.push(baseItem); updated = true;
+              }
+           });
+           setNavItems(loadedNav);
+           if(updated) DB.set("navItems", loadedNav);
+        }
       }
       setIsDbLoaded(true);
     }, (error) => {
@@ -1346,7 +1440,6 @@ function App(){
   const sidebar=<div style={{width:C.sidebarW,background:"var(--sidebar-bg)",borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",height:"100vh",position:"sticky",top:0,flexShrink:0}}>
     <div style={{padding:"20px 16px 16px",borderBottom:`1px solid ${C.border}`}}>
       <div style={{display:"flex",alignItems:"center",gap:10}}>
-        
         <div style={{width:34,height:34,borderRadius:9,background:`linear-gradient(135deg,${C.accent},#38BDF8)`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,overflow:"hidden"}}>
           {logoUrl ? <img src={logoUrl} alt="Logo" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={(e)=>{e.target.style.display='none'}}/> :
           <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1354,7 +1447,6 @@ function App(){
             <path d="M2 18c2-4 4-4 6 0s4 4 6 0 4-4 6 0"/>
           </svg>}
         </div>
-
         <div>
           <div style={{fontSize:14,fontWeight:800,letterSpacing:-0.3}}>{clubName}</div>
           <div style={{fontSize:10,color:C.textMuted,fontWeight:500}}>Yönetim Paneli</div>
@@ -1363,9 +1455,6 @@ function App(){
     </div>
     <div style={{flex:1,overflowY:"auto",paddingTop:8}}>
       {visibleNav.map(item=><NavItem key={item.id} item={item}/>)}
-    </div>
-    <div style={{padding:"12px 16px",borderTop:`1px solid ${C.border}`}}>
-      <div style={{fontSize:11,color:C.textMuted,fontWeight:500}}>AquaClub Pro v2.3</div>
     </div>
   </div>;
 
@@ -1387,22 +1476,17 @@ function App(){
         </div>
       </div>
       <div style={{flex:1,overflowY:"auto"}}>
-        {activeTab==="dashboard"&&<Dashboard students={students} staff={staff} stockItems={stockItems}/>}
+        {activeTab==="dashboard"&&<Dashboard students={students} stockItems={stockItems} expenses={expenses}/>}
         {activeTab==="students"&&<StudentsPage students={students} stockItems={stockItems}/>}
         {activeTab==="attendance"&&<AttendancePage students={students}/>}
         {activeTab==="payments"&&<PaymentsPage students={students}/>}
+        {activeTab==="expenses"&&<ExpensesPage expenses={expenses}/>}
         {activeTab==="staff"&&<StaffPage staff={staff}/>}
         {activeTab==="inventory"&&<InventoryPage items={stockItems} movements={movements}/>}
-        
         {activeTab==="settings"&&
           <SettingsPage 
-            navItems={navItems} 
-            clubName={clubName} 
-            logoUrl={logoUrl} 
-            themeColor={themeColor} 
-            sidebarColor={sidebarColor}
-            cardColor={cardColor}
-            pinCode={pinCode}
+            navItems={navItems} clubName={clubName} logoUrl={logoUrl} 
+            themeColor={themeColor} sidebarColor={sidebarColor} cardColor={cardColor} pinCode={pinCode}
           />}
       </div>
     </div>

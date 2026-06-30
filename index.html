@@ -144,7 +144,7 @@ function exportCSV(filename, headers, rows) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   UI BİLEŞENLERİ (SABİT MODAL DAHİL)
+   UI BİLEŞENLERİ
 ═══════════════════════════════════════════════════════════════ */
 function Icon({d,size=18,color="currentColor",style={}}){
   return<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" style={style}>
@@ -273,7 +273,7 @@ function LoginScreen({ onSuccess, appUsers, adminPin }) {
       <form onSubmit={handleLogin} style={{background:"var(--card-bg)",padding:"40px 30px",borderRadius:24,border:`1px solid ${err?"#EF4444":"#E2E8F0"}`,textAlign:"center",boxShadow:"0 12px 32px rgba(0,0,0,0.06)",width:"100%",maxWidth:360, transition:"all 0.3s"}}>
         <div style={{fontSize:18,fontWeight:700,marginBottom:24,color:"var(--text-main)"}}>Sisteme Giriş Yapın</div>
         <Inp value={user} onChange={setUser} placeholder="Kullanıcı Adı" autoFocus style={{textAlign:"center", fontSize:14, padding:"14px", borderRadius:12}}/>
-        <Inp value={pass} onChange={setPass} type="password" placeholder="Şifre" style={{textAlign:"center", fontSize:14, padding:"14px", borderRadius:12, letterSpacing:4}}/>
+        <Inp value={pass} onChange={setPass} type="password" placeholder="Şifre" style={{textAlign:"center", fontSize:14, padding:"14px", borderRadius:12}}/>
         <Btn full style={{marginTop:12, padding:"14px", borderRadius:12, fontSize:14}}>Giriş Yap</Btn>
         <div style={{height: 20, marginTop: 16}}>{err && <div style={{color:"#EF4444",fontSize:13,fontWeight:600}}>Hatalı Bilgi Girdiniz!</div>}</div>
       </form>
@@ -282,12 +282,13 @@ function LoginScreen({ onSuccess, appUsers, adminPin }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   ÖĞRENCİ FORMU (ZORUNLU BÜYÜK HARF)
+   ÖĞRENCİ FORMU (ZORUNLU BÜYÜK HARF ENTEGRASYONU)
 ═══════════════════════════════════════════════════════════════ */
 function StudentForm({initial,onSave,onCancel,stockItems}){
   const [tab,setTab]=useState(0);
   const [f,setF]=useState({...EMPTY_S,...initial});
 
+  // Girişleri otomatik Türkçe destekli Büyük Harf yapar
   const u=(k,v)=>{
     if(typeof v === "string" && !["dob","courseStart","courseEnd","guardianPhone1","guardianPhone2"].includes(k)){
       v = v.toLocaleUpperCase("tr-TR");
@@ -303,6 +304,11 @@ function StudentForm({initial,onSave,onCancel,stockItems}){
       u("courseEnd",calcEndDate(f.courseStart,Number(f.totalSessions),safeWeekDays));
     }
   },[f.courseStart,f.totalSessions,JSON.stringify(safeWeekDays)]);
+
+  function addEq(item){setF(p=>({...p,equipment:[...safeArr(p.equipment),{id:Date.now(),...item,addedDate:TODAY}]}))}
+  function rmEq(id){setF(p=>({...p,equipment:safeArr(p.equipment).filter(e=>e.id!==id)}))}
+
+  const netMonthly=Number(f.monthlyFee||0)-Number(f.discount||0);
 
   return<div>
     <TabBar tabs={["Kişisel","Kurs","Servis","Ekipman"]} active={tab} onChange={setTab}/>
@@ -359,7 +365,11 @@ function StudentForm({initial,onSave,onCancel,stockItems}){
     </div>}
     {tab===3&&<div>
       <div style={{fontSize:12,color:"#64748B",marginBottom:12}}>Alınan ekipmanlar aylık ücrete yansır.</div>
-      <EqPicker stockItems={stockItems} current={currentEq} onAdd={(item)=>setF(p=>({...p,equipment:[...currentEq,{id:Date.now(),...item,addedDate:TODAY}]}))} onRemove={(id)=>setF(p=>({...p,equipment:currentEq.filter(e=>e.id!==id)}))}/>
+      <EqPicker stockItems={stockItems} current={currentEq} onAdd={addEq} onRemove={rmEq}/>
+      {currentEq.length>0&&<Card accent="#F59E0B" style={{marginTop:8}}>
+        <div style={{display:"flex",justifyContent:"space-between",fontSize:13,marginBottom:6,fontWeight:600}}><span style={{color:"#475569"}}>Ekipman Toplamı</span><span style={{color:"#F59E0B"}}>+{equipmentTotal(f).toLocaleString("tr-TR")} ₺</span></div>
+        <div style={{display:"flex",justifyContent:"space-between",fontSize:14,fontWeight:700}}><span style={{color:"var(--text-main)"}}>Aylık Toplam</span><span style={{color:"#10B981"}}>{monthlyTotal(f).toLocaleString("tr-TR")} ₺</span></div>
+      </Card>}
     </div>}
     <div style={{display:"flex",gap:10,marginTop:20}}>
       <Btn variant="secondary" onClick={onCancel} style={{flex:1}}>İptal</Btn>
@@ -437,7 +447,6 @@ function StudentsPage({students,stockItems}){
     </div>
     <div style={{position:"relative",marginBottom:12}}><input style={{width:"100%",padding:"12px 14px",background:"var(--sidebar-bg)",border:`1px solid #E2E8F0`,borderRadius:12,color:"var(--text-main)"}} placeholder="İsimle öğrenci ara..." value={search} onChange={e=>setSearch(e.target.value)}/></div>
     
-    {/* Sıkılaştırılmış liste (marginBottom: 6px) */}
     {filtered.map(s=><Card key={s.id} style={{marginBottom:6, padding:"10px 14px"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
         <div><div style={{fontWeight:700,fontSize:15,color:"var(--text-main)"}}>{s.name}</div><div style={{fontSize:12,color:"#64748B",marginTop:2}}>{s.groupName||"Grup yok"}</div></div>

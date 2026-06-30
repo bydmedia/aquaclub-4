@@ -43,7 +43,6 @@ button{font-family:'Inter',-apple-system,sans-serif}
 <!-- Firebase Kütüphaneleri -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-
 </head>
 <body>
 <div id="root"></div>
@@ -170,7 +169,7 @@ function exportCSV(filename, headers, rows) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   3. UI BİLEŞENLERİ (SABİT WIDGET DAHİL)
+   3. UI BİLEŞENLERİ (KESİNLİKLE TEK KOPYA)
 ═══════════════════════════════════════════════════════════════ */
 function Icon({d,size=18,color="currentColor",style={}}){
   return<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" style={style}>
@@ -184,11 +183,11 @@ function Toggle({checked,onChange}){
   </button>
 }
 
-function Inp({label,value,onChange,type="text",placeholder,rows,half,autoFocus,style}){
+function Inp({label,value,onChange,type="text",placeholder,rows,half,autoFocus,style,disabled}){
   return<div style={{marginBottom:10,flex:half?"1":"unset"}}>
     {label&&<div style={{fontSize:11,color:"#475569",marginBottom:4,fontWeight:600,letterSpacing:0.3}}>{label}</div>}
-    {rows?<textarea style={{width:"100%",padding:"9px 11px",background:"var(--bg-color)",border:`1px solid #E2E8F0`,borderRadius:8,color:"var(--text-main)",fontSize:13,outline:"none",fontFamily:"inherit",resize:"vertical",minHeight:60,...style}} rows={rows} value={value||""} onChange={e=>onChange(e.target.value)} placeholder={placeholder}/>
-         :<input style={{width:"100%",padding:"9px 11px",background:"var(--bg-color)",border:`1px solid #E2E8F0`,borderRadius:8,color:"var(--text-main)",fontSize:13,outline:"none",fontFamily:"inherit",...style}} type={type} value={value||""} onChange={e=>onChange(e.target.value)} placeholder={placeholder} autoFocus={autoFocus}/>}
+    {rows?<textarea style={{width:"100%",padding:"9px 11px",background:"var(--bg-color)",border:`1px solid #E2E8F0`,borderRadius:8,color:"var(--text-main)",fontSize:13,outline:"none",fontFamily:"inherit",resize:"vertical",minHeight:60,...style}} rows={rows} value={value||""} onChange={e=>onChange(e.target.value)} placeholder={placeholder} disabled={disabled}/>
+         :<input style={{width:"100%",padding:"9px 11px",background:"var(--bg-color)",border:`1px solid #E2E8F0`,borderRadius:8,color:"var(--text-main)",fontSize:13,outline:"none",fontFamily:"inherit",...style}} type={type} value={value||""} onChange={e=>onChange(e.target.value)} placeholder={placeholder} autoFocus={autoFocus} disabled={disabled}/>}
   </div>
 }
 
@@ -202,7 +201,6 @@ function Sel({label,value,onChange,options}){
   </div>
 }
 
-/* DİKKAT: Btn bileşenine onClick tetiklemesi için type eklendi */
 function Btn({children,onClick,type="button",variant="primary",sm,full,style={}}){
   const base={padding:sm?"6px 14px":"9px 18px",borderRadius:8,border:"none",cursor:"pointer",fontWeight:600,fontSize:sm?12:13,fontFamily:"inherit",letterSpacing:0.2,transition:"opacity .15s",...style};
   const v={
@@ -222,7 +220,7 @@ function Card({children,style={},accent}){
 function Badge({label,color}){
   const map={active:["#10B981","Aktif"],upcoming:["#F59E0B","Başlamadı"],ended:["#EF4444","Bitti"],unknown:["#64748B","Belirsiz"]};
   const [col,txt]=map[label]||[color||"#64748B",label];
-  return<span style={{fontSize:10,fontWeight:600,padding:"3px 8px",borderRadius:20,background:col+"15",color:col,letterSpacing:0.3}}>{txt}</span>
+  return<span style={{fontSize:10,fontWeight:600,padding:"4px 8px",borderRadius:20,background:col+"15",color:col,letterSpacing:0.3}}>{txt}</span>
 }
 
 function SectionTitle({children,action}){
@@ -261,14 +259,13 @@ function DayPicker({value=[],onChange}){
   </div>
 }
 
-/* WIDGET EKRANININ SABİTLENMESİ İÇİN 580px HEIGHT EKLENDİ */
 function Modal({show,onClose,title,children}){
   if(!show)return null;
   return<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(4px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:300,padding:16}} onClick={e=>e.target===e.currentTarget&&onClose()}>
     <div style={{background:"var(--sidebar-bg)",borderRadius:20,padding:"24px",width:"100%",maxWidth:540,height:"580px",display:"flex",flexDirection:"column",boxShadow:"0 20px 40px rgba(0,0,0,0.08)"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20,flexShrink:0}}>
         <div style={{fontSize:17,fontWeight:800,color:"var(--text-main)"}}>{title}</div>
-        <button onClick={onClose} style={{background:"var(--bg-color)",border:"none",color:"#64748B",width:32,height:32,borderRadius:16,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+        <button type="button" onClick={onClose} style={{background:"var(--bg-color)",border:"none",color:"#64748B",width:32,height:32,borderRadius:16,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
       </div>
       <div style={{flex:1,overflowY:"auto",paddingRight:4}}>{children}</div>
     </div>
@@ -276,7 +273,7 @@ function Modal({show,onClose,title,children}){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   GİRİŞ EKRANI (onClick Eklendi)
+   4. EKRAN BİLEŞENLERİ
 ═══════════════════════════════════════════════════════════════ */
 function LoginScreen({ onSuccess, appUsers, adminPin }) {
   const [user, setUser] = useState("");
@@ -300,17 +297,14 @@ function LoginScreen({ onSuccess, appUsers, adminPin }) {
       <form onSubmit={handleLogin} style={{background:"var(--card-bg)",padding:"40px 30px",borderRadius:24,border:`1px solid ${err?"#EF4444":"#E2E8F0"}`,textAlign:"center",boxShadow:"0 12px 32px rgba(0,0,0,0.06)",width:"100%",maxWidth:360, transition:"all 0.3s"}}>
         <div style={{fontSize:18,fontWeight:700,marginBottom:24,color:"var(--text-main)"}}>Sisteme Giriş Yapın</div>
         <Inp value={user} onChange={setUser} placeholder="Kullanıcı Adı" autoFocus style={{textAlign:"center", fontSize:14, padding:"14px", borderRadius:12}}/>
-        <Inp value={pass} onChange={setPass} type="password" placeholder="Şifre" style={{textAlign:"center", fontSize:14, padding:"14px", borderRadius:12, letterSpacing:4}}/>
-        <Btn full type="submit" onClick={handleLogin} style={{marginTop:12, padding:"14px", borderRadius:12, fontSize:14}}>Giriş Yap</Btn>
+        <Inp value={pass} onChange={setPass} type="password" placeholder="Şifre" style={{textAlign:"center", fontSize:14, padding:"14px", borderRadius:12}}/>
+        <Btn full type="submit" style={{marginTop:12, padding:"14px", borderRadius:12, fontSize:14}}>Giriş Yap</Btn>
         <div style={{height: 20, marginTop: 16}}>{err && <div style={{color:"#EF4444",fontSize:13,fontWeight:600}}>Hatalı Bilgi Girdiniz!</div>}</div>
       </form>
     </div>
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   ÖĞRENCİ FORMU (ZORUNLU BÜYÜK HARF ENTEGRASYONU)
-═══════════════════════════════════════════════════════════════ */
 function StudentForm({initial,onSave,onCancel,stockItems}){
   const [tab,setTab]=useState(0);
   const [f,setF]=useState({...EMPTY_S,...initial});
@@ -463,7 +457,7 @@ function StudentDetail({student,onBack,students,stockItems}){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   GELİŞTİRİLMİŞ ÖĞRENCİLER LİSTESİ (KURUMSAL HÜCRE DÜZENİ)
+   5. SAYFALAR
 ═══════════════════════════════════════════════════════════════ */
 function StudentsPage({students,stockItems}){
   const [search,setSearch]=useState(""); const [showAdd,setShowAdd]=useState(false); const [detailId,setDetailId]=useState(null);
@@ -513,9 +507,6 @@ function StudentsPage({students,stockItems}){
   </div>
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   WHATSAPP SAYFASI (ÇOKLU İSİMLİ GRUP LİNKİ YÖNETİMİ)
-═══════════════════════════════════════════════════════════════ */
 function WhatsAppPage({students, waLinks}) {
   const safeLinks = safeArr(waLinks);
   const [title, setTitle] = useState("");
@@ -568,7 +559,7 @@ function WhatsAppPage({students, waLinks}) {
     <Modal show={showInviteModal} onClose={()=>setShowInviteModal(false)} title="Davet Grubu Seçin">
       <div style={{fontSize:13,color:"#64748B",marginBottom:16}}><strong>{selectedStudent?.name}</strong> isimli öğrencinin velisine hangi grubu göndermek istersiniz?</div>
       <div style={{display:"flex", flexDirection:"column", gap:8}}>
-        {safeLinks.map(l=><button key={l.id} onClick={()=>completeInvite(l.url)} style={{width:"100%",padding:12,borderRadius:12,background:"var(--bg-color)",border:"1px solid #E2E8F0",color:"var(--text-main)",fontWeight:700,textAlign:"left",cursor:"pointer"}}>{l.name}</button>)}
+        {safeLinks.map(l=><button key={l.id} type="button" onClick={()=>completeInvite(l.url)} style={{width:"100%",padding:12,borderRadius:12,background:"var(--bg-color)",border:"1px solid #E2E8F0",color:"var(--text-main)",fontWeight:700,textAlign:"left",cursor:"pointer"}}>{l.name}</button>)}
       </div>
     </Modal>
   </div>
@@ -685,9 +676,6 @@ function StaffPage({staff}){
   </div>
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   KURUMSAL DASHBOARD (YAN YANA 3 KOLON GRID)
-═══════════════════════════════════════════════════════════════ */
 function Dashboard({students,expenses}){
   const safeStudents = safeArr(students); const safeExpenses = safeArr(expenses); const active=safeStudents.filter(s=>courseStatus(s)==="active");
   const totalRev=safeStudents.reduce((t,s)=>t+totalPaid(s),0); const totalExp=safeExpenses.reduce((t,e)=>t+Number(e.amount||0),0); const netProfit = totalRev - totalExp;
@@ -745,7 +733,7 @@ function SettingsPage({navItems, clubName, logoUrl, appUsers}){
   }
 
   return<div style={{padding:16}}>
-    <TabBar tabs={["Genel Kurum", "Çalışan Yetkileri"]} active={tab} onChange={setTab}/>
+    <TabBar tabs={["Genel Kurum", "Personel Hesap Yetkileri"]} active={tab} onChange={setTab}/>
     {tab === 0 && (
       <div><Card><Inp label="Kulüp Adı" value={nameVal} onChange={setNameVal}/><Inp label="Logo URL" value={logoVal} onChange={setLogoVal}/></Card><Btn full onClick={()=>{DB.set("clubName",nameVal); DB.set("logoUrl",logoVal); alert("Kaydedildi");}}>Kaydet</Btn></div>
     )}
@@ -760,7 +748,7 @@ function SettingsPage({navItems, clubName, logoUrl, appUsers}){
             <div style={{fontSize:12, fontWeight:700, marginBottom:8, color:"var(--text-main)"}}>Görebileceği Menüler</div>
             <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:8}}>
               {navItems.map(nav => nav.id !== "settings" && (
-                <label key={nav.id} style={{display:"flex", alignItems:"center", gap:6, padding:"8px", background:"var(--bg-color)", borderRadius:8, cursor:"pointer", border:`1px solid ${(uForm.allowedTabs||[]).includes(nav.id)?"#0EA5E9":"#E2E8F0"}`}}>
+                <label key={nav.id} style={{display:"flex", alignItems:"center", gap:6, padding:"8px", background:C.bg, borderRadius:8, cursor:"pointer", border:`1px solid ${(uForm.allowedTabs||[]).includes(nav.id)?C.accent:C.border}`}}>
                   <input type="checkbox" checked={(uForm.allowedTabs||[]).includes(nav.id)} onChange={() => toggleMenuAccess(nav.id)} />
                   <span style={{fontSize:12}}>{nav.label}</span>
                 </label>

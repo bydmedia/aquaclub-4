@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#F0F4F8"/>
 <link rel="manifest" href="manifest.json"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
 <title>AquaClub Pro</title>
 <style>
@@ -55,7 +55,7 @@ button{font-family:'Inter',-apple-system,sans-serif}
 const {useState,useEffect,useRef}=React;
 
 /* ═══════════════════════════════════════════════════════════════
-   GLOBAL TANIMLAMALAR
+   GLOBAL STATICS & DEFAULTS
 ═══════════════════════════════════════════════════════════════ */
 const EMPTY_ITEM={id:null,name:"",category:"",price:"",stock:"",minStock:"",supplier:"",notes:""};
 const STOCK_CATS=["Gözlük","Bone","Palet","Şamandıra","Aksesuar","Kıyafet","Temizlik","Diğer"];
@@ -80,13 +80,29 @@ const DAYS_FULL=["Pazar","Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cu
 const TODAY=new Date().toISOString().split("T")[0];
 
 /* ═══════════════════════════════════════════════════════════════
-   SAFE ARRAY FILTER & UTILS
+   FIREBASE BAĞLANTISI
 ═══════════════════════════════════════════════════════════════ */
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.firestore();
+
 function safeArr(val) { 
   if (!val) return [];
   return (Array.isArray(val) ? val : Object.values(val)).filter(item => item !== null && item !== undefined && typeof item === 'object');
 }
 
+const DB={
+  set:(k,v)=>{
+    const cleanV = Array.isArray(v) ? v.filter(i => i && typeof i === 'object') : v;
+    db.collection("appData").doc("main").set({ [k]: cleanV }, { merge: true })
+      .catch(err => console.error("Firebase kayıt hatası:", err));
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════════
+   YARDIMCI FONKSİYONLAR
+═══════════════════════════════════════════════════════════════ */
 function fmtDate(d){if(!d)return"—";const[y,m,day]=d.split("-");return`${day}.${m}.${y}`}
 function totalPaid(s){return safeArr(s?.payments).reduce((t,p)=>t+Number(p.amount||0),0);}
 function equipmentTotal(s){return safeArr(s?.equipment).reduce((t,e)=>t+Number(e.price||0),0);}
@@ -109,25 +125,33 @@ function calcEndDate(start,total,days){
 function swimLevelLabel(v){return{beginner:"Başlangıç",intermediate:"Orta",advanced:"İleri",competitive:"Yarışmacı"}[v]||v||"—"}
 function roleLabel(r){return{trainer:"Antrenör",admin:"İdari Personel",driver:"Şoför",other:"Diğer"}[r]||r||"—"}
 
-/* ═══════════════════════════════════════════════════════════════
-   SABİT BOYUTLU MODAL BİLEŞENİ (WIDGET JUMP ENGELLEYİCİ)
-═══════════════════════════════════════════════════════════════ */
-function Modal({show,onClose,title,children}){
-  if(!show)return null;
-  return<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(4px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:300,padding:16}} onClick={e=>e.target===e.currentTarget&&onClose()}>
-    <div style={{background:"var(--sidebar-bg)",borderRadius:20,padding:"24px",width:"100%",maxWidth:540,height:"580px",display:"flex",flexDirection:"column",boxShadow:"0 20px 40px rgba(0,0,0,0.08)"}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20,flexShrink:0}}>
-        <div style={{fontSize:17,fontWeight:800,color:"var(--text-main)"}}>{title}</div>
-        <button onClick={onClose} style={{background:"var(--bg-color)",border:"none",color:"#64748B",width:32,height:32,borderRadius:16,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
-      </div>
-      <div style={{flex:1,overflowY:"auto",paddingRight:4}}>{children}</div>
-    </div>
-  </div>
+function openWA(phone, text) {
+  if (!phone) { alert("Sisteme kayıtlı veli telefonu bulunamadı."); return; }
+  let p = phone.replace(/\D/g, "");
+  if (p.startsWith("0")) p = "90" + p.slice(1);
+  else if (p.length === 10) p = "90" + p;
+  window.open(`https://wa.me/${p}?text=${encodeURIComponent(text)}`, "_blank");
+}
+
+function exportCSV(filename, headers, rows) {
+  const bom = "\uFEFF"; 
+  const csv = [headers.join(","), ...rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(","))].join("\n");
+  const blob = new Blob([bom + csv], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = filename + ".csv";
+  link.click();
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   PRIMITIVE UI ELEMENTS
+   UI BİLEŞENLERİ (SABİT MODAL DAHİL)
 ═══════════════════════════════════════════════════════════════ */
+function Icon({d,size=18,color="currentColor",style={}}){
+  return<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" style={style}>
+    {d.split("M").filter(Boolean).map((seg,i)=><path key={i} d={"M"+seg}/>)}
+  </svg>
+}
+
 function Toggle({checked,onChange}){
   return<button onClick={()=>onChange(!checked)} style={{width:40,height:22,borderRadius:11,background:checked?"#0EA5E9":"#E2E8F0",border:"none",cursor:"pointer",position:"relative",transition:"background .2s",flexShrink:0}}>
     <span style={{position:"absolute",top:2,left:checked?19:2,width:18,height:18,borderRadius:"50%",background:"#fff",transition:"left .2s"}}/>
@@ -170,7 +194,7 @@ function Card({children,style={},accent}){
 
 function Badge({label,color}){
   const map={active:["#10B981","Aktif"],upcoming:["#F59E0B","Başlamadı"],ended:["#EF4444","Bitti"],unknown:["#64748B","Belirsiz"]};
-  const [col,txt]=map[label]||[color||#64748B,label];
+  const [col,txt]=map[label]||[color||"#64748B",label];
   return<span style={{fontSize:10,fontWeight:600,padding:"2px 8px",borderRadius:20,background:col+"15",color:col,letterSpacing:0.3}}>{txt}</span>
 }
 
@@ -210,8 +234,55 @@ function DayPicker({value=[],onChange}){
   </div>
 }
 
+/* WIDGET EKRANININ SABİTLENMESİ İÇİN 580px HEIGHT EKLENDİ */
+function Modal({show,onClose,title,children}){
+  if(!show)return null;
+  return<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(4px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:300,padding:16}} onClick={e=>e.target===e.currentTarget&&onClose()}>
+    <div style={{background:"var(--sidebar-bg)",borderRadius:20,padding:"24px",width:"100%",maxWidth:540,height:"580px",display:"flex",flexDirection:"column",boxShadow:"0 20px 40px rgba(0,0,0,0.08)"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20,flexShrink:0}}>
+        <div style={{fontSize:17,fontWeight:800,color:"var(--text-main)"}}>{title}</div>
+        <button onClick={onClose} style={{background:"var(--bg-color)",border:"none",color:"#64748B",width:32,height:32,borderRadius:16,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+      </div>
+      <div style={{flex:1,overflowY:"auto",paddingRight:4}}>{children}</div>
+    </div>
+  </div>
+}
+
 /* ═══════════════════════════════════════════════════════════════
-   STUDENT FORM (BÜYÜK HARF ENFORCED)
+   GİRİŞ EKRANI
+═══════════════════════════════════════════════════════════════ */
+function LoginScreen({ onSuccess, appUsers, adminPin }) {
+  const [user, setUser] = useState("");
+  const [pass, setPass] = useState("");
+  const [err, setErr] = useState(false);
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (user.toLowerCase() === "admin" && (pass === "0309" || pass === adminPin)) {
+      onSuccess({ id: 'admin', username: 'admin', role: 'admin', allowedTabs: NAV_ITEMS.map(n=>n.id) });
+      return;
+    }
+    const foundUser = safeArr(appUsers).find(u => u.username.toLowerCase() === user.toLowerCase() && u.password === pass);
+    if (foundUser) { onSuccess(foundUser); return; }
+    setErr(true); setTimeout(() => setErr(false), 2000);
+  };
+
+  return (
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100vh",background:"var(--bg-color)",padding:20}}>
+      <div style={{fontSize:48, fontWeight:800, color:"#0EA5E9", marginBottom:30, letterSpacing:-1.5}}>AquaClub Pro</div>
+      <form onSubmit={handleLogin} style={{background:"var(--card-bg)",padding:"40px 30px",borderRadius:24,border:`1px solid ${err?"#EF4444":"#E2E8F0"}`,textAlign:"center",boxShadow:"0 12px 32px rgba(0,0,0,0.06)",width:"100%",maxWidth:360, transition:"all 0.3s"}}>
+        <div style={{fontSize:18,fontWeight:700,marginBottom:24,color:"var(--text-main)"}}>Sisteme Giriş Yapın</div>
+        <Inp value={user} onChange={setUser} placeholder="Kullanıcı Adı" autoFocus style={{textAlign:"center", fontSize:14, padding:"14px", borderRadius:12}}/>
+        <Inp value={pass} onChange={setPass} type="password" placeholder="Şifre" style={{textAlign:"center", fontSize:14, padding:"14px", borderRadius:12, letterSpacing:4}}/>
+        <Btn full style={{marginTop:12, padding:"14px", borderRadius:12, fontSize:14}}>Giriş Yap</Btn>
+        <div style={{height: 20, marginTop: 16}}>{err && <div style={{color:"#EF4444",fontSize:13,fontWeight:600}}>Hatalı Bilgi Girdiniz!</div>}</div>
+      </form>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ÖĞRENCİ FORMU (ZORUNLU BÜYÜK HARF)
 ═══════════════════════════════════════════════════════════════ */
 function StudentForm({initial,onSave,onCancel,stockItems}){
   const [tab,setTab]=useState(0);
@@ -315,8 +386,43 @@ function EqPicker({stockItems,current,onAdd,onRemove}){
   </div>
 }
 
+function StudentDetail({student,onBack,students,stockItems}){
+  const [tab,setTab]=useState(0); const [editing,setEditing]=useState(false); const [payForm,setPayForm]=useState({amount:"",date:TODAY,note:""}); const [showPay,setShowPay]=useState(false);
+  const safePays = safeArr(student.payments); const safeEqs = safeArr(student.equipment); const safeDays = safeArr(student.weekDays);
+  function save(f){const n=safeArr(students).map(s=>s.id===student.id?{...s,...f,id:s.id}:s);DB.set("students",n);setEditing(false);}
+  function addPay(){ if(!payForm.amount)return; const n=safeArr(students).map(s=>s.id===student.id?{...s,payments:[...safeArr(s.payments),{id:Date.now(),...payForm,amount:Number(payForm.amount)}]}:s); DB.set("students",n); setPayForm({amount:"",date:TODAY,note:""}); setShowPay(false); }
+  function delPay(pid){const n=safeArr(students).map(s=>s.id===student.id?{...s,payments:safeArr(s.payments).filter(p=>p.id!==pid)}:s);DB.set("students",n);}
+
+  if(editing)return<div style={{padding:14}}><div style={{display:"flex",alignItems:"center",gap:10,marginBottom:20}}><button onClick={()=>setEditing(false)} style={{background:"var(--card-bg)",border:`1px solid #E2E8F0`,color:"#475569",width:32,height:32,borderRadius:8}}>←</button><span style={{fontWeight:800,fontSize:16,color:"var(--text-main)"}}>Düzenle: {student.name}</span></div><StudentForm initial={student} onSave={save} onCancel={()=>setEditing(false)} stockItems={stockItems}/></div>;
+  const paid=totalPaid(student),monthly=monthlyTotal(student),balance=paid-monthly; const st=courseStatus(student);
+
+  return<div style={{padding:14}}>
+    <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
+      <button onClick={onBack} style={{background:"var(--card-bg)",border:`1px solid #E2E8F0`,color:"#475569",width:36,height:36,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center"}}>←</button>
+      <div style={{flex:1}}><div style={{fontWeight:800,fontSize:18,color:"var(--text-main)"}}>{student.name}</div><div style={{fontSize:12,color:"#64748B",marginTop:2}}>{age(student.dob)} · {student.groupName||"Grup yok"}</div></div>
+      <Badge label={st}/>
+    </div>
+    <TabBar tabs={["Genel","Kurs","Servis","Ekipman","Ödemeler"]} active={tab} onChange={setTab}/>
+    {tab===0&&<div>
+      <Card><Row label="Ad Soyad" val={student.name}/><Row label="Doğum Tarihi" val={`${fmtDate(student.dob)} (${age(student.dob)})`}/><Row label="Veli" val={student.guardianName||"—"}/><Row label="Veli Tel 1" val={student.guardianPhone1||"—"} href={student.guardianPhone1?`tel:${student.guardianPhone1}`:undefined}/></Card>
+      {student.guardianPhone1 && (
+        <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:12}}>
+          <Btn sm style={{background:"#25D366", color:"#fff", border:"none"}} onClick={()=>openWA(student.guardianPhone1, `Sayın velimiz, ${student.name} isimli öğrencimizin ödemesi hakkında hatırlatma yapmak isteriz.`)}>💬 Ödeme Hatırlat</Btn>
+          <Btn sm style={{background:"#25D366", color:"#fff", border:"none"}} onClick={()=>openWA(student.guardianPhone1, `Sayın velimiz, ${student.name} isimli öğrencimiz bugünkü antrenmana katılmamıştır.`)}>💬 Devamsızlık Bildir</Btn>
+        </div>
+      )}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}><StatCard label="Katılım (gün)" value={attendanceCount(student)}/><StatCard label="Aylık Bakiye" value={`${balance>=0?"+":""}${balance.toLocaleString("tr-TR")} ₺`} col={balance>=0?"#10B981":"#EF4444"}/></div>
+      <Btn variant="secondary" full onClick={()=>setEditing(true)}>Bilgileri Düzenle</Btn>
+    </div>}
+    {tab===1&&<div><Card><Row label="Seviye" val={swimLevelLabel(student.swimLevel)}/><Row label="Grup" val={student.groupName||"—"}/><Row label="Günler" val={safeDays.map(d=>DAYS_TR[d]).join(", ")||"—"}/><Row label="Başlangıç" val={fmtDate(student.courseStart)}/><Row label="Bitiş" val={fmtDate(student.courseEnd)}/></Card></div>}
+    {tab===2&&<div>{student.hasTransport?<Card><Row label="Adres" val={student.address||"—"}/><Row label="Servis Ücreti" val={`${student.transportFee} ₺`}/><Row label="Şoför" val={student.driverName}/></Card>:<div style={{textAlign:"center",padding:"40px 0",color:"#94A3B8"}}>Servis kullanmıyor</div>}</div>}
+    {tab===3&&<div>{safeEqs.length===0?<div style={{textAlign:"center",padding:"40px 0",color:"#94A3B8"}}>Ekipman yok</div>:<Card>{safeEqs.map(e=><Row key={e.id} label={e.name} val={`${e.price} ₺`}/>)}</Card>}</div>}
+    {tab===4&&<div><SectionTitle action={<Btn sm onClick={()=>setShowPay(true)}>+ Ödeme Ekle</Btn>}>Ödemeler</SectionTitle><Card>{safePays.map(p=><Row key={p.id} label={fmtDate(p.date)} val={`+${p.amount} ₺`} col={"#10B981"}/>)}</Card></div>}
+  </div>
+}
+
 /* ═══════════════════════════════════════════════════════════════
-   STUDENTS PAGE
+   ÖĞRENCİLER LİSTESİ (SIKILAŞTIRILMIŞ)
 ═══════════════════════════════════════════════════════════════ */
 function StudentsPage({students,stockItems}){
   const [search,setSearch]=useState(""); const [showAdd,setShowAdd]=useState(false); const [detailId,setDetailId]=useState(null);
@@ -330,6 +436,8 @@ function StudentsPage({students,stockItems}){
       <Btn sm onClick={()=>setShowAdd(true)}>+ Yeni Kayıt</Btn>
     </div>
     <div style={{position:"relative",marginBottom:12}}><input style={{width:"100%",padding:"12px 14px",background:"var(--sidebar-bg)",border:`1px solid #E2E8F0`,borderRadius:12,color:"var(--text-main)"}} placeholder="İsimle öğrenci ara..." value={search} onChange={e=>setSearch(e.target.value)}/></div>
+    
+    {/* Sıkılaştırılmış liste (marginBottom: 6px) */}
     {filtered.map(s=><Card key={s.id} style={{marginBottom:6, padding:"10px 14px"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
         <div><div style={{fontWeight:700,fontSize:15,color:"var(--text-main)"}}>{s.name}</div><div style={{fontSize:12,color:"#64748B",marginTop:2}}>{s.groupName||"Grup yok"}</div></div>
@@ -354,7 +462,13 @@ function AttendancePage({students}){
 
 function PaymentsPage({students}){
   const all=safeArr(students).flatMap(s=>safeArr(s.payments).map(p=>({...p,studentName:s.name}))).sort((a,b)=>new Date(b.date)-new Date(a.date));
-  return<div style={{padding:16}}><SectionTitle>Ödemeler</SectionTitle><Card>{all.map((p,i)=><Row key={i} label={p.studentName} val={`+${p.amount} ₺`} col="#10B981"/>)}</Card></div>
+  const total=all.reduce((t,p)=>t+Number(p.amount),0); const thisMonth=all.filter(p=>p.date&&p.date.startsWith(TODAY.slice(0,7))).reduce((t,p)=>t+Number(p.amount),0);
+  const unpaid = safeArr(students).filter(s => courseStatus(s) === "active" && totalPaid(s) < monthlyTotal(s));
+  return<div style={{padding:16}}>
+    <SectionTitle action={<Btn sm variant="ghost" onClick={()=>exportCSV("Odemeler", ["Ogrenci", "Tutar"], all.map(p => [p.studentName, p.amount]))}>⬇️ Excel</Btn>}>Ödemeler</SectionTitle>
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}><StatCard label="Toplam" value={`${total} ₺`} col="#10B981" span2/><StatCard label="Bu Ay" value={`${thisMonth} ₺`}/><StatCard label="Eksik" value={unpaid.length} col="#EF4444"/></div>
+    <Card>{all.map(p=><Row key={p.id} label={p.studentName} val={`+${p.amount} ₺`} col="#10B981"/>)}</Card>
+  </div>
 }
 
 function ExpensesPage({expenses}){
@@ -400,7 +514,7 @@ function InventoryPage({items}){
         }}>-</Btn><Btn sm variant="danger" onClick={()=>DB.set("stock", validItems.filter(i=>i.id!==item.id))}>Sil</Btn></div>
       </Card>)
     }
-    <Modal show={show} onClose={()=>setShow(false)} title="Ürün İşlemi">
+    <Modal show={show} onClose={()=>setShow(false)} title="Ürün Kartı">
       <Inp label="Ürün Adı *" value={f.name} onChange={v=>u("name",v)}/>
       <Sel label="Kategori" value={f.category} onChange={v=>u("category",v)} options={STOCK_CATS.map(c=>({value:c,label:c}))}/>
       <div style={{display:"flex",gap:8}}><div style={{flex:1}}><Inp label="Fiyat (₺)" value={f.price} onChange={v=>u("price",v)} type="number"/></div><div style={{flex:1}}><Inp label="Stok" value={f.stock} onChange={v=>u("stock",v)} type="number"/></div></div>
@@ -410,7 +524,7 @@ function InventoryPage({items}){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   PERSONEL PUANTAJ VE HAKEDİŞ PANELİ
+   PERSONEL YOKLAMA VE PUANTAJ HAKEDİŞ SİSTEMİ
 ═══════════════════════════════════════════════════════════════ */
 function StaffPage({staff}){
   const validStaff = safeArr(staff);
@@ -467,7 +581,7 @@ function StaffPage({staff}){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   KURUMSAL DASHBOARD (GRID 3 KOLON)
+   KURUMSAL DASHBOARD (YAN YANA 3 KOLON GRID)
 ═══════════════════════════════════════════════════════════════ */
 function Dashboard({students,expenses}){
   const safeStudents = safeArr(students); const safeExpenses = safeArr(expenses); const active=safeStudents.filter(s=>courseStatus(s)==="active");
@@ -478,7 +592,7 @@ function Dashboard({students,expenses}){
   const endingSoon = active.filter(s=>{const d=daysLeft(s);return d>=0&&d<=14;}).sort((a,b)=>daysLeft(a)-daysLeft(b)).slice(0,5);
 
   return<div style={{padding:16}}>
-    <Card style={{marginBottom:16, background:netProfit >= 0 ? "#10B98115" : "#EF444415", border:"none"}}>
+    <Card accent={netProfit >= 0 ? "#10B981" : "#EF4444"} style={{marginBottom:16, background:netProfit >= 0 ? "#10B98115" : "#EF444415", border:"none"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
         <div style={{fontSize:13, color:netProfit >= 0 ? "#10B981" : "#EF4444", fontWeight:800}}>NET KASA DURUMU</div>
         <div style={{fontSize:26, fontWeight:800, color:netProfit >= 0 ? "#10B981" : "#EF4444"}}>{netProfit >= 0 ? "+" : ""}{netProfit.toLocaleString("tr-TR")} ₺</div>
@@ -510,7 +624,20 @@ function Dashboard({students,expenses}){
 function SettingsPage({navItems, clubName, logoUrl, themeColor, sidebarColor, cardColor, appUsers}){
   const [tab, setTab] = useState(0); const [nameVal, setNameVal] = useState(clubName); const [logoVal, setLogoVal] = useState(logoUrl);
   const [showUserModal, setShowUserModal] = useState(false); const [uForm, setUForm] = useState({ id:null, username:"", password:"", role:"staff", allowedTabs:[] });
-  function saveUser() { if(!uForm.username||!uForm.password)return; let n = safeArr(appUsers); if(uForm.id) n = n.map(u => u.id === uForm.id ? {...uForm} : u); else n = [...n, {...uForm, id:Date.now(), allowedTabs:["dashboard","students","attendance"]}]; DB.set("appUsers", n); setShowUserModal(false); }
+  
+  function toggleMenuAccess(menuId) {
+    const tabs = uForm.allowedTabs || [];
+    if(tabs.includes(menuId)) setUForm({...uForm, allowedTabs: tabs.filter(t=>t!==menuId)});
+    else setUForm({...uForm, allowedTabs: [...tabs, menuId]});
+  }
+  
+  function saveUser() { 
+    if(!uForm.username||!uForm.password)return; 
+    let n = safeArr(appUsers); 
+    if(uForm.id) n = n.map(u => u.id === uForm.id ? {...uForm} : u); 
+    else n = [...n, {...uForm, id:Date.now()}]; 
+    DB.set("appUsers", n); setShowUserModal(false); 
+  }
 
   return<div style={{padding:16}}>
     <TabBar tabs={["Genel Kurum", "Personel Hesap Yetkileri"]} active={tab} onChange={setTab}/>
@@ -519,8 +646,27 @@ function SettingsPage({navItems, clubName, logoUrl, themeColor, sidebarColor, ca
     )}
     {tab===1&&<div>
       <SectionTitle action={<Btn sm onClick={()=>{setUForm({id:null,username:"",password:"",role:"staff",allowedTabs:["dashboard","students","attendance"]});setShowUserModal(true);}}>+ Hesap Ekle</Btn>}>Çalışan Giriş Yetkileri</SectionTitle>
-      {safeArr(appUsers).map(u=><Card key={u.id}><Row label={u.username} val={u.role=='admin'?'Tam Yetki (Admin)':'Çalışan (Kısıtlı)'}/></Card>)}
-      <Modal show={showUserModal} onClose={()=>setShowUserModal(false)} title="Personel Hesabı Tanımla"><Inp label="Kullanıcı Adı" value={uForm.username} onChange={v=>setUForm({...uForm,username:v})}/><Inp label="Giriş Şifresi" value={uForm.password} onChange={v=>setUForm({...uForm,password:v})}/><Btn full onClick={saveUser}>Hesabı Oluştur</Btn></Modal>
+      {safeArr(appUsers).map(u=><Card key={u.id}><Row label={u.username} val={u.role==='admin'?'Tam Yetki (Admin)':'Çalışan (Kısıtlı)'}/></Card>)}
+      <Modal show={showUserModal} onClose={()=>setShowUserModal(false)} title="Personel Hesabı Tanımla">
+        <Inp label="Kullanıcı Adı" value={uForm.username} onChange={v=>setUForm({...uForm,username:v})}/>
+        <Inp label="Giriş Şifresi" value={uForm.password} onChange={v=>setUForm({...uForm,password:v})}/>
+        {uForm.id !== "admin" && (
+          <div style={{marginTop: 10}}>
+            <div style={{fontSize:12, fontWeight:700, marginBottom:8, color:"var(--text-main)"}}>Görebileceği Menüler</div>
+            <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:8}}>
+              {navItems.map(nav => (
+                nav.id !== "settings" && (
+                  <label key={nav.id} style={{display:"flex", alignItems:"center", gap:6, padding:"8px", background:"var(--bg-color)", borderRadius:8, cursor:"pointer", border:`1px solid ${(uForm.allowedTabs||[]).includes(nav.id)?"#0EA5E9":"#E2E8F0"}`}}>
+                    <input type="checkbox" checked={(uForm.allowedTabs||[]).includes(nav.id)} onChange={() => toggleMenuAccess(nav.id)} />
+                    <span style={{fontSize:12}}>{nav.label}</span>
+                  </label>
+                )
+              ))}
+            </div>
+          </div>
+        )}
+        <Btn full onClick={saveUser} style={{marginTop:16}}>Hesabı Kaydet</Btn>
+      </Modal>
     </div>}
   </div>
 }

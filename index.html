@@ -280,6 +280,150 @@ function EqPicker({stockItems,current,onAdd,onRemove}){
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   4b. ÖĞRENCİ FORMU VE DETAY SAYFASI (EKSİK OLDUĞU İÇİN EKLENDİ)
+═══════════════════════════════════════════════════════════════ */
+function StudentForm({initial,onSave,onCancel,stockItems}){
+  const [tab,setTab]=useState(0);
+  const [f,setF]=useState({...EMPTY_S,...initial});
+  const u=(k,v)=>setF(p=>({...p,[k]:v}));
+
+  useEffect(()=>{
+    const end=calcEndDate(f.courseStart,f.totalSessions,f.weekDays);
+    if(end && end!==f.courseEnd) u("courseEnd",end);
+  },[f.courseStart,f.totalSessions,f.weekDays]);
+
+  function handleSave(){
+    if(!f.name || !f.name.trim()){ alert("Lütfen öğrenci adını giriniz."); return; }
+    onSave(f);
+  }
+
+  return<div>
+    <TabBar tabs={["Kişisel","Kurs","Servis","Ekipman"]} active={tab} onChange={setTab}/>
+    {tab===0&&<div>
+      <Inp label="Ad Soyad" value={f.name} onChange={v=>u("name",v.toLocaleUpperCase("tr-TR"))} autoFocus/>
+      <Inp label="Doğum Tarihi" type="date" value={f.dob} onChange={v=>u("dob",v)}/>
+      <Inp label="Veli Adı" value={f.guardianName} onChange={v=>u("guardianName",v.toLocaleUpperCase("tr-TR"))}/>
+      <Inp label="Veli Telefon 1" value={f.guardianPhone1} onChange={v=>u("guardianPhone1",v)}/>
+      <Inp label="Veli Telefon 2" value={f.guardianPhone2} onChange={v=>u("guardianPhone2",v)}/>
+      <Inp label="Notlar" value={f.notes} onChange={v=>u("notes",v)} rows={3}/>
+    </div>}
+    {tab===1&&<div>
+      <Inp label="Kurs Başlangıç Tarihi" type="date" value={f.courseStart} onChange={v=>u("courseStart",v)}/>
+      <Inp label="Toplam Seans Sayısı" type="number" value={f.totalSessions} onChange={v=>u("totalSessions",v)}/>
+      <div style={{fontSize:11,color:C.textSub,marginBottom:4,fontWeight:700,textTransform:"uppercase",letterSpacing:0.3}}>Haftanın Günleri</div>
+      <DayPicker value={f.weekDays} onChange={v=>u("weekDays",v)}/>
+      <Row label="Hesaplanan Bitiş Tarihi" val={fmtDate(f.courseEnd)}/>
+      <Sel label="Yüzme Seviyesi" value={f.swimLevel} onChange={v=>u("swimLevel",v)} options={[{value:"BAŞLANGIÇ",label:"Başlangıç"},{value:"ORTA",label:"Orta"},{value:"İLERİ",label:"İleri"},{value:"YARIŞMACI",label:"Yarışmacı"}]}/>
+      <Inp label="Kulvar" value={f.poolLane} onChange={v=>u("poolLane",v)}/>
+      <Inp label="Grup Adı" value={f.groupName} onChange={v=>u("groupName",v.toLocaleUpperCase("tr-TR"))}/>
+      <Inp label="Aylık Ücret" type="number" value={f.monthlyFee} onChange={v=>u("monthlyFee",v)}/>
+      <Inp label="İndirim" type="number" value={f.discount} onChange={v=>u("discount",v)}/>
+      <Inp label="Ödeme Notu" value={f.paymentNote} onChange={v=>u("paymentNote",v)}/>
+    </div>}
+    {tab===2&&<div>
+      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
+        <Toggle checked={f.hasTransport} onChange={v=>u("hasTransport",v)}/>
+        <span style={{fontSize:13,fontWeight:700}}>Servis Kullanıyor</span>
+      </div>
+      {f.hasTransport&&<div>
+        <Inp label="Adres" value={f.address} onChange={v=>u("address",v)} rows={2}/>
+        <Inp label="Servis Ücreti" type="number" value={f.transportFee} onChange={v=>u("transportFee",v)}/>
+        <Inp label="Şoför Adı" value={f.driverName} onChange={v=>u("driverName",v)}/>
+        <Inp label="Şoför Telefonu" value={f.driverPhone} onChange={v=>u("driverPhone",v)}/>
+      </div>}
+    </div>}
+    {tab===3&&<div>
+      <EqPicker stockItems={stockItems} current={f.equipment}
+        onAdd={(item)=>u("equipment",[...safeArr(f.equipment),{...item,id:Date.now(),addedDate:TODAY}])}
+        onRemove={(id)=>u("equipment",safeArr(f.equipment).filter(e=>e.id!==id))}/>
+    </div>}
+    <div style={{display:"flex",gap:8,marginTop:16}}>
+      <Btn variant="secondary" onClick={onCancel} style={{flex:1}}>Vazgeç</Btn>
+      <Btn onClick={handleSave} style={{flex:1}}>Kaydet</Btn>
+    </div>
+  </div>
+}
+
+function StudentDetail({student,onBack,students,stockItems}){
+  const [showEdit,setShowEdit]=useState(false);
+  const [showPay,setShowPay]=useState(false);
+  const [payAmount,setPayAmount]=useState("");
+
+  function updateStudent(newData){
+    const n=safeArr(students).map(s=>s.id===student.id?{...newData,id:student.id,payments:s.payments,attendance:s.attendance}:s);
+    DB.set("students",n);
+    setShowEdit(false);
+  }
+
+  function addPayment(){
+    if(!payAmount) return;
+    const n=safeArr(students).map(s=>s.id===student.id?{...s,payments:[...safeArr(s.payments),{id:Date.now(),amount:Number(payAmount),date:TODAY}]}:s);
+    DB.set("students",n);
+    setPayAmount("");
+    setShowPay(false);
+  }
+
+  const expected=monthlyTotal(student);
+  const paid=totalPaid(student);
+  const debt=expected-paid;
+
+  return<div style={{padding:16}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+      <Btn variant="ghost" sm onClick={onBack}>← Geri</Btn>
+      <div style={{display:"flex",gap:8}}>
+        <Btn sm variant="secondary" onClick={()=>setShowEdit(true)}>Düzenle</Btn>
+        <Btn sm onClick={()=>setShowPay(true)}>+ Ödeme Ekle</Btn>
+      </div>
+    </div>
+    <Card>
+      <div style={{fontSize:18,fontWeight:800,marginBottom:6}}>{student.name}</div>
+      <Badge label={courseStatus(student)}/>
+      <div style={{marginTop:12}}>
+        <Row label="Doğum Tarihi" val={fmtDate(student.dob)}/>
+        <Row label="Yaş" val={age(student.dob)}/>
+        <Row label="Veli" val={student.guardianName||"—"}/>
+        <Row label="Telefon" val={student.guardianPhone1||"—"}/>
+        <Row label="Grup" val={student.groupName||"—"}/>
+        <Row label="Seviye" val={swimLevelLabel(student.swimLevel)}/>
+        <Row label="Kurs Başlangıç" val={fmtDate(student.courseStart)}/>
+        <Row label="Kurs Bitiş" val={fmtDate(student.courseEnd)}/>
+        <Row label="Kalan Seans" val={`${calcRemainingSessions(student)} / ${student.totalSessions||0}`}/>
+      </div>
+    </Card>
+    <Card>
+      <SectionTitle>Ödeme Durumu</SectionTitle>
+      <Row label="Aylık Toplam" val={`${expected.toLocaleString("tr-TR")} ₺`}/>
+      <Row label="Ödenen" val={`${paid.toLocaleString("tr-TR")} ₺`} col={C.success}/>
+      <Row label="Kalan" val={`${debt.toLocaleString("tr-TR")} ₺`} col={debt>0?C.danger:C.success}/>
+    </Card>
+    {student.hasTransport&&<Card>
+      <SectionTitle>Servis Bilgisi</SectionTitle>
+      <Row label="Adres" val={student.address||"—"}/>
+      <Row label="Ücret" val={`${student.transportFee||0} ₺`}/>
+      <Row label="Şoför" val={student.driverName||"—"}/>
+    </Card>}
+    <Card>
+      <SectionTitle>Ekipmanlar</SectionTitle>
+      {safeArr(student.equipment).map(e=><Row key={e.id} label={e.name} val={`${e.price} ₺`}/>)}
+      {safeArr(student.equipment).length===0&&<div style={{fontSize:12,color:C.textSub}}>Kayıtlı ekipman yok.</div>}
+    </Card>
+    <Card>
+      <SectionTitle>Ödeme Geçmişi</SectionTitle>
+      {safeArr(student.payments).sort((a,b)=>new Date(b.date)-new Date(a.date)).map(p=><Row key={p.id} label={fmtDate(p.date)} val={`+${p.amount} ₺`} col={C.success}/>)}
+      {safeArr(student.payments).length===0&&<div style={{fontSize:12,color:C.textSub}}>Ödeme kaydı yok.</div>}
+    </Card>
+
+    <Modal show={showEdit} onClose={()=>setShowEdit(false)} title="Öğrenci Bilgilerini Düzenle">
+      <StudentForm initial={student} onSave={updateStudent} onCancel={()=>setShowEdit(false)} stockItems={stockItems}/>
+    </Modal>
+    <Modal show={showPay} onClose={()=>setShowPay(false)} title="Ödeme Ekle">
+      <Inp label="Tutar" type="number" value={payAmount} onChange={setPayAmount}/>
+      <Btn full onClick={addPayment} style={{marginTop:12}}>Kaydet</Btn>
+    </Modal>
+  </div>
+}
+
+/* ═══════════════════════════════════════════════════════════════
    5. ANA PASIF EKRANLAR VE FORM YÖNETİMLERİ
 ═══════════════════════════════════════════════════════════════ */
 // ... (Tüm sayfaların ana gövdeleri ve işlevleri stabil şekilde korunmuştur)
@@ -459,7 +603,6 @@ function App(){
     <div style={{flex:1, display:"flex", flexDirection:"column", overflow:"hidden"}}>
       <div style={{padding:"16px 20px", background:"var(--sidebar-bg)", borderBottom:"1px solid #E2E8F0", fontWeight:800, fontSize:16, color:"var(--text-main)"}}>{(visibleNav.find(n=>n.id===activeTab)||{}).label}</div>
       <div style={{flex:1, overflowY:"auto"}}>
-        {activeTab tyranny === "dashboard" /* fallback dummy conditional to secure babel parsing flow */}
         {activeTab==="dashboard"&&<Dashboard students={students} expenses={expenses}/>}
         {activeTab==="students"&&<StudentsPage students={students} stockItems={stockItems}/>}
         {activeTab==="attendance"&&<AttendancePage students={students}/>}

@@ -12,14 +12,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 <title>AquaClub Pro</title>
 <style>
-/* 🌟 ULTRA MODERN CSS (SOFT UI) 🌟 */
 :root {
-  --bg-color: #F8FAFC; /* Çok hafif, modern slate */
+  --bg-color: #F8FAFC; 
   --sidebar-bg: #FFFFFF;
   --card-bg: #FFFFFF;
   --text-main: #0F172A;
   --text-sub: #64748B;
-  --accent: #3B82F6; /* Modern Mavi */
+  --accent: #3B82F6; 
   --accent-hover: #2563EB;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -31,10 +30,9 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.4)}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:10px}
 
-/* MODERN İNPUTLAR VE BUTONLAR */
 .modern-inp {
   width: 100%; padding: 12px 16px; background-color: #F1F5F9; border: 2px solid transparent;
-  border-radius: 14px; color: var(--text-main); font-size: 14px; font-weight: 600;
+  border-radius: 12px; color: var(--text-main); font-size: 14px; font-weight: 600;
   transition: all 0.25s ease; outline: none; font-family: 'Inter', sans-serif;
 }
 .modern-inp:focus {
@@ -45,9 +43,9 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.4)}
 .modern-inp:disabled { opacity: 0.7; cursor: not-allowed; }
 
 .modern-btn {
-  padding: 12px 20px; border-radius: 12px; border: none; cursor: pointer; font-weight: 700;
+  padding: 12px 20px; border-radius: 12px; border: none; cursor: pointer; font-weight: 800;
   font-size: 14px; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); display: inline-flex; 
-  align-items: center; justify-content: center; letter-spacing: 0.3px; outline: none;
+  align-items: center; justify-content: center; outline: none;
 }
 .modern-btn:active { transform: scale(0.96); }
 .modern-btn-primary { background: var(--accent); color: #fff; box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3); }
@@ -58,13 +56,11 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.4)}
 .modern-btn-danger:hover { background: #FEE2E2; color: #B91C1C; }
 .modern-btn-success { background: #ECFDF5; color: #059669; }
 
-/* KAVİSLİ VE GÖLGELİ MODERN KARTLAR */
 .modern-card {
   background: var(--card-bg); border-radius: 20px; padding: 20px; margin-bottom: 16px;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
   border: 1px solid rgba(226, 232, 240, 0.8); transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-.modern-card:hover { box-shadow: 0 20px 35px -5px rgba(0, 0, 0, 0.08); }
 
 .spinner {border: 4px solid rgba(0,0,0,0.05); border-left-color: var(--accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 16px;}
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -74,11 +70,21 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.4)}
 .data-col { font-size: 13px; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700; }
 .data-col-sub { font-size: 11px; color: var(--text-sub); font-weight: 600; }
 .data-col-right { text-align: right; font-weight: 800; }
-.data-header { font-size: 11px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #E2E8F0; padding-bottom: 8px; margin-bottom: 4px; }
+.data-header { font-size: 11px; font-weight: 800; color: #94A3B8; text-transform: uppercase; border-bottom: 2px solid #E2E8F0; padding-bottom: 8px; margin-bottom: 4px; }
 </style>
 
+<!-- Firebase Kütüphaneleri -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<!-- Beyaz Ekran Hata Yakalayıcı (Acil Durumlar İçin) -->
+<script>
+  window.addEventListener('error', function(e) {
+    if(document.getElementById("root").innerHTML === "") {
+      document.body.innerHTML = '<div style="padding:30px;text-align:center;font-family:sans-serif;"><h2 style="color:#DC2626;">Sistem Yüklenirken Bir Hata Oluştu!</h2><p style="font-weight:bold;">Lütfen sayfayı yenileyin (F5).</p><p style="color:#64748B;font-size:12px;margin-top:20px;">Hata Detayı: ' + e.message + '</p></div>';
+    }
+  });
+</script>
 </head>
 <body>
 <div id="root"></div>
@@ -93,8 +99,6 @@ const {useState,useEffect,useRef}=React;
 ═══════════════════════════════════════════════════════════════ */
 const TODAY=new Date().toISOString().split("T")[0];
 const DAYS_TR=["Paz","Pzt","Sal","Çar","Per","Cum","Cmt"];
-const DAYS_FULL=["Pazar","Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi"];
-const STOCK_CATS=["Gözlük","Bone","Palet","Şamandıra","Aksesuar","Kıyafet","Temizlik","Diğer"];
 
 const EMPTY_ITEM={id:null,name:"",category:"",price:"",stock:"",minStock:"",supplier:"",notes:""};
 const EMPTY_EXPENSE={id:null, title:"", amount:"", date:TODAY, category:"", isFood:false, expiryDate:"", note:"", qty:""};
@@ -107,6 +111,7 @@ const EMPTY_S={
   equipment:[],payments:[],attendance:{}
 };
 
+const STOCK_CATS=["Gözlük","Bone","Palet","Şamandıra","Aksesuar","Kıyafet","Temizlik","Diğer"];
 const NAV_ITEMS=[
   {id:"dashboard",label:"Genel Bakış",icon:"M3 12l9-9 9 9M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9"},
   {id:"students",label:"Öğrenciler",icon:"M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 7a4 4 0 100 8 4 4 0 000-8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"},
@@ -120,7 +125,7 @@ const NAV_ITEMS=[
 ];
 
 /* ═══════════════════════════════════════════════════════════════
-   2. FIREBASE & UTILS 
+   2. FIREBASE & GÜVENLİK (ÇÖKME ZIRHI EKLENDİ)
 ═══════════════════════════════════════════════════════════════ */
 const firebaseConfig = {
   apiKey: "AIzaSyA6d55XjKFlj4-eZPCYrfTl1451f-IKdq0",
@@ -132,10 +137,13 @@ const firebaseConfig = {
   measurementId: "G-2YQYQ8PHMG"
 };
 
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
-const db = firebase.firestore();
+let db = null;
+try {
+  if (window.firebase && !window.firebase.apps.length) {
+    window.firebase.initializeApp(firebaseConfig);
+  }
+  if(window.firebase) { db = window.firebase.firestore(); }
+} catch (error) { console.error("Firebase Hatası:", error); }
 
 function safeArr(val) { 
   if (!val) return [];
@@ -144,6 +152,7 @@ function safeArr(val) {
 
 const DB={
   set:(k,v)=>{
+    if(!db) return;
     const cleanV = Array.isArray(v) ? v.filter(i => i !== null && i !== undefined) : v;
     db.collection("appData").doc("main").set({ [k]: cleanV }, { merge: true }).catch(console.error);
   }
@@ -169,7 +178,6 @@ function courseStatus(s){
 function daysLeft(s){
   try { return Math.ceil((new Date(s?.courseEnd)-new Date(TODAY))/86400000); } catch(e){ return 0; }
 }
-function attendanceCount(s){return Object.values(s?.attendance||{}).filter(Boolean).length}
 function age(dob){
   if(!dob)return"—";
   try { return Math.floor((Date.now()-new Date(dob))/31557600000)+" Yaş"; } catch(e){ return "—"; }
@@ -225,8 +233,18 @@ function openWA(phone, text) {
   window.open(`https://wa.me/${p}?text=${encodeURIComponent(text)}`, "_blank");
 }
 
+function exportCSV(filename, headers, rows) {
+  const bom = "\uFEFF"; 
+  const csv = [headers.join(","), ...rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(","))].join("\n");
+  const blob = new Blob([bom + csv], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = filename + ".csv";
+  link.click();
+}
+
 /* ═══════════════════════════════════════════════════════════════
-   3. MODERN UI BİLEŞENLERİ (CLASS KULLANILDI)
+   3. UI BİLEŞENLERİ
 ═══════════════════════════════════════════════════════════════ */
 function Icon({d,size=18,color="currentColor",style={}}){
   return<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style}>
@@ -310,7 +328,7 @@ function DayPicker({value=[],onChange}){
   </div>
 }
 
-/* WIDGET (MODAL) YALNIZCA ÇARPIYA BASINCA KAPANIR */
+/* YENİ MODAL (KAPANMAMA VE INSET HATASI ÇÖZÜLDÜ) */
 function Modal({show,onClose,title,children}){
   if(!show)return null;
   return<div style={{position:"fixed",top:0,left:0,right:0,bottom:0,backgroundColor:"rgba(15, 23, 42, 0.7)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:9999,padding:16}}>
@@ -325,7 +343,7 @@ function Modal({show,onClose,title,children}){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   4. EKRAN BİLEŞENLERİ
+   4. EKRAN BİLEŞENLERİ (EKİPMAN SEÇİCİ)
 ═══════════════════════════════════════════════════════════════ */
 function EqPicker({stockItems,current,onAdd,onRemove}){
   const [sel,setSel]=useState(""); const safeStock = safeArr(stockItems);
@@ -344,12 +362,14 @@ function EqPicker({stockItems,current,onAdd,onRemove}){
   </div>
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   ÖĞRENCİ FORMU (AÇILIR MENÜLÜ GRUP SEÇİMİ VE ZORUNLU BÜYÜK HARF)
+═══════════════════════════════════════════════════════════════ */
 function StudentForm({initial,onSave,onCancel,stockItems,students}){
   const [tab,setTab]=useState(0);
   const [f,setF]=useState({...EMPTY_S,...initial});
-  const [isNewGroup, setIsNewGroup]=useState(false); // GRUP SEÇİMİ İÇİN YENİ STATE
+  const [isNewGroup, setIsNewGroup]=useState(false); 
 
-  // Mevcut grupları çek (Benzersiz)
   const existingGroups = Array.from(new Set(safeArr(students).map(s=>s.groupName).filter(Boolean)));
 
   const u=(k,v)=>{
@@ -392,7 +412,6 @@ function StudentForm({initial,onSave,onCancel,stockItems,students}){
         <div style={{flex:1}}><Inp label="Havuz Kulvarı" value={f.poolLane} onChange={v=>u("poolLane",v)}/></div>
       </div>
       
-      {/* 🚀 YENİ AÇILIR LİSTELİ GRUP SEÇİMİ 🚀 */}
       <div style={{marginBottom:14}}>
         <div style={{fontSize:11,color:"var(--text-sub)",marginBottom:6,fontWeight:800,textTransform:"uppercase",letterSpacing:0.5}}>Grup / Sınıf Adı</div>
         {!isNewGroup ? (
@@ -461,48 +480,8 @@ function StudentForm({initial,onSave,onCancel,stockItems,students}){
   </div>
 }
 
-function StudentDetail({student,onBack,students,stockItems}){
-  const [tab,setTab]=useState(0); const [editing,setEditing]=useState(false); const [payForm,setPayForm]=useState({amount:"",date:TODAY,note:""}); const [showPay,setShowPay]=useState(false);
-  const safePays = safeArr(student.payments); const safeEqs = safeArr(student.equipment); const safeDays = safeArr(student.weekDays);
-  
-  function save(f){const n=safeArr(students).map(s=>s.id===student.id?{...s,...f,id:s.id}:s);DB.set("students",n);setEditing(false);}
-  function addPay(){ if(!payForm.amount)return; const n=safeArr(students).map(s=>s.id===student.id?{...s,payments:[...safeArr(s.payments),{id:Date.now(),...payForm,amount:Number(payForm.amount)}]}:s); DB.set("students",n); setPayForm({amount:"",date:TODAY,note:""}); setShowPay(false); }
-  function delPay(pid){const n=safeArr(students).map(s=>s.id===student.id?{...s,payments:safeArr(s.payments).filter(p=>p.id!==pid)}:s);DB.set("students",n);}
-
-  if(editing)return<div style={{padding:20,maxWidth:600,margin:"0 auto"}}><div style={{display:"flex",alignItems:"center",gap:12,marginBottom:24}}><button onClick={()=>setEditing(false)} style={{background:"var(--card-bg)",border:`1px solid #E2E8F0`,color:"var(--text-sub)",width:40,height:40,borderRadius:12,cursor:"pointer",fontWeight:900,fontSize:16}}>←</button><span style={{fontWeight:900,fontSize:20,color:"var(--text-main)",letterSpacing:-0.5}}>Düzenle: {student.name}</span></div><Card><StudentForm initial={student} onSave={save} onCancel={()=>setEditing(false)} stockItems={stockItems} students={students}/></Card></div>;
-  
-  const paid=totalPaid(student),monthly=monthlyTotal(student),balance=paid-monthly; const st=courseStatus(student);
-
-  return<div style={{padding:20, maxWidth:800, margin:"0 auto"}}>
-    <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:24}}>
-      <button onClick={onBack} style={{background:"var(--card-bg)",border:`1px solid #E2E8F0`,color:"var(--text-main)",width:44,height:44,borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontWeight:900,fontSize:18,boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>←</button>
-      <div style={{flex:1}}><div style={{fontWeight:900,fontSize:22,color:"var(--text-main)",letterSpacing:-0.5}}>{student.name}</div><div style={{fontSize:13,color:"var(--text-sub)",fontWeight:600,marginTop:4}}>{age(student.dob)} · Grup: <strong style={{color:"var(--text-main)"}}>{student.groupName||"Yok"}</strong></div></div>
-      <Badge label={st}/>
-    </div>
-    <TabBar tabs={["Genel Bakış","Kurs Eğitimi","Servis Durumu","Ekipmanlar","Ödeme Geçmişi"]} active={tab} onChange={setTab}/>
-    
-    {tab===0&&<div>
-      <Card><Row label="Öğrenci Adı Soyadı" val={student.name}/><Row label="Doğum Tarihi" val={`${fmtDate(student.dob)} (${age(student.dob)})`}/><Row label="Veli Adı Soyadı" val={student.guardianName||"—"}/><Row label="Veli Telefonu" val={student.guardianPhone1||"—"} href={student.guardianPhone1?`tel:${student.guardianPhone1}`:undefined}/><Row label="Özel Notlar" val={student.notes||"—"}/></Card>
-      {student.guardianPhone1 && (
-        <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:16}}>
-          <Btn style={{background:"#16A34A", color:"#fff", border:"none"}} onClick={()=>{const phone=student.guardianPhone1.replace(/\D/g,""); window.open(`https://wa.me/${phone.startsWith('0')?'90'+phone.slice(1):'90'+phone}?text=${encodeURIComponent(`SAYIN VELİMİZ, ${student.name} İSİMLİ ÖĞRENCİMİZİN ÖDEMESİ HAKKINDA HATIRLATMA YAPMAK İSTERİZ. İYİ GÜNLER DİLERİZ.`)}`, "_blank")}}>💬 Ödeme Hatırlat</Btn>
-          <Btn style={{background:"#16A34A", color:"#fff", border:"none"}} onClick={()=>{const phone=student.guardianPhone1.replace(/\D/g,""); window.open(`https://wa.me/${phone.startsWith('0')?'90'+phone.slice(1):'90'+phone}?text=${encodeURIComponent(`SAYIN VELİMİZ, ${student.name} İSİMLİ ÖĞRENCİMİZ BUGÜNKÜ ANTRENMANA KATILMAMIŞTIR. BİLGİNİZE SUNARIZ.`)}`, "_blank")}}>💬 Devamsızlık Bildir</Btn>
-        </div>
-      )}
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}><StatCard label="Mevcut Katılım" value={`${attendanceCount(student)} Gün`} col="#059669"/><StatCard label="Aylık Bakiye" value={`${balance>=0?"+":""}${balance.toLocaleString("tr-TR")} ₺`} col={balance>=0?"#059669":"#DC2626"}/></div>
-      <Btn variant="secondary" full onClick={()=>setEditing(true)}>Tüm Bilgileri Düzenle</Btn>
-    </div>}
-    {tab===1&&<div><Card><Row label="Yüzme Seviyesi" val={swimLevelLabel(student.swimLevel)}/><Row label="Kayıtlı Olduğu Grup" val={student.groupName||"—"}/><Row label="Antrenman Günleri" val={safeDays.map(d=>DAYS_TR[d]).join(", ")||"—"}/><Row label="Kayıt Başlangıç Tarihi" val={fmtDate(student.courseStart)}/><Row label="Planlanan Bitiş Tarihi" val={fmtDate(student.courseEnd)}/><Row label="Tarih Bazlı Kalan Seans" val={`${calcRemainingSessions(student)} / ${student.totalSessions||0}`} col="var(--accent)"/></Card></div>}
-    {tab===2&&<div>{student.hasTransport?<Card><Row label="Öğrenci Adresi" val={student.address||"—"}/><Row label="Aylık Servis Ücreti" val={`${student.transportFee} ₺`}/><Row label="Şoför Adı Soyadı" val={student.driverName}/><Row label="Şoför Telefonu" val={student.driverPhone}/></Card>:<div style={{textAlign:"center",padding:"40px 0",color:"var(--text-sub)",fontWeight:700,fontSize:16}}>Servis Kullanmıyor</div>}</div>}
-    {tab===3&&<div>{safeEqs.length===0?<div style={{textAlign:"center",padding:"40px 0",color:"var(--text-sub)",fontWeight:700,fontSize:16}}>Ekipman Yok</div>:<Card>{safeEqs.map(e=><Row key={e.id} label={e.name} val={`${e.price} ₺`}/>)}</Card>}</div>}
-    {tab===4&&<div><SectionTitle action={<Btn sm onClick={()=>setShowPay(true)}>+ Yeni Tahsilat Ekle</Btn>}>Ödeme Geçmişi</SectionTitle><Card>{safePays.length===0?<div style={{textAlign:"center",padding:"30px 0",color:"var(--text-sub)",fontWeight:600}}>Ödeme kaydı bulunmuyor.</div>:safePays.map(p=><div key={p.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"14px 0",borderBottom:`1px solid #F1F5F9`}}><div><div style={{fontWeight:800,color:"var(--text-main)",fontSize:14}}>{fmtDate(p.date)}</div><div style={{fontSize:12,color:"var(--text-sub)",marginTop:4,fontWeight:600}}>{p.note||"Not yok"}</div></div><div style={{display:"flex",alignItems:"center",gap:16}}><span style={{color:"#059669",fontWeight:900,fontSize:16}}>+{Number(p.amount).toLocaleString("tr-TR")} ₺</span><button type="button" onClick={()=>delPay(p.id)} style={{background:"#FEE2E2",color:"#DC2626",border:"none",borderRadius:8,width:30,height:30,cursor:"pointer",fontWeight:900}}>X</button></div></div>)}</Card>
-      <Modal show={showPay} onClose={()=>setShowPay(false)} title="Tahsilat Ekle"><Inp label="Alınan Tutar (₺) *" value={payForm.amount} onChange={v=>setPayForm(p=>({...p,amount:v}))} type="number"/><Inp label="İşlem Tarihi" value={payForm.date} onChange={v=>setPayForm(p=>({...p,date:v}))} type="date"/><Inp label="Açıklama / Not" value={payForm.note} onChange={v=>setPayForm(p=>({...p,note:v.toLocaleUpperCase("tr-TR")}))}/><div style={{display:"flex",gap:12,marginTop:24}}><Btn variant="secondary" onClick={()=>setShowPay(false)} style={{flex:1}}>İptal</Btn><Btn onClick={addPay} style={{flex:2}}>Ödemeyi Kaydet</Btn></div></Modal>
-    </div>}
-  </div>
-}
-
 /* ═══════════════════════════════════════════════════════════════
-   6. ÖĞRENCİLER LİSTESİ (GRUP FİLTRESİ EKLENDİ)
+   ÖĞRENCİ LİSTESİ (GRUP FİLTRELEME VE YATAY KARTLAR)
 ═══════════════════════════════════════════════════════════════ */
 function StudentsPage({students,stockItems}){
   const [search,setSearch]=useState(""); 
@@ -513,7 +492,6 @@ function StudentsPage({students,stockItems}){
   const safeStudents = safeArr(students); 
   const student=detailId?safeStudents.find(s=>s.id===detailId):null;
   
-  // Benzersiz grupları çıkart
   const allGroups = Array.from(new Set(safeStudents.map(s=>s.groupName).filter(Boolean)));
 
   const filtered = safeStudents.filter(s => {
@@ -533,7 +511,7 @@ function StudentsPage({students,stockItems}){
   return<div style={{padding:20, maxWidth:1200, margin:"0 auto"}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
       <div style={{fontSize:20,fontWeight:900,color:"var(--text-main)",letterSpacing:-0.5}}>Öğrenci Rehberi ({filtered.length})</div>
-      <Btn onClick={()=>setShowAdd(true)}>+ Yeni Öğrenci Kaydı</Btn>
+      <Btn onClick={()=>setShowAdd(true)}>+ Yeni Kayıt Ekle</Btn>
     </div>
     
     <div style={{display:"flex", gap:12, marginBottom:20}}>
@@ -575,7 +553,6 @@ function StudentsPage({students,stockItems}){
               Kalan Seans: <strong style={{color:"var(--accent)", fontSize:14}}>{calcRemainingSessions(s)} / {s.totalSessions || 0}</strong>
             </div>
 
-            {/* Yatay Tarih Kapsülü */}
             <div style={{background:"#F8FAFC", border:`1px solid #E2E8F0`, borderRadius:8, padding:"8px 12px", display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:4}}>
               <div style={{fontSize:11, fontWeight:800, color:"var(--text-sub)"}}>BŞL: <span style={{color:"var(--text-main)", marginLeft:4}}>{fmtDate(s.courseStart)}</span></div>
               <div style={{width:1, height:14, background:"#CBD5E1"}}></div>
@@ -595,39 +572,131 @@ function StudentsPage({students,stockItems}){
   </div>
 }
 
+function StudentDetail({student,onBack,students,stockItems}){
+  const [tab,setTab]=useState(0); const [editing,setEditing]=useState(false); const [payForm,setPayForm]=useState({amount:"",date:TODAY,note:""}); const [showPay,setShowPay]=useState(false);
+  const safePays = safeArr(student.payments); const safeEqs = safeArr(student.equipment); const safeDays = safeArr(student.weekDays);
+  
+  function save(f){const n=safeArr(students).map(s=>s.id===student.id?{...s,...f,id:s.id}:s);DB.set("students",n);setEditing(false);}
+  function addPay(){ if(!payForm.amount)return; const n=safeArr(students).map(s=>s.id===student.id?{...s,payments:[...safeArr(s.payments),{id:Date.now(),...payForm,amount:Number(payForm.amount)}]}:s); DB.set("students",n); setPayForm({amount:"",date:TODAY,note:""}); setShowPay(false); }
+  function delPay(pid){const n=safeArr(students).map(s=>s.id===student.id?{...s,payments:safeArr(s.payments).filter(p=>p.id!==pid)}:s);DB.set("students",n);}
+
+  if(editing)return<div style={{padding:20,maxWidth:600,margin:"0 auto"}}><div style={{display:"flex",alignItems:"center",gap:12,marginBottom:24}}><button onClick={()=>setEditing(false)} style={{background:"var(--card-bg)",border:`1px solid #E2E8F0`,color:"var(--text-sub)",width:40,height:40,borderRadius:12,cursor:"pointer",fontWeight:900,fontSize:16}}>←</button><span style={{fontWeight:900,fontSize:20,color:"var(--text-main)",letterSpacing:-0.5}}>Düzenle: {student.name}</span></div><Card><StudentForm initial={student} onSave={save} onCancel={()=>setEditing(false)} stockItems={stockItems} students={students}/></Card></div>;
+  
+  const paid=totalPaid(student),monthly=monthlyTotal(student),balance=paid-monthly; const st=courseStatus(student);
+
+  return<div style={{padding:20, maxWidth:800, margin:"0 auto"}}>
+    <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:24}}>
+      <button onClick={onBack} style={{background:"var(--card-bg)",border:`1px solid #E2E8F0`,color:"var(--text-main)",width:44,height:44,borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontWeight:900,fontSize:18,boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>←</button>
+      <div style={{flex:1}}><div style={{fontWeight:900,fontSize:22,color:"var(--text-main)",letterSpacing:-0.5}}>{student.name}</div><div style={{fontSize:13,color:"var(--text-sub)",fontWeight:600,marginTop:4}}>{age(student.dob)} · Grup: <strong style={{color:"var(--text-main)"}}>{student.groupName||"Yok"}</strong></div></div>
+      <Badge label={st}/>
+    </div>
+    <TabBar tabs={["Genel Bakış","Kurs Eğitimi","Servis Durumu","Ekipmanlar","Ödeme Geçmişi"]} active={tab} onChange={setTab}/>
+    
+    {tab===0&&<div>
+      <Card><Row label="Öğrenci Adı Soyadı" val={student.name}/><Row label="Doğum Tarihi" val={`${fmtDate(student.dob)} (${age(student.dob)})`}/><Row label="Veli Adı Soyadı" val={student.guardianName||"—"}/><Row label="Veli Telefonu" val={student.guardianPhone1||"—"} href={student.guardianPhone1?`tel:${student.guardianPhone1}`:undefined}/><Row label="Özel Notlar" val={student.notes||"—"}/></Card>
+      {student.guardianPhone1 && (
+        <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:16}}>
+          <Btn style={{background:"#16A34A", color:"#fff", border:"none"}} onClick={()=>{const phone=student.guardianPhone1.replace(/\D/g,""); window.open(`https://wa.me/${phone.startsWith('0')?'90'+phone.slice(1):'90'+phone}?text=${encodeURIComponent(`SAYIN VELİMİZ, ${student.name} İSİMLİ ÖĞRENCİMİZİN ÖDEMESİ HAKKINDA HATIRLATMA YAPMAK İSTERİZ. İYİ GÜNLER DİLERİZ.`)}`, "_blank")}}>💬 Ödeme Hatırlat</Btn>
+          <Btn style={{background:"#16A34A", color:"#fff", border:"none"}} onClick={()=>{const phone=student.guardianPhone1.replace(/\D/g,""); window.open(`https://wa.me/${phone.startsWith('0')?'90'+phone.slice(1):'90'+phone}?text=${encodeURIComponent(`SAYIN VELİMİZ, ${student.name} İSİMLİ ÖĞRENCİMİZ BUGÜNKÜ ANTRENMANA KATILMAMIŞTIR. BİLGİNİZE SUNARIZ.`)}`, "_blank")}}>💬 Devamsızlık Bildir</Btn>
+        </div>
+      )}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}><StatCard label="Mevcut Katılım" value={`${attendanceCount(student)} Gün`} col="#059669"/><StatCard label="Aylık Bakiye" value={`${balance>=0?"+":""}${balance.toLocaleString("tr-TR")} ₺`} col={balance>=0?"#059669":"#DC2626"}/></div>
+      <Btn variant="secondary" full onClick={()=>setEditing(true)}>Tüm Bilgileri Düzenle</Btn>
+    </div>}
+    {tab===1&&<div><Card><Row label="Yüzme Seviyesi" val={swimLevelLabel(student.swimLevel)}/><Row label="Kayıtlı Olduğu Grup" val={student.groupName||"—"}/><Row label="Antrenman Günleri" val={safeDays.map(d=>DAYS_TR[d]).join(", ")||"—"}/><Row label="Kayıt Başlangıç Tarihi" val={fmtDate(student.courseStart)}/><Row label="Planlanan Bitiş Tarihi" val={fmtDate(student.courseEnd)}/><Row label="Tarih Bazlı Kalan Seans" val={`${calcRemainingSessions(student)} / ${student.totalSessions||0}`} col="var(--accent)"/></Card></div>}
+    {tab===2&&<div>{student.hasTransport?<Card><Row label="Öğrenci Adresi" val={student.address||"—"}/><Row label="Aylık Servis Ücreti" val={`${student.transportFee} ₺`}/><Row label="Şoför Adı Soyadı" val={student.driverName}/><Row label="Şoför Telefonu" val={student.driverPhone}/></Card>:<div style={{textAlign:"center",padding:"40px 0",color:"var(--text-sub)",fontWeight:700,fontSize:16}}>Servis Kullanmıyor</div>}</div>}
+    {tab===3&&<div>{safeEqs.length===0?<div style={{textAlign:"center",padding:"40px 0",color:"var(--text-sub)",fontWeight:700,fontSize:16}}>Ekipman Yok</div>:<Card>{safeEqs.map(e=><Row key={e.id} label={e.name} val={`${e.price} ₺`}/>)}</Card>}</div>}
+    {tab===4&&<div><SectionTitle action={<Btn sm onClick={()=>setShowPay(true)}>+ Yeni Tahsilat Ekle</Btn>}>Ödeme Geçmişi</SectionTitle><Card>{safePays.length===0?<div style={{textAlign:"center",padding:"30px 0",color:"var(--text-sub)",fontWeight:600}}>Ödeme kaydı bulunmuyor.</div>:safePays.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(p=><div key={p.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"14px 0",borderBottom:`1px solid #F1F5F9`}}><div><div style={{fontWeight:800,color:"var(--text-main)",fontSize:14}}>{fmtDate(p.date)}</div><div style={{fontSize:12,color:"var(--text-sub)",marginTop:4,fontWeight:600}}>{p.note||"Not yok"}</div></div><div style={{display:"flex",alignItems:"center",gap:16}}><span style={{color:"#059669",fontWeight:900,fontSize:16}}>+{Number(p.amount).toLocaleString("tr-TR")} ₺</span><button type="button" onClick={()=>delPay(p.id)} style={{background:"#FEE2E2",color:"#DC2626",border:"none",borderRadius:8,width:30,height:30,cursor:"pointer",fontWeight:900}}>X</button></div></div>)}</Card>
+      <Modal show={showPay} onClose={()=>setShowPay(false)} title="Tahsilat Ekle"><Inp label="Alınan Tutar (₺) *" value={payForm.amount} onChange={v=>setPayForm(p=>({...p,amount:v}))} type="number"/><Inp label="İşlem Tarihi" value={payForm.date} onChange={v=>setPayForm(p=>({...p,date:v}))} type="date"/><Inp label="Açıklama / Not" value={payForm.note} onChange={v=>setPayForm(p=>({...p,note:v.toLocaleUpperCase("tr-TR")}))}/><div style={{display:"flex",gap:12,marginTop:24}}><Btn variant="secondary" onClick={()=>setShowPay(false)} style={{flex:1}}>İptal</Btn><Btn onClick={addPay} style={{flex:2}}>Ödemeyi Kaydet</Btn></div></Modal>
+    </div>}
+  </div>
+}
+
 /* ═══════════════════════════════════════════════════════════════
-   WHATSAPP DAVET PANELİ
+   GRUP BAZLI YOKLAMA VE GEÇMİŞ LOGLARI (YENİ SİSTEM)
+═══════════════════════════════════════════════════════════════ */
+function AttendancePage({students}){
+  const [tab, setTab] = useState(0);
+  const [date, setDate] = useState(TODAY);
+  const [selectedGroup, setSelectedGroup] = useState("");
+  const [logDate, setLogDate] = useState(TODAY);
+
+  const safeStudents = safeArr(students);
+  const allGroups = Array.from(new Set(safeStudents.map(s=>s.groupName).filter(Boolean)));
+
+  const activeInGroup = safeStudents.filter(s => courseStatus(s) === "active" && s.groupName === selectedGroup);
+  const presentCount = activeInGroup.filter(s => (s.attendance||{})[date]).length;
+  const presentOnLogDate = safeStudents.filter(s => (s.attendance||{})[logDate]);
+
+  return <div style={{padding:20, maxWidth:800, margin:"0 auto"}}>
+    <TabBar tabs={["Grup Bazlı Yoklama", "Geçmiş Kayıtlar (Log)"]} active={tab} onChange={setTab}/>
+    
+    {tab === 0 && <div>
+      <SectionTitle>Grup Bazlı Yoklama Al</SectionTitle>
+      <Card>
+         <div style={{display:"flex", gap:12, marginBottom:16}}>
+            <Inp label="Yoklama Tarihi" type="date" value={date} onChange={setDate} half/>
+            <div style={{flex:1}}>
+              <Sel label="Öğrenci Grubu Seçin" value={selectedGroup} onChange={setSelectedGroup} options={allGroups.map(g=>({value:g, label:g}))}/>
+            </div>
+         </div>
+         
+         {!selectedGroup ? <div style={{textAlign:"center", padding:"30px", color:"var(--text-sub)", fontWeight:700}}>Lütfen yoklama almak için bir grup seçiniz.</div> : 
+           <div>
+              <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12, background:"#F8FAFC", padding:"12px 16px", borderRadius:12, border:"1px solid #E2E8F0"}}>
+                <span style={{fontWeight:800, color:"var(--text-main)"}}>Toplam Öğrenci: {activeInGroup.length}</span>
+                <span style={{fontWeight:800, color:"#059669"}}>Katılanlar: {presentCount}</span>
+              </div>
+              {activeInGroup.length === 0 ? <div style={{textAlign:"center", padding:"20px", color:"var(--text-sub)", fontWeight:700}}>Bu grupta aktif öğrenci bulunmuyor.</div> : 
+                activeInGroup.map(s => <div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid #F1F5F9`}}>
+                  <div style={{fontWeight:800,fontSize:15,color:"var(--text-main)"}}>{s.name}</div>
+                  <Toggle checked={!!(s.attendance||{})[date]} onChange={(v)=>{
+                    const n=safeStudents.map(st=>{
+                      if(st.id!==s.id)return st; 
+                      const att={...(st.attendance||{})}; 
+                      if(v)att[date]=true; else delete att[date]; 
+                      return{...st,attendance:att};
+                    }); 
+                    DB.set("students",n);
+                  }}/>
+                </div>)
+              }
+           </div>
+         }
+      </Card>
+    </div>}
+
+    {tab === 1 && <div>
+      <SectionTitle>Geçmiş Yoklama Logları</SectionTitle>
+      <Card>
+        <Inp label="İncelenecek Tarih" type="date" value={logDate} onChange={setLogDate}/>
+        <div style={{marginTop:20}}>
+          <div style={{fontSize:14, fontWeight:800, color:"var(--accent)", marginBottom:12, borderBottom:"1px solid #E2E8F0", paddingBottom:8}}>Bu Tarihte Derse Katılan Tüm Öğrenciler ({presentOnLogDate.length})</div>
+          {presentOnLogDate.length === 0 ? <div style={{textAlign:"center", padding:"30px", color:"var(--text-sub)", fontWeight:700}}>Bu tarihte derse katılan öğrenci kaydı bulunamadı.</div> : 
+            presentOnLogDate.map(s => <div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid #F1F5F9`}}>
+              <div>
+                <div style={{fontWeight:800, fontSize:15, color:"var(--text-main)"}}>{s.name}</div>
+                <div style={{fontSize:12, fontWeight:600, color:"var(--text-sub)", marginTop:2}}>{s.groupName || "Grup Yok"}</div>
+              </div>
+              <Badge label="KATILDI" color="#059669"/>
+            </div>)
+          }
+        </div>
+      </Card>
+    </div>}
+  </div>
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DİĞER SAYFALAR
 ═══════════════════════════════════════════════════════════════ */
 function WhatsAppPage({students, waLinks}) {
-  const safeLinks = safeArr(waLinks);
-  const [title, setTitle] = useState("");
-  const [url, setUrl] = useState("");
-  const [search, setSearch] = useState("");
-  const [selectedStudent, setSelectedStudent] = useState(null);
-  const [showInviteModal, setShowInviteModal] = useState(false);
-
-  function addLink() {
-    if(!title.trim() || !url.trim()) return;
-    const n = [...safeLinks, { id:Date.now(), name: title.toLocaleUpperCase("tr-TR"), url: url }];
-    DB.set("waLinks", n); setTitle(""); setUrl("");
-  }
-
-  function triggerInvite(student) {
-    if(safeLinks.length === 0) { alert("Lütfen önce yukarıdaki alandan en az bir grup davet bağlantısı ekleyin."); return; }
-    setSelectedStudent(student);
-    setShowInviteModal(true);
-  }
-
-  function completeInvite(linkUrl) {
-    if(!selectedStudent.guardianPhone1) return;
-    const phone = selectedStudent.guardianPhone1.replace(/\D/g,"");
-    const msg = `SAYIN VELİMİZ,\n${selectedStudent.name} İSİMLİ ÖĞRENCİMİZİN ANTRENMAN VE DUYURU TAKİBİ İÇİN KULÜBÜMÜZÜN RESMİ WHATSAPP GRUBUNA AŞAĞIDAKİ LİNKTEN KATILABİLİRSİNİZ:\n\n${linkUrl}`;
-    window.open(`https://wa.me/${phone.startsWith('0')?'90'+phone.slice(1):'90'+phone}?text=${encodeURIComponent(msg)}`, "_blank");
-    setShowInviteModal(false);
-  }
-
-  const activeStudents = safeArr(students).filter(s => courseStatus(s) === "active" && s.guardianPhone1);
-  const filteredStudents = activeStudents.filter(s => s.name && s.name.toLowerCase().includes(search.toLowerCase()));
+  const safeLinks = safeArr(waLinks); const [title, setTitle] = useState(""); const [url, setUrl] = useState(""); const [search, setSearch] = useState("");
+  const [selectedStudent, setSelectedStudent] = useState(null); const [showInviteModal, setShowInviteModal] = useState(false);
+  function addLink() { if(!title.trim() || !url.trim()) return; const n = [...safeLinks, { id:Date.now(), name: title.toLocaleUpperCase("tr-TR"), url: url }]; DB.set("waLinks", n); setTitle(""); setUrl(""); }
+  function triggerInvite(student) { if(safeLinks.length === 0) { alert("Lütfen önce yukarıdaki alandan en az bir grup davet bağlantısı ekleyin."); return; } setSelectedStudent(student); setShowInviteModal(true); }
+  function completeInvite(linkUrl) { if(!selectedStudent.guardianPhone1) return; const phone = selectedStudent.guardianPhone1.replace(/\D/g,""); const msg = `SAYIN VELİMİZ,\n${selectedStudent.name} İSİMLİ ÖĞRENCİMİZİN ANTRENMAN VE DUYURU TAKİBİ İÇİN KULÜBÜMÜZÜN RESMİ WHATSAPP GRUBUNA AŞAĞIDAKİ LİNKTEN KATILABİLİRSİNİZ:\n\n${linkUrl}`; window.open(`https://wa.me/${phone.startsWith('0')?'90'+phone.slice(1):'90'+phone}?text=${encodeURIComponent(msg)}`, "_blank"); setShowInviteModal(false); }
+  const filteredStudents = safeArr(students).filter(s => courseStatus(s) === "active" && s.guardianPhone1 && s.name.toLowerCase().includes(search.toLowerCase()));
 
   return <div style={{padding:20, maxWidth:800, margin:"0 auto"}}>
     <SectionTitle>WhatsApp Web Merkezi</SectionTitle>
@@ -668,25 +737,12 @@ function WhatsAppPage({students, waLinks}) {
   </div>
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   DİĞER SAYFALAR (GİDER DÜZENLEME, PERSONEL SİLME)
-═══════════════════════════════════════════════════════════════ */
-function AttendancePage({students}){
-  const [date,setDate]=useState(TODAY); const [y, m, d] = date.split('-'); const selectedDayIndex = new Date(y, m - 1, d).getDay();
-  const active=safeArr(students).filter(s=>courseStatus(s)==="active" && safeArr(s.weekDays).map(Number).includes(selectedDayIndex));
-  const present=active.filter(s=>(s.attendance||{})[date]).length;
-  return<div style={{padding:20, maxWidth:800, margin:"0 auto"}}><SectionTitle>Günlük Yoklama Defteri</SectionTitle><Inp value={date} onChange={setDate} type="date"/>
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}><StatCard label="Beklenen Öğrenci" value={active.length}/><StatCard label="Mevcut Katılım" value={present} col="#059669"/></div>
-    <Card>{active.length===0?<div style={{textAlign:"center",padding:"30px 0",color:"var(--text-sub)",fontWeight:700,fontSize:15}}>Bu güne kayıtlı öğrenci yok.</div>:active.map(s=><div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid #F1F5F9`}}><div><div style={{fontSize:15,fontWeight:800,color:"var(--text-main)"}}>{s.name}</div><div style={{fontSize:11,color:"var(--text-sub)",fontWeight:600,marginTop:2}}>{s.groupName||"Grup Yok"}</div></div><Toggle checked={!!(s.attendance||{})[date]} onChange={(v)=>{ const n=safeArr(students).map(st=>{if(st.id!==s.id)return st; const att={...(st.attendance||{})}; if(v)att[date]=true; else delete att[date]; return{...st,attendance:att}}); DB.set("students",n); }}/></div>)}</Card>
-  </div>
-}
-
 function PaymentsPage({students}){
   const all=safeArr(students).flatMap(s=>safeArr(s.payments).map(p=>({...p,studentName:s.name}))).sort((a,b)=>new Date(b.date)-new Date(a.date));
   const total=all.reduce((t,p)=>t+Number(p.amount),0); const thisMonth=all.filter(p=>p.date&&p.date.startsWith(TODAY.slice(0,7))).reduce((t,p)=>t+Number(p.amount),0);
   const unpaid = safeArr(students).filter(s => courseStatus(s) === "active" && totalPaid(s) < monthlyTotal(s));
   return<div style={{padding:20, maxWidth:800, margin:"0 auto"}}>
-    <SectionTitle action={<Btn sm onClick={()=>exportCSV("Odemeler", ["Ogrenci", "Tutar", "Tarih"], all.map(p => [p.studentName, p.amount, p.date]))}>Excel İndir</Btn>}>Muhasebe & Ödemeler</SectionTitle>
+    <SectionTitle action={<Btn sm variant="ghost" onClick={()=>exportCSV("Odemeler", ["Ogrenci", "Tutar", "Tarih"], all.map(p => [p.studentName, p.amount, p.date]))}>Excel İndir</Btn>}>Muhasebe & Ödemeler</SectionTitle>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}><StatCard label="Tüm Zamanlar Tahsilat" value={`${total.toLocaleString("tr-TR")} ₺`} col="#059669" span2/><StatCard label="Bu Ayki Ciro" value={`${thisMonth.toLocaleString("tr-TR")} ₺`}/><StatCard label="Eksik Ödeme" value={unpaid.length} col="#DC2626"/></div>
     <Card>{all.length===0?<div style={{textAlign:"center",padding:"30px 0",color:"var(--text-sub)",fontWeight:700}}>Ödeme kaydı bulunamadı.</div>:all.map((p,i)=><div key={i} style={{display:"flex",justifyContent:"space-between",padding:"12px 0",borderBottom:"1px solid #F1F5F9"}}><div><div style={{fontWeight:800,fontSize:14}}>{p.studentName}</div><div style={{fontSize:11,color:"var(--text-sub)",fontWeight:600,marginTop:2}}>{fmtDate(p.date)} {p.note?`- ${p.note}`:''}</div></div><div style={{fontWeight:900,color:"#059669",fontSize:15}}>+{Number(p.amount).toLocaleString("tr-TR")} ₺</div></div>)}</Card>
   </div>
@@ -925,8 +981,12 @@ function App(){
   const [students,setStudents]=useState([]); const [staff,setStaff]=useState([]); const [stockItems,setStockItems]=useState([]); const [movements,setMovements]=useState([]); const [expenses,setExpenses]=useState([]);
   const [clubName,setClubName]=useState("AquaClub Pro"); const [navItems,setNavItems]=useState(NAV_ITEMS); const [appUsers, setAppUsers]=useState([]); const [oldPinCode, setOldPinCode]=useState("0309"); const [waLinks,setWaLinks]=useState([]);
   const [logoUrl,setLogoUrl]=useState(""); const [activeTab,setActiveTab]=useState("dashboard"); const [sidebarOpen,setSidebarOpen]=useState(false);
+  const [themeColor,setThemeColor]=useState("#F8FAFC"); const [sidebarColor,setSidebarColor]=useState("#FFFFFF"); const [cardColor,setCardColor]=useState("#FFFFFF"); const [textColor,setTextColor]=useState("#0F172A");
+
+  useEffect(() => { document.documentElement.style.setProperty('--bg-color', themeColor); document.documentElement.style.setProperty('--sidebar-bg', sidebarColor); document.documentElement.style.setProperty('--card-bg', cardColor); document.documentElement.style.setProperty('--text-main', textColor); }, [themeColor, sidebarColor, cardColor, textColor]);
 
   useEffect(() => {
+    if(!db) { setIsDbLoaded(true); return; }
     const unsub = db.collection("appData").doc("main").onSnapshot((doc) => {
       if (doc.exists) {
         const d = doc.data();

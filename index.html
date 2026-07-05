@@ -65,7 +65,6 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.4)}
 .spinner {border: 4px solid rgba(0,0,0,0.05); border-left-color: var(--accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 16px;}
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-/* YENİ LİSTE GÖRÜNÜMÜ İÇİN TABLO ROW YAPISI */
 .list-row {
   display: grid; grid-template-columns: 2.5fr 1.5fr 1.5fr 1.5fr 1fr; gap: 16px; align-items: center; 
   padding: 16px 20px; background: #fff; border: 1px solid #E2E8F0; border-radius: 14px; 
@@ -81,8 +80,8 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.4)}
   .list-row, .list-header { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
   .list-header { display: none; }
 }
-
 </style>
+
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
@@ -137,7 +136,7 @@ const NAV_ITEMS=[
 ];
 
 /* ═══════════════════════════════════════════════════════════════
-   2. FIREBASE & UTILS (BEYAZ EKRAN ZIRHI)
+   2. FIREBASE & UTILS 
 ═══════════════════════════════════════════════════════════════ */
 const firebaseConfig = {
   apiKey: "AIzaSyA6d55XjKFlj4-eZPCYrfTl1451f-IKdq0",
@@ -188,7 +187,6 @@ function courseStatus(s){
 function daysLeft(s){
   try { return Math.ceil((new Date(s?.courseEnd)-new Date(TODAY))/86400000); } catch(e){ return 0; }
 }
-function attendanceCount(s){return Object.values(s?.attendance||{}).filter(Boolean).length}
 function age(dob){
   if(!dob)return"—";
   try { return Math.floor((Date.now()-new Date(dob))/31557600000)+" Yaş"; } catch(e){ return "—"; }
@@ -341,7 +339,7 @@ function DayPicker({value=[],onChange}){
   </div>
 }
 
-/* YENİ MODAL (KAPANMAMA) */
+/* YENİ MODAL (KAPANMAMA VE INSET HATASI ÇÖZÜLDÜ) */
 function Modal({show,onClose,title,children}){
   if(!show)return null;
   return<div style={{position:"fixed",top:0,left:0,right:0,bottom:0,backgroundColor:"rgba(15, 23, 42, 0.7)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:9999,padding:16}}>
@@ -356,7 +354,7 @@ function Modal({show,onClose,title,children}){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   GİRİŞ EKRANI
+   4. EKRAN BİLEŞENLERİ
 ═══════════════════════════════════════════════════════════════ */
 function LoginScreen({ onSuccess, appUsers, adminPin }) {
   const [user, setUser] = useState("");
@@ -388,9 +386,6 @@ function LoginScreen({ onSuccess, appUsers, adminPin }) {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   YARDIMCI BİLEŞENLER
-═══════════════════════════════════════════════════════════════ */
 function EqPicker({stockItems,current,onAdd,onRemove}){
   const [sel,setSel]=useState(""); const safeStock = safeArr(stockItems);
   return<div>
@@ -408,9 +403,6 @@ function EqPicker({stockItems,current,onAdd,onRemove}){
   </div>
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   ROTALAMA SİSTEMİ (YENİ)
-═══════════════════════════════════════════════════════════════ */
 function RoutesManager({routes, setRoutes, onClose}) {
   const [f, setF] = useState({id:null, routeName:"", driverName:"", driverPhone:"", neighborhoods:""});
   const safeRoutes = safeArr(routes);
@@ -455,9 +447,6 @@ function RoutesManager({routes, setRoutes, onClose}) {
   </div>
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   ÖĞRENCİ FORMU (ROTALAMA ENTEGRELİ & ÖDEME SEKMELİ)
-═══════════════════════════════════════════════════════════════ */
 function StudentForm({initial,onSave,onCancel,stockItems,students,routes}){
   const [tab,setTab]=useState(0);
   const [f,setF]=useState({...EMPTY_S,...initial});
@@ -485,7 +474,6 @@ function StudentForm({initial,onSave,onCancel,stockItems,students,routes}){
     } catch(err) {}
   },[f.courseStart,f.totalSessions,JSON.stringify(safeWeekDays)]);
 
-  // OTOMATİK ROTA BULUCU
   const handleAddressChange = (val) => {
     u("address", val);
     if(val.length > 3) {
@@ -574,8 +562,8 @@ function StudentForm({initial,onSave,onCancel,stockItems,students,routes}){
     </div>}
     
     {tab===2&&<div>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 0",borderBottom:`1px solid #F1F5F9`,marginBottom:16}}>
-        <div><div style={{fontWeight:800,fontSize:15,color:"var(--text-main)"}}>Servis Kullanıyor mu?</div></div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid #F1F5F9`,marginBottom:14}}>
+        <div><div style={{fontWeight:700,fontSize:14,color:"var(--text-main)"}}>Servis Kullanıyor mu?</div></div>
         <Toggle checked={f.hasTransport} onChange={v=>u("hasTransport",v)}/>
       </div>
       {f.hasTransport?
@@ -587,11 +575,15 @@ function StudentForm({initial,onSave,onCancel,stockItems,students,routes}){
             <Inp label="Şoför Adı" value={f.driverName} onChange={v=>u("driverName",v)}/>
             <Inp label="Şoför Tel" value={f.driverPhone} onChange={v=>u("driverPhone",v)} type="tel"/>
           </div>
-          <div style={{width: 200, background:"#F8FAFC", padding:"16px", borderRadius:12, border:"1px solid #E2E8F0"}}>
+          <div style={{width: 240, background:"#F8FAFC", padding:"16px", borderRadius:12, border:"1px solid #E2E8F0"}}>
             <div style={{fontSize:11, fontWeight:800, color:"var(--text-sub)", textTransform:"uppercase", marginBottom:12}}>Manuel Rota Seç</div>
             {safeRoutes.length === 0 ? <div style={{fontSize:12, color:"var(--text-sub)"}}>Rota bulunmuyor.</div> : 
-              <div style={{display:"flex", flexDirection:"column", gap:8}}>
-                {safeRoutes.map(r=><button key={r.id} type="button" onClick={()=>{u("driverName", r.driverName); u("driverPhone", r.driverPhone);}} style={{padding:"8px", background:"#fff", border:"1px solid #CBD5E1", borderRadius:8, cursor:"pointer", textAlign:"left", fontSize:12, fontWeight:700, color:"var(--text-main)"}}>{r.routeName}</button>)}
+              <div style={{display:"flex", flexDirection:"column", gap:10}}>
+                {safeRoutes.map(r=><button key={r.id} type="button" onClick={()=>{u("driverName", r.driverName); u("driverPhone", r.driverPhone);}} style={{padding:"12px", background:"#fff", border:"1px solid #CBD5E1", borderRadius:8, cursor:"pointer", textAlign:"left", transition:"all 0.2s", boxShadow:"0 2px 4px rgba(0,0,0,0.02)"}}>
+                  <div style={{fontSize:13, fontWeight:800, color:"var(--text-main)"}}>{r.routeName}</div>
+                  <div style={{fontSize:11, color:"var(--text-sub)", marginTop:6, lineHeight:1.4}}>{r.neighborhoods || "Mahalle girilmedi."}</div>
+                  <div style={{fontSize:11, color:"var(--accent)", marginTop:6, fontWeight:700}}>{r.driverName}</div>
+                </button>)}
               </div>
             }
           </div>
@@ -631,7 +623,7 @@ function StudentForm({initial,onSave,onCancel,stockItems,students,routes}){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   ÖĞRENCİ LİSTESİ VE DETAY (YENİ TABLO YAPISI VE FİLTRELER)
+   ÖĞRENCİ LİSTESİ (ÇIKTI VE YENİ GÖRÜNÜM)
 ═══════════════════════════════════════════════════════════════ */
 function StudentsPage({students, stockItems, routes, setRoutes}){
   const [search,setSearch]=useState(""); 
@@ -640,6 +632,11 @@ function StudentsPage({students, stockItems, routes, setRoutes}){
   
   const [showAdd,setShowAdd]=useState(false); 
   const [showRoutes,setShowRoutes]=useState(false); 
+  const [showExport,setShowExport]=useState(false); 
+
+  const [expType, setExpType]=useState("STUDENT"); // STUDENT, TRANSPORT, PAYMENT
+  const [expFilter, setExpFilter]=useState("ALL");
+
   const [detailId,setDetailId]=useState(null);
   
   const safeStudents = safeArr(students); 
@@ -653,7 +650,6 @@ function StudentsPage({students, stockItems, routes, setRoutes}){
     let matchPay = true;
     if(payFilter === "PAID") matchPay = debt <= 0;
     if(payFilter === "UNPAID") matchPay = debt > 0;
-    
     return matchName && matchGroup && matchPay;
   });
 
@@ -663,12 +659,38 @@ function StudentsPage({students, stockItems, routes, setRoutes}){
     DB.set("students",n);setShowAdd(false);
   }
 
+  function handleExport() {
+    let rows = []; let headers = []; let filename = "";
+    if (expType === "STUDENT") {
+        filename = "Ogrenci_Listesi";
+        headers = ["Ad Soyad", "Grup", "Seviye", "Veli Adi", "Veli Telefon", "Baslangic", "Bitis"];
+        const exFilt = safeStudents.filter(s => expFilter === "ALL" || s.groupName === expFilter);
+        rows = exFilt.map(s => [s.name, s.groupName||"-", s.swimLevel||"-", s.guardianName||"-", s.guardianPhone1||"-", fmtDate(s.courseStart), fmtDate(s.courseEnd)]);
+    } else if (expType === "TRANSPORT") {
+        filename = "Servis_Listesi";
+        headers = ["Ogrenci Ad Soyad", "Adres", "Veli Telefon", "Sofor Adi", "Sofor Tel"];
+        const exFilt = safeStudents.filter(s => s.hasTransport && (expFilter === "ALL" || s.driverName === expFilter));
+        rows = exFilt.map(s => [s.name, s.address||"-", s.guardianPhone1||"-", s.driverName||"-", s.driverPhone||"-"]);
+    } else if (expType === "PAYMENT") {
+        filename = "Odeme_Listesi";
+        headers = ["Ad Soyad", "Grup", "Aylik Ucret", "Toplam Odenen", "Kalan Borc"];
+        const exFilt = safeStudents.filter(s => expFilter === "ALL" || s.groupName === expFilter);
+        rows = exFilt.map(s => {
+            const expected = monthlyTotal(s); const p = totalPaid(s);
+            return [s.name, s.groupName||"-", expected, p, expected - p];
+        });
+    }
+    exportCSV(filename, headers, rows);
+    setShowExport(false);
+  }
+
   if(student)return<StudentDetail student={student} onBack={()=>setDetailId(null)} students={safeStudents} stockItems={stockItems} routes={routes}/>;
 
   return<div style={{padding:20, maxWidth:1300, margin:"0 auto"}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
       <div style={{fontSize:20,fontWeight:900,color:"var(--text-main)",letterSpacing:-0.5}}>Öğrenci Rehberi ({filtered.length})</div>
-      <div style={{display:"flex", gap:10}}>
+      <div style={{display:"flex", gap:10, flexWrap:"wrap"}}>
+        <Btn variant="success" onClick={()=>{setExpType("STUDENT"); setExpFilter("ALL"); setShowExport(true);}}>📊 Excel Çıktısı Al</Btn>
         <Btn variant="secondary" onClick={()=>setShowRoutes(true)}>📍 Rotalama Yap</Btn>
         <Btn onClick={()=>setShowAdd(true)}>+ Yeni Kayıt Ekle</Btn>
       </div>
@@ -729,6 +751,30 @@ function StudentsPage({students, stockItems, routes, setRoutes}){
 
     <Modal show={showAdd} onClose={()=>setShowAdd(false)} title="Öğrenci Kaydı Oluştur"><StudentForm initial={{}} onSave={save} onCancel={()=>setShowAdd(false)} stockItems={stockItems} students={safeStudents} routes={routes}/></Modal>
     <Modal show={showRoutes} onClose={()=>setShowRoutes(false)} title="Servis Rotalarını Yönet"><RoutesManager routes={routes} setRoutes={setRoutes} onClose={()=>setShowRoutes(false)}/></Modal>
+    
+    <Modal show={showExport} onClose={()=>setShowExport(false)} title="Excel Çıktısı Al">
+      <div style={{marginBottom:16}}>
+        <Sel label="Çıktı Türü" value={expType} onChange={v=>{setExpType(v); setExpFilter("ALL");}} options={[
+           {label: "Öğrenci Listesi", value: "STUDENT"},
+           {label: "Servis / Rota Listesi", value: "TRANSPORT"},
+           {label: "Ödeme / Borç Listesi", value: "PAYMENT"}
+        ]}/>
+      </div>
+      <div style={{marginBottom:24}}>
+        {expType === "STUDENT" || expType === "PAYMENT" ? (
+           <Sel label="Grup Filtresi" value={expFilter} onChange={setExpFilter} options={[
+             {label: "Tüm Gruplar", value: "ALL"},
+             ...allGroups.map(g=>({label: g, value: g}))
+           ]}/>
+        ) : (
+           <Sel label="Rota / Şoför Filtresi" value={expFilter} onChange={setExpFilter} options={[
+             {label: "Tüm Rotalar", value: "ALL"},
+             ...safeArr(routes).map(r=>({label: r.routeName, value: r.driverName}))
+           ]}/>
+        )}
+      </div>
+      <Btn full onClick={handleExport} variant="success">Excel Olarak İndir</Btn>
+    </Modal>
   </div>
 }
 
@@ -851,7 +897,7 @@ function AttendancePage({students}){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   WHATSAPP DAVET PANELİ (GRUP FİLTRESİ VE TERS SIRALAMA)
+   WHATSAPP DAVET PANELİ
 ═══════════════════════════════════════════════════════════════ */
 function WhatsAppPage({students, waLinks}) {
   const safeLinks = safeArr(waLinks);
@@ -885,7 +931,6 @@ function WhatsAppPage({students, waLinks}) {
   const activeStudents = safeArr(students).filter(s => courseStatus(s) === "active" && s.guardianPhone1);
   const allGroups = Array.from(new Set(activeStudents.map(s=>s.groupName).filter(Boolean)));
   
-  // ARAMA, FİLTRE VE TERS SIRALAMA (YENİLER EN ÜSTTE)
   const filteredStudents = activeStudents.filter(s => {
     const matchName = s.name && s.name.toLowerCase().includes(search.toLowerCase());
     const matchGroup = groupFilter === "ALL" || s.groupName === groupFilter;
@@ -1175,7 +1220,7 @@ function SettingsPage({navItems, clubName, logoUrl, appUsers}){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   APP ROOT
+   APP ROOT (DB KORUMALI)
 ═══════════════════════════════════════════════════════════════ */
 function App(){
   const [currentUser, setCurrentUser] = useState(() => { try { return JSON.parse(sessionStorage.getItem("aqua_user")); } catch { return null; } });
@@ -1183,30 +1228,34 @@ function App(){
   const [students,setStudents]=useState([]); const [staff,setStaff]=useState([]); const [stockItems,setStockItems]=useState([]); const [movements,setMovements]=useState([]); const [expenses,setExpenses]=useState([]);
   const [clubName,setClubName]=useState("AquaClub Pro"); const [navItems,setNavItems]=useState(NAV_ITEMS); const [appUsers, setAppUsers]=useState([]); const [oldPinCode, setOldPinCode]=useState("0309"); const [waLinks,setWaLinks]=useState([]);
   const [logoUrl,setLogoUrl]=useState(""); const [activeTab,setActiveTab]=useState("dashboard"); const [sidebarOpen,setSidebarOpen]=useState(false);
-  const [routes, setRoutes] = useState([]); // YENİ ROTALAR STATE
+  const [routes, setRoutes] = useState([]);
+
+  useEffect(() => { document.documentElement.style.setProperty('--bg-color', themeColor); document.documentElement.style.setProperty('--sidebar-bg', sidebarColor); document.documentElement.style.setProperty('--card-bg', cardColor); document.documentElement.style.setProperty('--text-main', textColor); }, [themeColor, sidebarColor, cardColor, textColor]);
 
   useEffect(() => {
     if(!db) { setIsDbLoaded(true); return; }
-    const unsub = db.collection("appData").doc("main").onSnapshot((doc) => {
-      if (doc.exists) {
-        const d = doc.data();
-        if (d.students) setStudents(safeArr(d.students));
-        if (d.staff) setStaff(safeArr(d.staff));
-        if (d.stock) setStockItems(safeArr(d.stock));
-        if (d.movements) setMovements(safeArr(d.movements));
-        if (d.expenses) setExpenses(safeArr(d.expenses));
-        if (d.waLinks) setWaLinks(safeArr(d.waLinks));
-        if (d.routes) setRoutes(safeArr(d.routes));
-        if (d.clubName) setClubName(d.clubName);
-        if (d.pinCode) setOldPinCode(d.pinCode); 
-        let loadedUsers = safeArr(d.appUsers);
-        if (loadedUsers.length === 0) { loadedUsers = [{ id:"admin", username:"admin", password: d.pinCode || "0309", role:"admin", allowedTabs: NAV_ITEMS.map(n=>n.id) }]; }
-        setAppUsers(loadedUsers);
-        if (d.logoUrl) setLogoUrl(d.logoUrl);
-      }
-      setIsDbLoaded(true);
-    });
-    return () => unsub();
+    try {
+      const unsub = db.collection("appData").doc("main").onSnapshot((doc) => {
+        if (doc.exists) {
+          const d = doc.data();
+          if (d.students) setStudents(safeArr(d.students));
+          if (d.staff) setStaff(safeArr(d.staff));
+          if (d.stock) setStockItems(safeArr(d.stock));
+          if (d.movements) setMovements(safeArr(d.movements));
+          if (d.expenses) setExpenses(safeArr(d.expenses));
+          if (d.waLinks) setWaLinks(safeArr(d.waLinks));
+          if (d.routes) setRoutes(safeArr(d.routes));
+          if (d.clubName) setClubName(d.clubName);
+          if (d.pinCode) setOldPinCode(d.pinCode); 
+          let loadedUsers = safeArr(d.appUsers);
+          if (loadedUsers.length === 0) { loadedUsers = [{ id:"admin", username:"admin", password: d.pinCode || "0309", role:"admin", allowedTabs: NAV_ITEMS.map(n=>n.id) }]; }
+          setAppUsers(loadedUsers);
+          if (d.logoUrl) setLogoUrl(d.logoUrl);
+        }
+        setIsDbLoaded(true);
+      });
+      return () => unsub();
+    } catch(e) { console.error(e); setIsDbLoaded(true); }
   }, []);
 
   if (!isDbLoaded) return <div style={{display:"flex",flexDirection:"column",height:"100vh",alignItems:"center",justifyContent:"center",background:"var(--bg-color)"}}><div className="spinner"></div><div style={{color:"var(--text-main)",fontWeight:800,marginTop:16,letterSpacing:0.5}}>Kurumsal Sistem Yükleniyor...</div></div>;

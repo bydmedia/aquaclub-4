@@ -5,61 +5,65 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="theme-color" content="#F8FAFC"/>
+<meta name="theme-color" content="#F3F4F6"/>
 <link rel="manifest" href="manifest.json"/>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 <title>AquaClub Pro</title>
 <style>
+/* 🌟 KURUMSAL SAAS CSS MİMARİSİ 🌟 */
 :root {
-  --bg-color: #F8FAFC; 
+  --bg-color: #F3F4F6; 
   --sidebar-bg: #FFFFFF;
   --card-bg: #FFFFFF;
-  --text-main: #0F172A;
-  --text-sub: #64748B;
-  --accent: #3B82F6; 
-  --accent-hover: #2563EB;
+  --text-main: #111827;
+  --text-sub: #4B5563;
+  --accent: #1E3A8A; /* Kurumsal Lacivert */
+  --accent-hover: #1E40AF;
+  --accent-light: #EFF6FF;
+  --border: #D1D5DB;
+  --success: #065F46;
+  --success-bg: #D1FAE5;
+  --danger: #991B1B;
+  --danger-bg: #FEE2E2;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;background:var(--bg-color);transition:background 0.3s ease;}
-body{font-family:'Inter',-apple-system,sans-serif;overscroll-behavior:none;color:var(--text-main);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;letter-spacing:-0.01em;}
+body{
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  overscroll-behavior:none;color:var(--text-main);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased;
+}
 #root{height:100%}
 input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.4)}
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:10px}
+::-webkit-scrollbar-thumb{background:#9CA3AF;border-radius:10px}
 
-.modern-inp {
-  width: 100%; padding: 12px 16px; background-color: #F1F5F9; border: 2px solid transparent;
-  border-radius: 12px; color: var(--text-main); font-size: 14px; font-weight: 600;
-  transition: all 0.25s ease; outline: none; font-family: 'Inter', sans-serif;
+/* KURUMSAL FORM ELEMANLARI */
+.corp-inp {
+  width: 100%; padding: 10px 14px; background-color: #FFFFFF; border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text-main); font-size: 13px; font-weight: 500;
+  transition: all 0.2s; outline: none; font-family: inherit;
 }
-.modern-inp:focus {
-  background-color: #FFFFFF; border-color: var(--accent);
-  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15);
-}
-.modern-inp::placeholder { color: #94A3B8; font-weight: 500; }
-.modern-inp:disabled { opacity: 0.7; cursor: not-allowed; }
+.corp-inp:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(30,58,138,0.1); }
+.corp-inp::placeholder { color: #9CA3AF; }
+.corp-inp:disabled { background-color: #F9FAFB; cursor: not-allowed; }
 
-.modern-btn {
-  padding: 12px 20px; border-radius: 12px; border: none; cursor: pointer; font-weight: 800;
-  font-size: 14px; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); display: inline-flex; 
-  align-items: center; justify-content: center; outline: none;
+.corp-btn {
+  padding: 10px 16px; border-radius: 6px; border: 1px solid transparent; cursor: pointer; font-weight: 600;
+  font-size: 13px; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; outline: none;
 }
-.modern-btn:active { transform: scale(0.96); }
-.modern-btn-primary { background: var(--accent); color: #fff; box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3); }
-.modern-btn-primary:hover { background: var(--accent-hover); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4); transform: translateY(-1px); }
-.modern-btn-secondary { background: #F1F5F9; color: #475569; }
-.modern-btn-secondary:hover { background: #E2E8F0; color: #1E293B; }
-.modern-btn-danger { background: #FEF2F2; color: #DC2626; }
-.modern-btn-danger:hover { background: #FEE2E2; color: #B91C1C; }
-.modern-btn-success { background: #ECFDF5; color: #059669; }
+.corp-btn:active { transform: scale(0.98); }
+.corp-btn-primary { background: var(--accent); color: #fff; }
+.corp-btn-primary:hover { background: var(--accent-hover); }
+.corp-btn-secondary { background: #FFFFFF; border-color: var(--border); color: var(--text-main); }
+.corp-btn-secondary:hover { background: #F3F4F6; }
+.corp-btn-danger { background: var(--danger-bg); border-color: #FCA5A5; color: var(--danger); }
+.corp-btn-danger:hover { background: #FCA5A5; }
+.corp-btn-success { background: var(--success-bg); border-color: #6EE7B7; color: var(--success); }
+.corp-btn-success:hover { background: #A7F3D0; }
 
-.modern-card {
-  background: var(--card-bg); border-radius: 20px; padding: 20px; margin-bottom: 16px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
-  border: 1px solid rgba(226, 232, 240, 0.8); transition: transform 0.2s ease, box-shadow 0.2s ease;
+.corp-card {
+  background: var(--card-bg); border-radius: 8px; padding: 20px; margin-bottom: 16px;
+  border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .spinner {border: 4px solid rgba(0,0,0,0.05); border-left-color: var(--accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 16px;}
@@ -67,14 +71,14 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.4)}
 
 .list-row {
   display: grid; grid-template-columns: 2.5fr 1.5fr 1.5fr 1.5fr 1fr; gap: 16px; align-items: center; 
-  padding: 16px 20px; background: #fff; border: 1px solid #E2E8F0; border-radius: 14px; 
-  margin-bottom: 8px; transition: all 0.2s ease;
+  padding: 16px 20px; background: #fff; border: 1px solid var(--border); border-radius: 8px; 
+  margin-bottom: 8px; transition: all 0.2s;
 }
-.list-row:hover { border-color: #CBD5E1; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+.list-row:hover { border-color: #9CA3AF; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
 .list-header {
   display: grid; grid-template-columns: 2.5fr 1.5fr 1.5fr 1.5fr 1fr; gap: 16px; align-items: center; 
-  padding: 12px 20px; background: #F1F5F9; border-radius: 12px; font-weight: 800; color: var(--text-sub); 
-  font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;
+  padding: 12px 20px; background: #F9FAFB; border: 1px solid var(--border); border-radius: 8px; 
+  font-weight: 700; color: var(--text-sub); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;
 }
 @media (max-width: 900px) {
   .list-row, .list-header { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
@@ -100,18 +104,6 @@ const {useState,useEffect,useRef}=React;
 const TODAY=new Date().toISOString().split("T")[0];
 const DAYS_TR=["Paz","Pzt","Sal","Çar","Per","Cum","Cmt"];
 
-const C={
-  bg:"var(--bg-color)", surface:"var(--card-bg)", card:"var(--card-bg)", sidebar:"var(--sidebar-bg)",
-  border:"#CBD5E1", borderLight:"#E2E8F0",
-  accent:"#3B82F6", accentDark:"#2563EB", accentGlow:"#EFF6FF",
-  text:"var(--text-main)", textSub:"#64748B", textMuted:"#94A3B8",
-  success:"#059669", successBg:"#D1FAE5",
-  warning:"#D97706", warningBg:"#FEF3C7",
-  danger:"#DC2626",  dangerBg:"#FEE2E2",
-  purple:"#6D28D9",  purpleBg:"#EDE9FE",
-  whatsapp:"#16A34A", whatsappBg:"#DCFCE7",
-};
-
 const STOCK_CATS=["Gözlük","Bone","Palet","Şamandıra","Aksesuar","Kıyafet","Temizlik","Diğer"];
 const EMPTY_ITEM={id:null,name:"",category:"",price:"",stock:"",minStock:"",supplier:"",notes:""};
 const EMPTY_EXPENSE={id:null, title:"", amount:"", date:TODAY, category:"", isFood:false, expiryDate:"", note:"", qty:""};
@@ -125,19 +117,19 @@ const EMPTY_S={
 };
 
 const NAV_ITEMS=[
-  {id:"dashboard",label:"Genel Bakış",icon:"M3 12l9-9 9 9M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9"},
-  {id:"students",label:"Öğrenciler",icon:"M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 7a4 4 0 100 8 4 4 0 000-8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"},
-  {id:"attendance",label:"Yoklama",icon:"M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"},
-  {id:"payments",label:"Ödemeler",icon:"M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"},
-  {id:"expenses",label:"Giderler",icon:"M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"},
-  {id:"staff",label:"Personel & Puantaj",icon:"M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197"},
-  {id:"inventory",label:"Envanter",icon:"M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"},
-  {id:"whatsapp",label:"WhatsApp Davet",icon:"M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.482-1.46-1.656-1.758-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z M12 22C6.477 22 2 17.523 2 12c0-1.76.452-3.414 1.25-4.832L2 2l5.344 1.156C8.683 2.43 10.297 2 12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10z"},
-  {id:"settings",label:"Ayarlar",icon:"M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"},
+  {id:"dashboard",label:"Genel Bakış",icon:"dashboard"},
+  {id:"students",label:"Öğrenciler",icon:"students"},
+  {id:"attendance",label:"Yoklama",icon:"attendance"},
+  {id:"payments",label:"Ödemeler",icon:"payments"},
+  {id:"expenses",label:"Giderler",icon:"expenses"},
+  {id:"staff",label:"Personel & Puantaj",icon:"staff"},
+  {id:"inventory",label:"Envanter",icon:"inventory"},
+  {id:"whatsapp",label:"WhatsApp Davet",icon:"whatsapp"},
+  {id:"settings",label:"Ayarlar",icon:"settings"},
 ];
 
 /* ═══════════════════════════════════════════════════════════════
-   2. FIREBASE & UTILS 
+   2. FIREBASE & UTILS (BEYAZ EKRAN ZIRHLARI)
 ═══════════════════════════════════════════════════════════════ */
 const firebaseConfig = {
   apiKey: "AIzaSyA6d55XjKFlj4-eZPCYrfTl1451f-IKdq0",
@@ -169,12 +161,19 @@ const DB={
 };
 
 function fmtDate(d){
-  if(!d) return "—";
+  if(!d || typeof d !== 'string') return "—";
   try {
     const parts = d.split("-");
     if(parts.length !== 3) return d;
     return `${parts[2]}.${parts[1]}.${parts[0]}`;
   } catch(e) { return d; }
+}
+
+// BEYAZ EKRAN ÇÖKME SEBEBİ (SORT) İÇİN KUSURSUZ GÜVENLİK
+function sortDateDesc(a, b) {
+  const da = new Date(a.date || 0).getTime();
+  const db = new Date(b.date || 0).getTime();
+  return (isNaN(db) ? 0 : db) - (isNaN(da) ? 0 : da);
 }
 
 function totalPaid(s){return safeArr(s?.payments).reduce((t,p)=>t+Number(p.amount||0),0);}
@@ -257,32 +256,72 @@ function exportCSV(filename, headers, rows) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   3. UI BİLEŞENLERİ 
+   3. UI BİLEŞENLERİ (EMOJİLER SİLİNDİ, SVG İKONLAR EKLENDİ)
 ═══════════════════════════════════════════════════════════════ */
-function Icon({d,size=18,color="currentColor",style={}}){
-  return<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style}>
-    {d.split("M").filter(Boolean).map((seg,i)=><path key={i} d={"M"+seg}/>)}
+function Icon({name,size=18,color="currentColor",style={}}){
+  const icons = {
+    users: "M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 7a4 4 0 100 8 4 4 0 000-8zM23 21v-2a4 4 0 00-3-3.87",
+    bus: "M8 21h8M10 17h4M12 21v-4M4 17h16a2 2 0 002-2V9a2 2 0 00-2-2H4a2 2 0 00-2 2v6a2 2 0 002 2zM4 7h16M4 7a2 2 0 012-2h12a2 2 0 012 2M4 7v4M20 7v4",
+    refresh: "M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15",
+    warning: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z",
+    check: "M5 13l4 4L19 7",
+    chart: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
+    mapPin: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z",
+    link: "M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1",
+    chat: "M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z",
+    dashboard: "M3 12l9-9 9 9M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9",
+    students: "M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 7a4 4 0 100 8 4 4 0 000-8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75",
+    attendance: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
+    payments: "M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z",
+    expenses: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
+    staff: "M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197",
+    inventory: "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4",
+    whatsapp: "M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.482-1.46-1.656-1.758-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z M12 22C6.477 22 2 17.523 2 12c0-1.76.452-3.414 1.25-4.832L2 2l5.344 1.156C8.683 2.43 10.297 2 12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10z",
+    settings: "M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+  };
+  const path = icons[name] || icons.dashboard;
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style}>
+    {path.split("M").filter(Boolean).map((seg,i)=><path key={i} d={"M"+seg}/>)}
+    {name === "mapPin" && <circle cx="12" cy="11" r="3" />}
   </svg>
 }
 
+// BEYAZ EKRANLARI YAKALAYIP SAYFAYI ÇÖKMESİNİ ENGELLEYEN HATA ZIRHI
+class ErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { hasError: false, error: null }; }
+  static getDerivedStateFromError(error) { return { hasError: true, error }; }
+  render() {
+    if (this.state.hasError) {
+      return <div style={{padding:"40px", textAlign:"center"}}>
+        <div style={{display:"inline-block", background:"var(--danger-bg)", color:"var(--danger)", padding:"20px 30px", border:"1px solid #FCA5A5", borderRadius:"8px"}}>
+          <h3 style={{margin:"0 0 10px 0"}}>Modül Yüklenirken Bir Hata Oluştu</h3>
+          <p style={{margin:0, fontSize:"13px"}}>{this.state.error?.toString()}</p>
+          <button onClick={()=>this.setState({hasError:false})} style={{marginTop:"15px", padding:"8px 16px", background:"var(--danger)", color:"#fff", border:"none", borderRadius:"4px", cursor:"pointer", fontWeight:"bold"}}>Tekrar Dene</button>
+        </div>
+      </div>;
+    }
+    return this.props.children;
+  }
+}
+
 function Toggle({checked,onChange}){
-  return<button type="button" onClick={()=>onChange(!checked)} style={{width:44,height:24,borderRadius:12,background:checked?"var(--accent)":"#CBD5E1",border:"none",cursor:"pointer",position:"relative",transition:"background .3s",flexShrink:0}}>
+  return<button type="button" onClick={()=>onChange(!checked)} style={{width:44,height:24,borderRadius:12,background:checked?"var(--accent)":"var(--border)",border:"none",cursor:"pointer",position:"relative",transition:"background .3s",flexShrink:0}}>
     <span style={{position:"absolute",top:2,left:checked?22:2,width:20,height:20,borderRadius:"50%",background:"#fff",transition:"left .3s",boxShadow:"0 2px 4px rgba(0,0,0,0.1)"}}/>
   </button>
 }
 
 function Inp({label,value,onChange,type="text",placeholder,rows,half,autoFocus,style,disabled}){
   return<div style={{marginBottom:14,flex:half?"1":"unset"}}>
-    {label&&<div style={{fontSize:11,color:"var(--text-sub)",marginBottom:6,fontWeight:800,textTransform:"uppercase",letterSpacing:0.5}}>{label}</div>}
-    {rows?<textarea className="modern-inp" style={{minHeight:80,...style}} rows={rows} value={value||""} onChange={e=>onChange(e.target.value)} placeholder={placeholder} disabled={disabled}/>
-         :<input className="modern-inp" style={style} type={type} value={value||""} onChange={e=>onChange(e.target.value)} placeholder={placeholder} autoFocus={autoFocus} disabled={disabled}/>}
+    {label&&<div style={{fontSize:11,color:"var(--text-sub)",marginBottom:6,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5}}>{label}</div>}
+    {rows?<textarea className="corp-inp" style={{minHeight:80,...style}} rows={rows} value={value||""} onChange={e=>onChange(e.target.value)} placeholder={placeholder} disabled={disabled}/>
+         :<input className="corp-inp" style={style} type={type} value={value||""} onChange={e=>onChange(e.target.value)} placeholder={placeholder} autoFocus={autoFocus} disabled={disabled}/>}
   </div>
 }
 
 function Sel({label,value,onChange,options}){
   return<div style={{marginBottom:14}}>
-    {label&&<div style={{fontSize:11,color:"var(--text-sub)",marginBottom:6,fontWeight:800,textTransform:"uppercase",letterSpacing:0.5}}>{label}</div>}
-    <select className="modern-inp" style={{cursor:"pointer", paddingRight:32}} value={value||""} onChange={e=>onChange(e.target.value)}>
+    {label&&<div style={{fontSize:11,color:"var(--text-sub)",marginBottom:6,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5}}>{label}</div>}
+    <select className="corp-inp" style={{cursor:"pointer", paddingRight:32}} value={value||""} onChange={e=>onChange(e.target.value)}>
       <option value="">Seçiniz...</option>
       {(options||[]).map(o=><option key={o.value} value={o.value}>{o.label}</option>)}
     </select>
@@ -290,46 +329,46 @@ function Sel({label,value,onChange,options}){
 }
 
 function Btn({children,onClick,type="button",variant="primary",sm,full,style={}}){
-  const vClass = `modern-btn modern-btn-${variant}`;
-  const s = { ...style, padding: sm ? "8px 16px" : "12px 20px", fontSize: sm ? 12 : 14, width: full ? "100%" : "auto" };
+  const vClass = `corp-btn corp-btn-${variant}`;
+  const s = { ...style, padding: sm ? "8px 12px" : "10px 16px", fontSize: sm ? 12 : 13, width: full ? "100%" : "auto" };
   return<button type={type} onClick={onClick} className={vClass} style={s}>{children}</button>
 }
 
-function Card({children,style={},accent}){
-  return<div className="modern-card" style={{borderLeft:accent?`4px solid ${accent}`:undefined, ...style}}>{children}</div>
+function Card({children,style={}}){
+  return<div className="corp-card" style={style}>{children}</div>
 }
 
 function Badge({label,color}){
-  const map={active:["#059669","AKTİF"],upcoming:["#D97706","BAŞLAMADI"],ended:["#DC2626","BİTTİ"],unknown:["#94A3B8","BELİRSİZ"]};
-  const [col,txt]=map[label]||[color||"#94A3B8",label];
-  return<span style={{fontSize:10,fontWeight:800,padding:"4px 10px",borderRadius:20,background:col+"15",color:col,letterSpacing:0.5}}>{txt}</span>
+  const map={active:["var(--success)","AKTİF"],upcoming:["#D97706","BAŞLAMADI"],ended:["var(--danger)","BİTTİ"],unknown:["var(--text-sub)","BELİRSİZ"]};
+  const [col,txt]=map[label]||[color||"var(--text-sub)",label];
+  return<span style={{fontSize:10,fontWeight:700,padding:"4px 8px",borderRadius:6,background:col+"15",color:col,letterSpacing:0.5, border:`1px solid ${col}40`}}>{txt}</span>
 }
 
 function SectionTitle({children,action}){
   return<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16,marginTop:8}}>
-    <div style={{fontSize:14,fontWeight:900,color:"var(--text-main)",letterSpacing:-0.5}}>{children}</div>
+    <div style={{fontSize:15,fontWeight:700,color:"var(--text-main)",letterSpacing:-0.3}}>{children}</div>
     {action}
   </div>
 }
 
 function Row({label,val,href,col}){
-  return<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:`1px solid #F1F5F9`}}>
-    <span style={{fontSize:13,color:"var(--text-sub)",flexShrink:0,marginRight:12,fontWeight:600}}>{label}</span>
-    {href?<a href={href} style={{fontSize:14,color:"var(--accent)",textDecoration:"none",fontWeight:700}}>{val}</a>
-         :<span style={{fontSize:14,fontWeight:800,color:col||"var(--text-main)",textAlign:"right"}}>{val}</span>}
+  return<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:`1px solid #F3F4F6`}}>
+    <span style={{fontSize:13,color:"var(--text-sub)",flexShrink:0,marginRight:12,fontWeight:500}}>{label}</span>
+    {href?<a href={href} style={{fontSize:13,color:"var(--accent)",textDecoration:"none",fontWeight:600}}>{val}</a>
+         :<span style={{fontSize:13,fontWeight:600,color:col||"var(--text-main)",textAlign:"right"}}>{val}</span>}
   </div>
 }
 
 function StatCard({label,value,col,span2}){
-  return<div style={{background:"#fff",border:`1px solid #E2E8F0`,borderRadius:16,padding:20,gridColumn:span2?"span 2":"span 1",boxShadow:"0 4px 6px -1px rgba(0,0,0,0.02)"}}>
-    <div style={{fontSize:28,fontWeight:900,color:col||"var(--text-main)",marginBottom:6,letterSpacing:-1}}>{value}</div>
-    <div style={{fontSize:11,color:"var(--text-sub)",fontWeight:800,textTransform:"uppercase",letterSpacing:0.5}}>{label}</div>
+  return<div style={{background:"#fff",border:`1px solid var(--border)`,borderRadius:8,padding:20,gridColumn:span2?"span 2":"span 1",boxShadow:"0 1px 2px rgba(0,0,0,0.05)"}}>
+    <div style={{fontSize:24,fontWeight:700,color:col||"var(--text-main)",marginBottom:4,letterSpacing:-0.5}}>{value}</div>
+    <div style={{fontSize:11,color:"var(--text-sub)",fontWeight:600,textTransform:"uppercase",letterSpacing:0.5}}>{label}</div>
   </div>
 }
 
 function TabBar({tabs,active,onChange}){
-  return<div style={{display:"flex",borderBottom:`2px solid #E2E8F0`,marginBottom:20,overflowX:"auto",gap:8,paddingBottom:4}}>
-    {tabs.map((t,i)=><button key={i} type="button" onClick={()=>onChange(i)} style={{padding:"8px 16px",background:active===i?"var(--text-main)":"transparent",border:"none",borderRadius:10,color:active===i?"#fff":"var(--text-sub)",cursor:"pointer",fontWeight:800,fontSize:13,fontFamily:"inherit",whiteSpace:"nowrap",transition:"all 0.2s"}}>{t}</button>)}
+  return<div style={{display:"flex",borderBottom:`1px solid var(--border)`,marginBottom:20,overflowX:"auto",gap:4}}>
+    {tabs.map((t,i)=><button key={i} type="button" onClick={()=>onChange(i)} style={{padding:"10px 16px",background:active===i?"var(--bg-color)":"transparent",border:"1px solid", borderColor:active===i?"var(--border)":"transparent", borderBottom:"none", borderRadius:"6px 6px 0 0",color:active===i?"var(--accent)":"var(--text-sub)",cursor:"pointer",fontWeight:600,fontSize:13,fontFamily:"inherit",whiteSpace:"nowrap",transition:"all 0.2s"}}>{t}</button>)}
   </div>
 }
 
@@ -337,17 +376,18 @@ function DayPicker({value=[],onChange}){
   const safeVal = safeArr(value).map(Number);
   return<div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:16}}>
     {DAYS_TR.map((d,i)=>{const on=safeVal.includes(i);return<button key={i} type="button" onClick={()=>onChange(on?safeVal.filter(x=>x!==i):[...safeVal,i].sort())}
-      style={{width:44,height:44,borderRadius:12,border:`2px solid ${on?"var(--accent)":"#E2E8F0"}`,background:on?"rgba(59, 130, 246, 0.1)":"#fff",color:on?"var(--accent)":"var(--text-sub)",cursor:"pointer",fontSize:13,fontWeight:800,fontFamily:"inherit",transition:"all 0.2s"}}>{d}</button>})}
+      style={{width:40,height:40,borderRadius:6,border:`1px solid ${on?"var(--accent)":"var(--border)"}`,background:on?"var(--accent-light)":"#fff",color:on?"var(--accent)":"var(--text-sub)",cursor:"pointer",fontSize:13,fontWeight:600,fontFamily:"inherit",transition:"all 0.2s"}}>{d}</button>})}
   </div>
 }
 
+/* WIDGET MODAL - ÇARPIYLA KAPANIR, YÜKSEKLİK SABİT */
 function Modal({show,onClose,title,children}){
   if(!show)return null;
-  return<div style={{position:"fixed",top:0,left:0,right:0,bottom:0,backgroundColor:"rgba(15, 23, 42, 0.7)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:9999,padding:16}}>
-    <div style={{background:"#fff",borderRadius:24,padding:"28px",width:"100%",maxWidth:580,height:"650px",minHeight:"650px",display:"flex",flexDirection:"column",boxShadow:"0 25px 50px -12px rgba(0,0,0,0.25)"}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24,flexShrink:0}}>
-        <div style={{fontSize:18,fontWeight:900,color:"var(--text-main)",letterSpacing:-0.5}}>{title}</div>
-        <button type="button" onClick={onClose} style={{background:"#F1F5F9",border:"none",color:"#64748B",width:36,height:36,borderRadius:10,cursor:"pointer",fontSize:20,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.2s"}}>×</button>
+  return<div style={{position:"fixed",top:0,left:0,right:0,bottom:0,backgroundColor:"rgba(17, 24, 39, 0.7)",backdropFilter:"blur(4px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:9999,padding:16}}>
+    <div style={{background:"#fff",borderRadius:8,padding:"24px",width:"100%",maxWidth:600,height:"650px",minHeight:"650px",display:"flex",flexDirection:"column",boxShadow:"0 20px 25px -5px rgba(0,0,0,0.1)"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20,flexShrink:0,borderBottom:`1px solid var(--border)`,paddingBottom:12}}>
+        <div style={{fontSize:16,fontWeight:700,color:"var(--text-main)",letterSpacing:-0.3}}>{title}</div>
+        <button type="button" onClick={onClose} style={{background:"var(--bg-color)",border:`1px solid var(--border)`,color:"var(--text-sub)",width:32,height:32,borderRadius:6,cursor:"pointer",fontSize:18,fontWeight:600,display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
       </div>
       <div style={{flex:1,overflowY:"auto",paddingRight:8,minHeight:0}}>{children}</div>
     </div>
@@ -375,13 +415,13 @@ function LoginScreen({ onSuccess, appUsers, adminPin }) {
 
   return (
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100vh",background:"var(--bg-color)",padding:20}}>
-      <div style={{fontSize:42, fontWeight:900, color:"var(--accent)", marginBottom:30, letterSpacing:-1.5}}>AquaClub Pro</div>
-      <form onSubmit={handleLogin} style={{background:"#fff",padding:"40px 30px",borderRadius:16,border:`1px solid ${err?"#DC2626":"#E2E8F0"}`,textAlign:"center",boxShadow:"0 12px 32px rgba(0,0,0,0.04)",width:"100%",maxWidth:340, transition:"all 0.3s"}}>
-        <div style={{fontSize:16,fontWeight:800,marginBottom:24,color:"var(--text-main)"}}>Sisteme Giriş Yapın</div>
+      <div style={{fontSize:36, fontWeight:700, color:"var(--accent)", marginBottom:30, letterSpacing:-1}}>AquaClub Pro</div>
+      <form onSubmit={handleLogin} style={{background:"#fff",padding:"40px 30px",borderRadius:8,border:`1px solid ${err?"var(--danger)":"var(--border)"}`,textAlign:"center",boxShadow:"0 4px 6px -1px rgba(0,0,0,0.05)",width:"100%",maxWidth:340, transition:"all 0.3s"}}>
+        <div style={{fontSize:16,fontWeight:600,marginBottom:24,color:"var(--text-main)"}}>Kurumsal Giriş</div>
         <Inp value={user} onChange={setUser} placeholder="Kullanıcı Adı" autoFocus style={{textAlign:"center", fontSize:14}}/>
         <Inp value={pass} onChange={setPass} type="password" placeholder="Şifre" style={{textAlign:"center", fontSize:14, letterSpacing:4}}/>
         <Btn full type="submit" onClick={handleLogin} style={{marginTop:12}}>Giriş Yap</Btn>
-        <div style={{height: 20, marginTop: 16}}>{err && <div style={{color:"#DC2626",fontSize:13,fontWeight:700}}>Hatalı Bilgi Girdiniz!</div>}</div>
+        <div style={{height: 20, marginTop: 16}}>{err && <div style={{color:"var(--danger)",fontSize:13,fontWeight:600}}>Hatalı Bilgi Girdiniz!</div>}</div>
       </form>
     </div>
   );
@@ -391,15 +431,15 @@ function EqPicker({stockItems,current,onAdd,onRemove}){
   const [sel,setSel]=useState(""); const safeStock = safeArr(stockItems);
   return<div>
     <div style={{display:"flex",gap:10,marginBottom:12}}>
-      <select className="modern-inp" style={{flex:1}} value={sel} onChange={e=>setSel(e.target.value)}>
+      <select className="corp-inp" style={{flex:1}} value={sel} onChange={e=>setSel(e.target.value)}>
         <option value="">Ekipman seçin...</option>
         {safeStock.filter(s=>Number(s.stock)>0).map(s=><option key={s.id} value={s.id}>{s.name} — {Number(s.price).toLocaleString("tr-TR")} ₺</option>)}
       </select>
       <Btn onClick={()=>{if(!sel)return;const item=safeStock.find(s=>String(s.id)===String(sel));if(item)onAdd({name:item.name,price:item.price,stockId:item.id});setSel("");}}>Ekle</Btn>
     </div>
-    {safeArr(current).map(e=><div key={e.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 16px",background:"#F8FAFC",borderRadius:12,marginBottom:8}}>
-      <div><div style={{fontSize:14,fontWeight:800,color:"var(--text-main)"}}>{e.name}</div><div style={{fontSize:11,color:"var(--text-sub)",fontWeight:600}}>{fmtDate(e.addedDate)}</div></div>
-      <div style={{display:"flex",alignItems:"center",gap:16}}><span style={{color:"#D97706",fontWeight:900,fontSize:15}}>{Number(e.price).toLocaleString("tr-TR")} ₺</span><button type="button" onClick={()=>onRemove(e.id)} style={{background:"#FEE2E2",border:"none",color:"#DC2626",cursor:"pointer",fontSize:14,width:30,height:30,borderRadius:8,fontWeight:800}}>X</button></div>
+    {safeArr(current).map(e=><div key={e.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 14px",background:"var(--bg-color)",borderRadius:6,border:"1px solid var(--border)",marginBottom:8}}>
+      <div><div style={{fontSize:13,fontWeight:600,color:"var(--text-main)"}}>{e.name}</div><div style={{fontSize:11,color:"var(--text-sub)"}}>{fmtDate(e.addedDate)}</div></div>
+      <div style={{display:"flex",alignItems:"center",gap:16}}><span style={{color:"#D97706",fontWeight:700,fontSize:14}}>{Number(e.price).toLocaleString("tr-TR")} ₺</span><button type="button" onClick={()=>onRemove(e.id)} style={{background:"var(--danger-bg)",border:"1px solid #FCA5A5",color:"var(--danger)",cursor:"pointer",fontSize:12,width:26,height:26,borderRadius:4,fontWeight:700}}>X</button></div>
     </div>)}
   </div>
 }
@@ -429,14 +469,14 @@ function RoutesManager({routes, setRoutes, onClose}) {
     </div>
     <Btn full onClick={save} style={{marginBottom:24}}>{f.id ? "Rotayı Güncelle" : "Yeni Rota Kaydet"}</Btn>
     
-    <div style={{fontSize:12, fontWeight:800, color:"var(--text-sub)", marginBottom:10, textTransform:"uppercase"}}>Mevcut Rotalar</div>
-    {safeRoutes.length === 0 ? <div style={{textAlign:"center", padding:"20px 0", color:"var(--text-sub)", fontWeight:600}}>Kayıtlı rota bulunmuyor.</div> : 
+    <div style={{fontSize:11, fontWeight:700, color:"var(--text-sub)", marginBottom:10, textTransform:"uppercase"}}>Mevcut Rotalar</div>
+    {safeRoutes.length === 0 ? <div style={{textAlign:"center", padding:"20px 0", color:"var(--text-sub)", fontWeight:500}}>Kayıtlı rota bulunmuyor.</div> : 
       safeRoutes.map(r=><Card key={r.id} style={{padding:"12px 16px", marginBottom:8}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
           <div>
-            <div style={{fontWeight:800,fontSize:15,color:"var(--text-main)"}}>📍 {r.routeName}</div>
-            <div style={{fontSize:12,color:"var(--text-sub)",fontWeight:600,marginTop:4}}>Şoför: {r.driverName} ({r.driverPhone})</div>
-            <div style={{fontSize:11,color:"var(--accent)",fontWeight:700,marginTop:4, wordBreak:"break-word", whiteSpace:"normal", lineHeight:1.4}}>Mahalleler: {r.neighborhoods}</div>
+            <div style={{fontWeight:700,fontSize:14,color:"var(--text-main)",display:"flex",alignItems:"center",gap:6}}><Icon name="mapPin" size={14} color="var(--accent)"/> {r.routeName}</div>
+            <div style={{fontSize:12,color:"var(--text-sub)",fontWeight:500,marginTop:4}}>Şoför: {r.driverName} ({r.driverPhone})</div>
+            <div style={{fontSize:11,color:"var(--text-main)",fontWeight:600,marginTop:4, background:"var(--bg-color)", padding:"4px 8px", borderRadius:4, display:"inline-block", border:"1px solid var(--border)"}}>Mahalleler: {r.neighborhoods}</div>
           </div>
           <div style={{display:"flex",gap:6}}>
             <Btn sm variant="secondary" onClick={()=>{setF(r);}}>Düzenle</Btn>
@@ -507,7 +547,7 @@ function StudentForm({initial,onSave,onCancel,stockItems,students,routes}){
     {tab===0&&<div>
       <Inp label="Ad Soyad *" value={f.name} onChange={v=>u("name",v)} autoFocus/>
       <Inp label="Doğum Tarihi" value={f.dob} onChange={v=>u("dob",v)} type="date"/>
-      <div style={{height:1,background:"#F1F5F9",margin:"16px 0"}}/>
+      <div style={{height:1,background:"var(--bg-color)",margin:"16px 0"}}/>
       <Inp label="Veli Adı Soyadı" value={f.guardianName} onChange={v=>u("guardianName",v)}/>
       <div style={{display:"flex",gap:12}}>
         <Inp label="Veli Tel 1" value={f.guardianPhone1} onChange={v=>u("guardianPhone1",v)} type="tel" half/>
@@ -523,26 +563,26 @@ function StudentForm({initial,onSave,onCancel,stockItems,students,routes}){
       </div>
       
       <div style={{marginBottom:14}}>
-        <div style={{fontSize:11,color:"var(--text-sub)",marginBottom:6,fontWeight:800,textTransform:"uppercase",letterSpacing:0.5}}>Grup / Sınıf Adı</div>
+        <div style={{fontSize:11,color:"var(--text-sub)",marginBottom:6,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5}}>Grup / Sınıf Adı</div>
         {!isNewGroup ? (
-          <select className="modern-inp" value={f.groupName} onChange={e => {
+          <select className="corp-inp" value={f.groupName} onChange={e => {
             if(e.target.value === "___NEW___") { setIsNewGroup(true); u("groupName", ""); }
             else { u("groupName", e.target.value); }
           }}>
             <option value="">Grup Seçiniz...</option>
             {existingGroups.map(g=><option key={g} value={g}>{g}</option>)}
-            <option value="___NEW___" style={{fontWeight:800, color:"var(--accent)"}}>+ YENİ GRUP EKLE...</option>
+            <option value="___NEW___" style={{fontWeight:700, color:"var(--accent)"}}>+ YENİ GRUP EKLE...</option>
           </select>
         ) : (
           <div style={{display:"flex", gap:10}}>
-            <input className="modern-inp" style={{flex:1}} placeholder="Yeni grubun adını yazın..." value={f.groupName} onChange={e=>u("groupName", e.target.value.toLocaleUpperCase("tr-TR"))} autoFocus/>
+            <input className="corp-inp" style={{flex:1}} placeholder="Yeni grubun adını yazın..." value={f.groupName} onChange={e=>u("groupName", e.target.value.toLocaleUpperCase("tr-TR"))} autoFocus/>
             <Btn variant="secondary" onClick={()=>{setIsNewGroup(false); u("groupName","");}}>İptal</Btn>
           </div>
         )}
       </div>
 
-      <div style={{height:1,background:"#F1F5F9",margin:"16px 0"}}/>
-      <div style={{fontSize:11,color:"var(--text-sub)",marginBottom:8,fontWeight:800,textTransform:"uppercase"}}>Haftalık Antrenman Günleri *</div>
+      <div style={{height:1,background:"var(--bg-color)",margin:"16px 0"}}/>
+      <div style={{fontSize:11,color:"var(--text-sub)",marginBottom:8,fontWeight:700,textTransform:"uppercase"}}>Haftalık Antrenman Günleri *</div>
       <DayPicker value={safeWeekDays} onChange={v=>u("weekDays",v)}/>
       
       <div style={{display:"flex",gap:12}}>
@@ -550,9 +590,9 @@ function StudentForm({initial,onSave,onCancel,stockItems,students,routes}){
         <div style={{flex:1}}><Inp label="Toplam Seans *" value={f.totalSessions} onChange={v=>u("totalSessions",v)} type="number"/></div>
       </div>
       
-      <div style={{background:"rgba(59, 130, 246, 0.05)", padding:"12px 16px", borderRadius:12, marginBottom:16, border:`1px solid rgba(59, 130, 246, 0.2)`}}>
-        <div style={{fontSize:11,color:"var(--accent)",fontWeight:800,textTransform:"uppercase"}}>Sistemin Hesapladığı Bitiş Tarihi</div>
-        <div style={{fontSize:18,fontWeight:900,color:"var(--text-main)",marginTop:4}}>{fmtDate(f.courseEnd)||"—"}</div>
+      <div style={{background:"var(--accent-light)", padding:"12px 16px", borderRadius:6, marginBottom:16, border:`1px solid var(--accent)`}}>
+        <div style={{fontSize:11,color:"var(--accent)",fontWeight:700,textTransform:"uppercase"}}>Sistemin Hesapladığı Bitiş Tarihi</div>
+        <div style={{fontSize:16,fontWeight:700,color:"var(--text-main)",marginTop:4}}>{fmtDate(f.courseEnd)||"—"}</div>
       </div>
       
       <div style={{display:"flex",gap:12}}>
@@ -563,8 +603,8 @@ function StudentForm({initial,onSave,onCancel,stockItems,students,routes}){
     </div>}
     
     {tab===2&&<div>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 0",borderBottom:`1px solid #F1F5F9`,marginBottom:16}}>
-        <div><div style={{fontWeight:800,fontSize:15,color:"var(--text-main)"}}>Servis Kullanıyor mu?</div></div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"16px 0",borderBottom:`1px solid var(--bg-color)`,marginBottom:16}}>
+        <div><div style={{fontWeight:600,fontSize:14,color:"var(--text-main)"}}>Servis Kullanıyor mu?</div></div>
         <Toggle checked={f.hasTransport} onChange={v=>u("hasTransport",v)}/>
       </div>
       {f.hasTransport?
@@ -572,51 +612,51 @@ function StudentForm({initial,onSave,onCancel,stockItems,students,routes}){
           <div style={{flex:1}}>
             <Inp label="Öğrenci Adresi (Mahalle vb.)" value={f.address} onChange={handleAddressChange} rows={2} placeholder="Adres yazarken şoför otomatik eşleşir..."/>
             <Inp label="Aylık Servis Ücreti (₺)" value={f.transportFee} onChange={v=>u("transportFee",v)} type="number"/>
-            <div style={{height:1,background:"#F1F5F9",margin:"16px 0"}}/>
+            <div style={{height:1,background:"var(--bg-color)",margin:"16px 0"}}/>
             <Inp label="Şoför Adı" value={f.driverName} onChange={v=>u("driverName",v)}/>
             <Inp label="Şoför Tel" value={f.driverPhone} onChange={v=>u("driverPhone",v)} type="tel"/>
           </div>
-          <div style={{width: 240, background:"#F8FAFC", padding:"16px", borderRadius:12, border:"1px solid #E2E8F0"}}>
-            <div style={{fontSize:11, fontWeight:800, color:"var(--text-sub)", textTransform:"uppercase", marginBottom:12}}>Manuel Rota Seç</div>
+          <div style={{width: 240, background:"var(--bg-color)", padding:"16px", borderRadius:6, border:"1px solid var(--border)", overflowY:"auto", maxHeight:300}}>
+            <div style={{fontSize:11, fontWeight:700, color:"var(--text-sub)", textTransform:"uppercase", marginBottom:12}}>Manuel Rota Seç</div>
             {safeRoutes.length === 0 ? <div style={{fontSize:12, color:"var(--text-sub)"}}>Rota bulunmuyor.</div> : 
-              <div style={{display:"flex", flexDirection:"column", gap:10}}>
+              <div style={{display:"flex", flexDirection:"column", gap:8}}>
                 {safeRoutes.map(r=>{
                   const isSelected = f.driverName === r.driverName && f.driverPhone === r.driverPhone;
                   return <button key={r.id} type="button" onClick={()=>{u("driverName", r.driverName); u("driverPhone", r.driverPhone);}} 
-                    style={{padding:"12px", background:isSelected ? "var(--accentGlow)" : "#fff", border:isSelected ? "2px solid var(--accent)" : "1px solid #CBD5E1", borderRadius:10, cursor:"pointer", textAlign:"left", transition:"all 0.2s", boxShadow:isSelected ? "0 4px 12px rgba(59, 130, 246, 0.15)" : "0 2px 4px rgba(0,0,0,0.02)", position:"relative", display:"flex", flexDirection:"column"}}>
-                    {isSelected && <div style={{position:"absolute", top:10, right:10, fontSize:16}}>✅</div>}
-                    <div style={{fontSize:13, fontWeight:800, color:isSelected?"var(--accent)":"var(--text-main)", paddingRight:20}}>{r.routeName}</div>
-                    <div style={{fontSize:11, color:"var(--text-sub)", marginTop:6, lineHeight:1.4, wordBreak:"break-word", whiteSpace:"normal"}}>{r.neighborhoods || "Mahalle girilmedi."}</div>
-                    <div style={{fontSize:11, color:isSelected?"var(--accent)":"var(--text-main)", marginTop:8, fontWeight:800, background:isSelected?"#fff":"#F1F5F9", padding:"4px 8px", borderRadius:6, alignSelf:"flex-start"}}>{r.driverName}</div>
+                    style={{padding:"12px", background:isSelected ? "var(--accent-light)" : "#fff", border:isSelected ? "1px solid var(--accent)" : "1px solid var(--border)", borderRadius:6, cursor:"pointer", textAlign:"left", transition:"all 0.2s", position:"relative", display:"flex", flexDirection:"column"}}>
+                    {isSelected && <div style={{position:"absolute", top:10, right:10, color:"var(--accent)"}}><Icon name="check" size={16}/></div>}
+                    <div style={{fontSize:12, fontWeight:700, color:isSelected?"var(--accent)":"var(--text-main)", paddingRight:20}}>{r.routeName}</div>
+                    <div style={{fontSize:11, color:"var(--text-sub)", marginTop:4, lineHeight:1.4, wordBreak:"break-word", whiteSpace:"normal"}}>{r.neighborhoods || "Mahalle girilmedi."}</div>
+                    <div style={{fontSize:11, color:isSelected?"var(--accent)":"var(--text-main)", marginTop:6, fontWeight:600, background:isSelected?"#fff":"var(--bg-color)", padding:"4px 6px", borderRadius:4, alignSelf:"flex-start"}}>{r.driverName}</div>
                   </button>
                 })}
               </div>
             }
           </div>
         </div>
-      :<div style={{textAlign:"center",padding:"40px 0",color:"var(--text-sub)",fontWeight:600}}>Öğrenci servis kullanmıyor.</div>}
+      :<div style={{textAlign:"center",padding:"40px 0",color:"var(--text-sub)",fontWeight:500}}>Öğrenci servis kullanmıyor.</div>}
     </div>}
     
     {tab===3&&<div>
-      <div style={{fontSize:13,color:"var(--text-sub)",marginBottom:16,fontWeight:600}}>Öğrencinin kurumdan satın aldığı ekstra ekipmanlar faturasına yansıtılır.</div>
+      <div style={{fontSize:12,color:"var(--text-sub)",marginBottom:16,fontWeight:500}}>Öğrencinin kurumdan satın aldığı ekstra ekipmanlar faturasına yansıtılır.</div>
       <EqPicker stockItems={stockItems} current={currentEq} onAdd={(item)=>u("equipment",[...currentEq,{id:Date.now(),...item,addedDate:TODAY}])} onRemove={(id)=>u("equipment",currentEq.filter(e=>e.id!==id))}/>
     </div>}
 
     {tab===4&&<div>
-      <div style={{fontSize:13,color:"var(--text-sub)",marginBottom:16,fontWeight:600}}>Kayıt anında nakit veya kart ile alınan ilk ödemeyi buraya girebilirsiniz.</div>
+      <div style={{fontSize:12,color:"var(--text-sub)",marginBottom:16,fontWeight:500}}>Kayıt anında nakit veya kart ile alınan ilk ödemeyi buraya girebilirsiniz.</div>
       <div style={{display:"flex",gap:12}}>
         <div style={{flex:1}}><Inp label="Şu An Yapılan Ödeme (₺)" value={f.initialPaymentAmount} onChange={v=>u("initialPaymentAmount",v)} type="number"/></div>
         <div style={{flex:1}}><Inp label="Ödeme Tarihi" value={f.initialPaymentDate} onChange={v=>u("initialPaymentDate",v)} type="date"/></div>
       </div>
-      <div style={{background:"#F8FAFC", border:`1px solid #E2E8F0`, borderRadius:12, padding:"16px", marginTop:20}}>
-         <div style={{fontSize:12, fontWeight:800, color:"var(--text-main)", marginBottom:12, textTransform:"uppercase"}}>Maliyet Özeti</div>
+      <div style={{background:"var(--bg-color)", border:`1px solid var(--border)`, borderRadius:6, padding:"16px", marginTop:20}}>
+         <div style={{fontSize:11, fontWeight:700, color:"var(--text-main)", marginBottom:12, textTransform:"uppercase"}}>Maliyet Özeti</div>
          <Row label="Aylık Kurs Ücreti" val={`${Number(f.monthlyFee||0)} ₺`}/>
-         {Number(f.discount)>0 && <Row label="İndirim" val={`-${Number(f.discount)} ₺`} col="#DC2626"/>}
+         {Number(f.discount)>0 && <Row label="İndirim" val={`-${Number(f.discount)} ₺`} col="var(--danger)"/>}
          {f.hasTransport && <Row label="Servis Ücreti" val={`${Number(f.transportFee||0)} ₺`}/>}
          {safeArr(f.equipment).length>0 && <Row label="Ekipmanlar Toplamı" val={`${safeArr(f.equipment).reduce((t,e)=>t+Number(e.price||0),0)} ₺`}/>}
-         <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:12, paddingTop:12, borderTop:"2px dashed #CBD5E1"}}>
-           <span style={{fontSize:14, fontWeight:900, color:"var(--text-main)"}}>TOPLAM ÖDENMESİ GEREKEN</span>
-           <span style={{fontSize:20, fontWeight:900, color:"var(--accent)"}}>{(Number(f.monthlyFee||0) - Number(f.discount||0) + (f.hasTransport?Number(f.transportFee||0):0) + safeArr(f.equipment).reduce((t,e)=>t+Number(e.price||0),0)).toLocaleString("tr-TR")} ₺</span>
+         <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:12, paddingTop:12, borderTop:"1px solid var(--border)"}}>
+           <span style={{fontSize:13, fontWeight:700, color:"var(--text-main)"}}>TOPLAM ÖDENMESİ GEREKEN</span>
+           <span style={{fontSize:18, fontWeight:700, color:"var(--accent)"}}>{(Number(f.monthlyFee||0) - Number(f.discount||0) + (f.hasTransport?Number(f.transportFee||0):0) + safeArr(f.equipment).reduce((t,e)=>t+Number(e.price||0),0)).toLocaleString("tr-TR")} ₺</span>
          </div>
       </div>
     </div>}
@@ -629,7 +669,7 @@ function StudentForm({initial,onSave,onCancel,stockItems,students,routes}){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   ÖĞRENCİ LİSTESİ (ÇIKTI VE YENİ GÖRÜNÜM)
+   5. ANA LİSTELER (ÖĞRENCİ SAYFASI VE DETAYLARI)
 ═══════════════════════════════════════════════════════════════ */
 function StudentsPage({students, stockItems, routes, setRoutes}){
   const [search,setSearch]=useState(""); 
@@ -695,28 +735,28 @@ function StudentsPage({students, stockItems, routes, setRoutes}){
 
   return<div style={{padding:20, maxWidth:1300, margin:"0 auto"}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
-      <div style={{fontSize:20,fontWeight:900,color:"var(--text-main)",letterSpacing:-0.5}}>Öğrenci Rehberi ({filtered.length})</div>
+      <div style={{fontSize:20,fontWeight:700,color:"var(--text-main)",letterSpacing:-0.5}}>Öğrenci Rehberi ({filtered.length})</div>
       <div style={{display:"flex", gap:10, flexWrap:"wrap"}}>
-        <button onClick={()=>{setExpType("STUDENT"); setExpFilter("ALL"); setShowExport(true);}} style={{display:"flex",alignItems:"center",gap:6,background:"#ECFDF5",border:"1px solid #10B981",color:"#059669",padding:"10px 16px",borderRadius:10,fontWeight:800,fontSize:13,cursor:"pointer",transition:"all 0.2s",boxShadow:"0 2px 4px rgba(0,0,0,0.02)"}}>📊 Excel Çıktısı Al</button>
-        <button onClick={()=>setShowRoutes(true)} style={{display:"flex",alignItems:"center",gap:6,background:"#EFF6FF",border:"1px solid #3B82F6",color:"#2563EB",padding:"10px 16px",borderRadius:10,fontWeight:800,fontSize:13,cursor:"pointer",transition:"all 0.2s",boxShadow:"0 2px 4px rgba(0,0,0,0.02)"}}>📍 Rotalama Yap</button>
-        <button onClick={()=>setShowAdd(true)} style={{display:"flex",alignItems:"center",gap:6,background:"var(--accent)",border:"none",color:"#fff",padding:"10px 16px",borderRadius:10,fontWeight:800,fontSize:13,cursor:"pointer",transition:"all 0.2s",boxShadow:"0 4px 12px rgba(59, 130, 246, 0.3)"}}>+ Yeni Kayıt Ekle</button>
+        <button onClick={()=>{setExpType("STUDENT"); setExpFilter("ALL"); setShowExport(true);}} style={{display:"flex",alignItems:"center",gap:6,background:"var(--success-bg)",border:"1px solid #6EE7B7",color:"var(--success)",padding:"8px 14px",borderRadius:6,fontWeight:600,fontSize:13,cursor:"pointer",transition:"all 0.2s"}}><Icon name="chart" size={16}/> Excel Çıktısı Al</button>
+        <button onClick={()=>setShowRoutes(true)} style={{display:"flex",alignItems:"center",gap:6,background:"#FFFFFF",border:"1px solid var(--border)",color:"var(--accent)",padding:"8px 14px",borderRadius:6,fontWeight:600,fontSize:13,cursor:"pointer",transition:"all 0.2s"}}><Icon name="mapPin" size={16}/> Rotalama Yap</button>
+        <button onClick={()=>setShowAdd(true)} style={{display:"flex",alignItems:"center",gap:6,background:"var(--accent)",border:"none",color:"#fff",padding:"8px 14px",borderRadius:6,fontWeight:600,fontSize:13,cursor:"pointer",transition:"all 0.2s"}}>+ Yeni Kayıt Ekle</button>
       </div>
     </div>
     
     <div style={{display:"flex", gap:12, marginBottom:20, flexWrap:"wrap"}}>
-      <input className="modern-inp" style={{flex:2, minWidth:200, boxShadow:"0 2px 8px rgba(0,0,0,0.02)"}} placeholder="Öğrenci adı ile arama yapın..." value={search} onChange={e=>setSearch(e.target.value)}/>
-      <select className="modern-inp" style={{flex:1, minWidth:150, cursor:"pointer", boxShadow:"0 2px 8px rgba(0,0,0,0.02)"}} value={groupFilter} onChange={e=>setGroupFilter(e.target.value)}>
+      <input className="corp-inp" style={{flex:2, minWidth:200}} placeholder="Öğrenci adı ile arama yapın..." value={search} onChange={e=>setSearch(e.target.value)}/>
+      <select className="corp-inp" style={{flex:1, minWidth:150, cursor:"pointer"}} value={groupFilter} onChange={e=>setGroupFilter(e.target.value)}>
         <option value="ALL">Tüm Gruplar</option>
         {allGroups.map(g=><option key={g} value={g}>{g}</option>)}
       </select>
-      <select className="modern-inp" style={{flex:1, minWidth:150, cursor:"pointer", boxShadow:"0 2px 8px rgba(0,0,0,0.02)"}} value={payFilter} onChange={e=>setPayFilter(e.target.value)}>
+      <select className="corp-inp" style={{flex:1, minWidth:150, cursor:"pointer"}} value={payFilter} onChange={e=>setPayFilter(e.target.value)}>
         <option value="ALL">Tüm Ödeme Durumları</option>
         <option value="PAID">Ödemesi Tamamlananlar</option>
         <option value="UNPAID">Borcu Olanlar</option>
       </select>
     </div>
     
-    {filtered.length===0 && <div style={{textAlign:"center", padding:"40px 0", color:"var(--text-sub)", fontWeight:700, fontSize:15}}>Aradığınız kriterlere uygun öğrenci bulunamadı.</div>}
+    {filtered.length===0 && <div style={{textAlign:"center", padding:"40px 0", color:"var(--text-sub)", fontWeight:600, fontSize:14}}>Aradığınız kriterlere uygun öğrenci bulunamadı.</div>}
 
     {filtered.length > 0 && <div className="list-header">
       <div>Öğrenci Bilgisi</div>
@@ -731,22 +771,22 @@ function StudentsPage({students, stockItems, routes, setRoutes}){
         const expected = monthlyTotal(s); const paid = totalPaid(s); const debt = expected - paid;
         return <div key={s.id} className="list-row">
           <div>
-            <div style={{fontWeight:800,fontSize:15,color:"var(--text-main)"}}>{s.name}</div>
-            <div style={{fontSize:12,color:"var(--text-sub)",fontWeight:600,marginTop:4}}>{s.groupName||"Grup Yok"} • {s.guardianPhone1||"Tel Yok"}</div>
+            <div style={{fontWeight:700,fontSize:14,color:"var(--text-main)"}}>{s.name}</div>
+            <div style={{fontSize:12,color:"var(--text-sub)",fontWeight:500,marginTop:4}}>{s.groupName||"Grup Yok"} • {s.guardianPhone1||"Tel Yok"}</div>
           </div>
           <div>
-            <div style={{fontSize:13,color:"var(--accent)",fontWeight:800}}>{calcRemainingSessions(s)} / {s.totalSessions || 0} Seans Kaldı</div>
-            <div style={{fontSize:11,color:"var(--text-sub)",fontWeight:600,marginTop:4}}>{fmtDate(s.courseStart)} - {fmtDate(s.courseEnd)}</div>
+            <div style={{fontSize:12,color:"var(--accent)",fontWeight:700}}>{calcRemainingSessions(s)} / {s.totalSessions || 0} Seans Kaldı</div>
+            <div style={{fontSize:11,color:"var(--text-sub)",fontWeight:500,marginTop:4}}>{fmtDate(s.courseStart)} - {fmtDate(s.courseEnd)}</div>
           </div>
           <div>
             {s.hasTransport ? <div>
-              <div style={{fontSize:13,color:"#6D28D9",fontWeight:800}}>🚌 Servis Aktif</div>
-              <div style={{fontSize:11,color:"var(--text-sub)",fontWeight:600,marginTop:4}}>{s.driverName||"Şoför Yok"}</div>
-            </div> : <div style={{fontSize:13,color:"var(--text-sub)",fontWeight:600}}>Servis Yok</div>}
+              <div style={{fontSize:12,color:"var(--accent)",fontWeight:700, display:"flex", alignItems:"center", gap:4}}><Icon name="bus" size={14}/> Servis Aktif</div>
+              <div style={{fontSize:11,color:"var(--text-sub)",fontWeight:500,marginTop:4}}>{s.driverName||"Şoför Yok"}</div>
+            </div> : <div style={{fontSize:12,color:"var(--text-sub)",fontWeight:500}}>Servis Yok</div>}
           </div>
           <div>
-            {debt > 0 ? <span style={{background:"#FEF2F2", color:"#DC2626", padding:"6px 10px", borderRadius:8, fontWeight:800, fontSize:12, display:"inline-block"}}>⚠️ {debt.toLocaleString("tr-TR")} ₺ BORÇ</span>
-                     : <span style={{background:"#ECFDF5", color:"#059669", padding:"6px 10px", borderRadius:8, fontWeight:800, fontSize:12, display:"inline-block"}}>✓ ÖDENDİ</span>}
+            {debt > 0 ? <span style={{border:`1px solid #FCA5A5`, color:"var(--danger)", padding:"4px 8px", borderRadius:4, fontWeight:600, fontSize:11, display:"inline-block"}}>⚠️ {debt.toLocaleString("tr-TR")} ₺ BORÇ</span>
+                     : <span style={{border:`1px solid #6EE7B7`, color:"var(--success)", padding:"4px 8px", borderRadius:4, fontWeight:600, fontSize:11, display:"inline-block"}}><Icon name="check" size={10} style={{marginRight:2, verticalAlign:"middle"}}/> ÖDENDİ</span>}
           </div>
           <div style={{display:"flex", gap:8, justifyContent:"flex-end"}}>
             <Btn variant="secondary" sm onClick={()=>setDetailId(s.id)}>Detay</Btn>
@@ -793,14 +833,14 @@ function StudentDetail({student,onBack,students,stockItems,routes}){
   function addPay(){ if(!payForm.amount)return; const n=safeArr(students).map(s=>s.id===student.id?{...s,payments:[...safeArr(s.payments),{id:Date.now(),...payForm,amount:Number(payForm.amount)}]}:s); DB.set("students",n); setPayForm({amount:"",date:TODAY,note:""}); setShowPay(false); }
   function delPay(pid){const n=safeArr(students).map(s=>s.id===student.id?{...s,payments:safeArr(s.payments).filter(p=>p.id!==pid)}:s);DB.set("students",n);}
 
-  if(editing)return<div style={{padding:20,maxWidth:600,margin:"0 auto"}}><div style={{display:"flex",alignItems:"center",gap:12,marginBottom:24}}><button onClick={()=>setEditing(false)} style={{background:"var(--card-bg)",border:`1px solid #E2E8F0`,color:"var(--text-sub)",width:40,height:40,borderRadius:12,cursor:"pointer",fontWeight:900,fontSize:16}}>←</button><span style={{fontWeight:900,fontSize:20,color:"var(--text-main)",letterSpacing:-0.5}}>Düzenle: {student.name}</span></div><Card><StudentForm initial={student} onSave={save} onCancel={()=>setEditing(false)} stockItems={stockItems} students={students} routes={routes}/></Card></div>;
+  if(editing)return<div style={{padding:20,maxWidth:600,margin:"0 auto"}}><div style={{display:"flex",alignItems:"center",gap:12,marginBottom:24}}><button onClick={()=>setEditing(false)} style={{background:"var(--card-bg)",border:`1px solid var(--border)`,color:"var(--text-sub)",width:36,height:36,borderRadius:8,cursor:"pointer",fontWeight:700,fontSize:16}}>←</button><span style={{fontWeight:700,fontSize:18,color:"var(--text-main)",letterSpacing:-0.5}}>Düzenle: {student.name}</span></div><Card><StudentForm initial={student} onSave={save} onCancel={()=>setEditing(false)} stockItems={stockItems} students={students} routes={routes}/></Card></div>;
   
   const paid=totalPaid(student),monthly=monthlyTotal(student),balance=paid-monthly; const st=courseStatus(student);
 
   return<div style={{padding:20, maxWidth:800, margin:"0 auto"}}>
     <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:24}}>
-      <button onClick={onBack} style={{background:"var(--card-bg)",border:`1px solid #E2E8F0`,color:"var(--text-main)",width:44,height:44,borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontWeight:900,fontSize:18,boxShadow:"0 2px 8px rgba(0,0,0,0.04)"}}>←</button>
-      <div style={{flex:1}}><div style={{fontWeight:900,fontSize:22,color:"var(--text-main)",letterSpacing:-0.5}}>{student.name}</div><div style={{fontSize:13,color:"var(--text-sub)",fontWeight:600,marginTop:4}}>{age(student.dob)} · Grup: <strong style={{color:"var(--text-main)"}}>{student.groupName||"Yok"}</strong></div></div>
+      <button onClick={onBack} style={{background:"var(--card-bg)",border:`1px solid var(--border)`,color:"var(--text-main)",width:40,height:40,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",fontWeight:700,fontSize:16}}>←</button>
+      <div style={{flex:1}}><div style={{fontWeight:700,fontSize:20,color:"var(--text-main)",letterSpacing:-0.5}}>{student.name}</div><div style={{fontSize:12,color:"var(--text-sub)",fontWeight:500,marginTop:4}}>{age(student.dob)} · Grup: <strong style={{color:"var(--text-main)"}}>{student.groupName||"Yok"}</strong></div></div>
       <Badge label={st}/>
     </div>
     <TabBar tabs={["Genel Bakış","Kurs Eğitimi","Servis Durumu","Ekipmanlar","Ödeme Geçmişi"]} active={tab} onChange={setTab}/>
@@ -810,19 +850,19 @@ function StudentDetail({student,onBack,students,stockItems,routes}){
       
       {student.guardianPhone1 && (
         <div style={{display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10, marginBottom:16}}>
-          <Btn sm style={{background:C.whatsapp, color:"#fff", border:"none"}} onClick={()=>openWA(student.guardianPhone1, `SAYIN VELİMİZ, ${student.name} İSİMLİ ÖĞRENCİMİZİN ÖDEMESİ HAKKINDA HATIRLATMA YAPMAK İSTERİZ. İYİ GÜNLER DİLERİZ.`)}>💬 Ödeme Bildir</Btn>
-          <Btn sm style={{background:C.whatsapp, color:"#fff", border:"none"}} onClick={()=>openWA(student.guardianPhone1, `SAYIN VELİMİZ, ${student.name} İSİMLİ ÖĞRENCİMİZ BUGÜNKÜ ANTRENMANA KATILMAMIŞTIR. BİLGİNİZE SUNARIZ.`)}>💬 Devamsızlık Bildir</Btn>
-          {student.driverName && <Btn sm style={{background:C.whatsapp, color:"#fff", border:"none"}} onClick={()=>openWA(student.guardianPhone1, `SAYIN VELİMİZ, ${student.name} İSİMLİ ÖĞRENCİMİZİN SERVİS ŞOFÖRÜ BİLGİLERİ AŞAĞIDADIR:\nŞOFÖR ADI: ${student.driverName}\nTELEFON: ${student.driverPhone}\nİYİ GÜNLER DİLERİZ.`)}>💬 Şoför Bilgisi İlet</Btn>}
+          <Btn sm style={{background:"#10B981", color:"#fff", border:"none"}} onClick={()=>openWA(student.guardianPhone1, `SAYIN VELİMİZ, ${student.name} İSİMLİ ÖĞRENCİMİZİN ÖDEMESİ HAKKINDA HATIRLATMA YAPMAK İSTERİZ. İYİ GÜNLER DİLERİZ.`)}><Icon name="chat" size={14}/> Ödeme Bildir</Btn>
+          <Btn sm style={{background:"#10B981", color:"#fff", border:"none"}} onClick={()=>openWA(student.guardianPhone1, `SAYIN VELİMİZ, ${student.name} İSİMLİ ÖĞRENCİMİZ BUGÜNKÜ ANTRENMANA KATILMAMIŞTIR. BİLGİNİZE SUNARIZ.`)}><Icon name="chat" size={14}/> Devamsızlık Bildir</Btn>
+          {student.driverName && <Btn sm style={{background:"#10B981", color:"#fff", border:"none"}} onClick={()=>openWA(student.guardianPhone1, `SAYIN VELİMİZ, ${student.name} İSİMLİ ÖĞRENCİMİZİN SERVİS ŞOFÖRÜ BİLGİLERİ AŞAĞIDADIR:\nŞOFÖR ADI: ${student.driverName}\nTELEFON: ${student.driverPhone}\nİYİ GÜNLER DİLERİZ.`)}><Icon name="bus" size={14}/> Şoför Bilgisi İlet</Btn>}
         </div>
       )}
       
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}><StatCard label="Mevcut Katılım" value={`${attendanceCount(student)} Gün`} col="#059669"/><StatCard label="Aylık Bakiye Durumu" value={`${balance>=0?"+":""}${balance.toLocaleString("tr-TR")} ₺`} col={balance>=0?"#059669":"#DC2626"}/></div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}><StatCard label="Mevcut Katılım" value={`${attendanceCount(student)} Gün`} col="var(--success)"/><StatCard label="Aylık Bakiye Durumu" value={`${balance>=0?"+":""}${balance.toLocaleString("tr-TR")} ₺`} col={balance>=0?"var(--success)":"var(--danger)"}/></div>
       <Btn variant="secondary" full onClick={()=>setEditing(true)}>Tüm Bilgileri Düzenle</Btn>
     </div>}
     {tab===1&&<div><Card><Row label="Yüzme Seviyesi" val={swimLevelLabel(student.swimLevel)}/><Row label="Kayıtlı Olduğu Grup" val={student.groupName||"—"}/><Row label="Antrenman Günleri" val={safeDays.map(d=>DAYS_TR[d]).join(", ")||"—"}/><Row label="Kayıt Başlangıç Tarihi" val={fmtDate(student.courseStart)}/><Row label="Planlanan Bitiş Tarihi" val={fmtDate(student.courseEnd)}/><Row label="Tarih Bazlı Kalan Seans" val={`${calcRemainingSessions(student)} / ${student.totalSessions||0}`} col="var(--accent)"/></Card></div>}
-    {tab===2&&<div>{student.hasTransport?<Card><Row label="Öğrenci Adresi" val={student.address||"—"}/><Row label="Aylık Servis Ücreti" val={`${student.transportFee} ₺`}/><Row label="Şoför Adı Soyadı" val={student.driverName}/><Row label="Şoför Telefonu" val={student.driverPhone}/></Card>:<div style={{textAlign:"center",padding:"40px 0",color:"var(--text-sub)",fontWeight:700,fontSize:16}}>Servis Kullanmıyor</div>}</div>}
-    {tab===3&&<div>{safeEqs.length===0?<div style={{textAlign:"center",padding:"40px 0",color:"var(--text-sub)",fontWeight:700,fontSize:16}}>Ekipman Yok</div>:<Card>{safeEqs.map(e=><Row key={e.id} label={e.name} val={`${e.price} ₺`}/>)}</Card>}</div>}
-    {tab===4&&<div><SectionTitle action={<Btn sm onClick={()=>setShowPay(true)}>+ Yeni Tahsilat Ekle</Btn>}>Ödeme Geçmişi</SectionTitle><Card>{safePays.length===0?<div style={{textAlign:"center",padding:"30px 0",color:"var(--text-sub)",fontWeight:600}}>Ödeme kaydı bulunmuyor.</div>:safePays.sort((a,b)=>new Date(b.date)-new Date(a.date)).map(p=><div key={p.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"14px 0",borderBottom:`1px solid #F1F5F9`}}><div><div style={{fontWeight:800,color:"var(--text-main)",fontSize:14}}>{fmtDate(p.date)}</div><div style={{fontSize:12,color:"var(--text-sub)",marginTop:4,fontWeight:600}}>{p.note||"Not yok"}</div></div><div style={{display:"flex",alignItems:"center",gap:16}}><span style={{color:"#059669",fontWeight:900,fontSize:16}}>+{Number(p.amount).toLocaleString("tr-TR")} ₺</span><button type="button" onClick={()=>delPay(p.id)} style={{background:"#FEE2E2",color:"#DC2626",border:"none",borderRadius:8,width:30,height:30,cursor:"pointer",fontWeight:900}}>X</button></div></div>)}</Card>
+    {tab===2&&<div>{student.hasTransport?<Card><Row label="Öğrenci Adresi" val={student.address||"—"}/><Row label="Aylık Servis Ücreti" val={`${student.transportFee} ₺`}/><Row label="Şoför Adı Soyadı" val={student.driverName}/><Row label="Şoför Telefonu" val={student.driverPhone}/></Card>:<div style={{textAlign:"center",padding:"40px 0",color:"var(--text-sub)",fontWeight:500,fontSize:14}}>Servis Kullanmıyor</div>}</div>}
+    {tab===3&&<div>{safeEqs.length===0?<div style={{textAlign:"center",padding:"40px 0",color:"var(--text-sub)",fontWeight:500,fontSize:14}}>Ekipman Yok</div>:<Card>{safeEqs.map(e=><Row key={e.id} label={e.name} val={`${e.price} ₺`}/>)}</Card>}</div>}
+    {tab===4&&<div><SectionTitle action={<Btn sm onClick={()=>setShowPay(true)}>+ Yeni Tahsilat Ekle</Btn>}>Ödeme Geçmişi</SectionTitle><Card>{safePays.length===0?<div style={{textAlign:"center",padding:"30px 0",color:"var(--text-sub)",fontWeight:500}}>Ödeme kaydı bulunmuyor.</div>:safePays.sort(sortDateDesc).map(p=><div key={p.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"14px 0",borderBottom:`1px solid #F3F4F6`}}><div><div style={{fontWeight:700,color:"var(--text-main)",fontSize:13}}>{fmtDate(p.date)}</div><div style={{fontSize:11,color:"var(--text-sub)",marginTop:4,fontWeight:500}}>{p.note||"Not yok"}</div></div><div style={{display:"flex",alignItems:"center",gap:16}}><span style={{color:"var(--success)",fontWeight:700,fontSize:14}}>+{Number(p.amount).toLocaleString("tr-TR")} ₺</span><button type="button" onClick={()=>delPay(p.id)} style={{background:"var(--danger-bg)",color:"var(--danger)",border:"none",borderRadius:6,width:26,height:26,cursor:"pointer",fontWeight:700}}>X</button></div></div>)}</Card>
       <Modal show={showPay} onClose={()=>setShowPay(false)} title="Tahsilat Ekle"><Inp label="Alınan Tutar (₺) *" value={payForm.amount} onChange={v=>setPayForm(p=>({...p,amount:v}))} type="number"/><Inp label="İşlem Tarihi" value={payForm.date} onChange={v=>setPayForm(p=>({...p,date:v}))} type="date"/><Inp label="Açıklama / Not" value={payForm.note} onChange={v=>setPayForm(p=>({...p,note:v.toLocaleUpperCase("tr-TR")}))}/><div style={{display:"flex",gap:12,marginTop:24}}><Btn variant="secondary" onClick={()=>setShowPay(false)} style={{flex:1}}>İptal</Btn><Btn onClick={addPay} style={{flex:2}}>Ödemeyi Kaydet</Btn></div></Modal>
     </div>}
   </div>
@@ -857,15 +897,15 @@ function AttendancePage({students}){
             </div>
          </div>
          
-         {!selectedGroup ? <div style={{textAlign:"center", padding:"30px", color:"var(--text-sub)", fontWeight:700}}>Lütfen yoklama almak için bir grup seçiniz.</div> : 
+         {!selectedGroup ? <div style={{textAlign:"center", padding:"30px", color:"var(--text-sub)", fontWeight:500}}>Lütfen yoklama almak için bir grup seçiniz.</div> : 
            <div>
-              <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12, background:"#F8FAFC", padding:"12px 16px", borderRadius:12, border:"1px solid #E2E8F0"}}>
-                <span style={{fontWeight:800, color:"var(--text-main)"}}>Toplam Öğrenci: {activeInGroup.length}</span>
-                <span style={{fontWeight:800, color:"#059669"}}>Katılanlar: {presentCount}</span>
+              <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12, background:"var(--bg-color)", padding:"12px 16px", borderRadius:6, border:"1px solid var(--border)"}}>
+                <span style={{fontWeight:600, color:"var(--text-main)", fontSize:13}}>Toplam Öğrenci: {activeInGroup.length}</span>
+                <span style={{fontWeight:600, color:"var(--success)", fontSize:13}}>Katılanlar: {presentCount}</span>
               </div>
-              {activeInGroup.length === 0 ? <div style={{textAlign:"center", padding:"20px", color:"var(--text-sub)", fontWeight:700}}>Bu grupta aktif öğrenci bulunmuyor.</div> : 
-                activeInGroup.map(s => <div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid #F1F5F9`}}>
-                  <div style={{fontWeight:800,fontSize:15,color:"var(--text-main)"}}>{s.name}</div>
+              {activeInGroup.length === 0 ? <div style={{textAlign:"center", padding:"20px", color:"var(--text-sub)", fontWeight:500}}>Bu grupta aktif öğrenci bulunmuyor.</div> : 
+                activeInGroup.map(s => <div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid #F3F4F6`}}>
+                  <div style={{fontWeight:600,fontSize:14,color:"var(--text-main)"}}>{s.name}</div>
                   <Toggle checked={!!(s.attendance||{})[date]} onChange={(v)=>{
                     const n=safeStudents.map(st=>{
                       if(st.id!==s.id)return st; 
@@ -887,14 +927,14 @@ function AttendancePage({students}){
       <Card>
         <Inp label="İncelenecek Tarih" type="date" value={logDate} onChange={setLogDate}/>
         <div style={{marginTop:20}}>
-          <div style={{fontSize:14, fontWeight:800, color:"var(--accent)", marginBottom:12, borderBottom:"1px solid #E2E8F0", paddingBottom:8}}>Bu Tarihte Derse Katılan Tüm Öğrenciler ({presentOnLogDate.length})</div>
-          {presentOnLogDate.length === 0 ? <div style={{textAlign:"center", padding:"30px", color:"var(--text-sub)", fontWeight:700}}>Bu tarihte derse katılan öğrenci kaydı bulunamadı.</div> : 
-            presentOnLogDate.map(s => <div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid #F1F5F9`}}>
+          <div style={{fontSize:13, fontWeight:700, color:"var(--text-main)", marginBottom:12, borderBottom:"1px solid var(--border)", paddingBottom:8}}>Bu Tarihte Derse Katılan Tüm Öğrenciler ({presentOnLogDate.length})</div>
+          {presentOnLogDate.length === 0 ? <div style={{textAlign:"center", padding:"30px", color:"var(--text-sub)", fontWeight:500}}>Bu tarihte derse katılan öğrenci kaydı bulunamadı.</div> : 
+            presentOnLogDate.map(s => <div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid #F3F4F6`}}>
               <div>
-                <div style={{fontWeight:800, fontSize:15, color:"var(--text-main)"}}>{s.name}</div>
-                <div style={{fontSize:12, fontWeight:600, color:"var(--text-sub)", marginTop:2}}>{s.groupName || "Grup Yok"}</div>
+                <div style={{fontWeight:600, fontSize:14, color:"var(--text-main)"}}>{s.name}</div>
+                <div style={{fontSize:11, fontWeight:500, color:"var(--text-sub)", marginTop:2}}>{s.groupName || "Grup Yok"}</div>
               </div>
-              <Badge label="KATILDI" color="#059669"/>
+              <Badge label="KATILDI" color="var(--success)"/>
             </div>)
           }
         </div>
@@ -904,7 +944,7 @@ function AttendancePage({students}){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   WHATSAPP DAVET PANELİ (ÇOKLU GRUP DAVETİ)
+   WHATSAPP DAVET PANELİ 
 ═══════════════════════════════════════════════════════════════ */
 function WhatsAppPage({students, waLinks}) {
   const safeLinks = safeArr(waLinks);
@@ -942,48 +982,165 @@ function WhatsAppPage({students, waLinks}) {
     const matchName = s.name && s.name.toLowerCase().includes(search.toLowerCase());
     const matchGroup = groupFilter === "ALL" || s.groupName === groupFilter;
     return matchName && matchGroup;
-  }).sort((a, b) => b.id - a.id);
+  }).sort((a, b) => (b.id||0) - (a.id||0));
 
   return <div style={{padding:20, maxWidth:800, margin:"0 auto"}}>
     <SectionTitle>WhatsApp Web Merkezi</SectionTitle>
-    <Card style={{marginBottom:24}}><Btn full style={{background:"#16A34A", color:"#fff", border:"none", padding:"14px", fontSize:15}} onClick={()=>window.open("https://web.whatsapp.com", "_blank")}>WhatsApp Web Sekmesini Aç</Btn></Card>
+    <Card style={{marginBottom:24}}><Btn full style={{background:"#10B981", color:"#fff", border:"none"}} onClick={()=>window.open("https://web.whatsapp.com", "_blank")}><Icon name="chat" size={16}/> WhatsApp Web Sekmesini Aç</Btn></Card>
     
     <SectionTitle>İsimli Grup Davet Bağlantıları</SectionTitle>
     <Card style={{marginBottom:24}}>
       <div style={{display:"flex", gap:10}}>
-        <input className="modern-inp" style={{flex:1}} value={title} onChange={e=>setTitle(e.target.value)} placeholder="Grup Adı (Örn: CUMARTESİ)" />
-        <input className="modern-inp" style={{flex:2}} value={url} onChange={e=>setUrl(e.target.value)} placeholder="https://chat.whatsapp.com/..." />
+        <input className="corp-inp" style={{flex:1}} value={title} onChange={e=>setTitle(e.target.value)} placeholder="Grup Adı (Örn: CUMARTESİ)" />
+        <input className="corp-inp" style={{flex:2}} value={url} onChange={e=>setUrl(e.target.value)} placeholder="https://chat.whatsapp.com/..." />
         <Btn onClick={addLink}>Ekle</Btn>
       </div>
       <div style={{marginTop:16}}>
-        {safeLinks.length === 0 && <div style={{fontSize:13, color:"var(--text-sub)", textAlign:"center", fontWeight:600}}>Sisteme kayıtlı davet bağlantısı yok.</div>}
-        {safeLinks.map(l=><div key={l.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 16px",background:"#F8FAFC",borderRadius:12,marginBottom:8}}><span style={{fontSize:14,fontWeight:800,color:"var(--text-main)"}}>🔗 {l.name}</span><button type="button" onClick={()=>DB.set("waLinks", safeLinks.filter(x=>x.id!==l.id))} style={{background:"#FEE2E2",border:"none",color:"#DC2626",cursor:"pointer",fontWeight:800,padding:"6px 12px",borderRadius:8}}>Sil</button></div>)}
+        {safeLinks.length === 0 && <div style={{fontSize:12, color:"var(--text-sub)", textAlign:"center", fontWeight:500}}>Sisteme kayıtlı davet bağlantısı yok.</div>}
+        {safeLinks.map(l=><div key={l.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 14px",background:"var(--bg-color)",borderRadius:6,border:"1px solid var(--border)",marginBottom:8}}><span style={{fontSize:13,fontWeight:700,color:"var(--text-main)",display:"flex",alignItems:"center",gap:6}}><Icon name="link" size={14}/> {l.name}</span><button type="button" onClick={()=>DB.set("waLinks", safeLinks.filter(x=>x.id!==l.id))} style={{background:"var(--danger-bg)",border:"none",color:"var(--danger)",cursor:"pointer",fontWeight:600,padding:"4px 10px",borderRadius:4}}>Sil</button></div>)}
       </div>
     </Card>
 
     <SectionTitle>Öğrenci Davet Takip Paneli</SectionTitle>
     <div style={{display:"flex", gap:12, marginBottom:16}}>
-      <input className="modern-inp" style={{flex:2}} placeholder="Listeden öğrenci arayın..." value={search} onChange={e=>setSearch(e.target.value)}/>
-      <select className="modern-inp" style={{flex:1, cursor:"pointer"}} value={groupFilter} onChange={e=>setGroupFilter(e.target.value)}>
+      <input className="corp-inp" style={{flex:2}} placeholder="Listeden öğrenci arayın..." value={search} onChange={e=>setSearch(e.target.value)}/>
+      <select className="corp-inp" style={{flex:1, cursor:"pointer"}} value={groupFilter} onChange={e=>setGroupFilter(e.target.value)}>
         <option value="ALL">Tüm Gruplar</option>
         {allGroups.map(g=><option key={g} value={g}>{g}</option>)}
       </select>
     </div>
     
     <Card>
-      {filteredStudents.length === 0 ? <div style={{textAlign:"center",padding:"20px 0",color:"var(--text-sub)",fontSize:14,fontWeight:600}}>Kayıtlı aktif öğrenci bulunamadı.</div> :
-        filteredStudents.map(s=><div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid #F1F5F9`}}>
-          <div><div style={{fontWeight:800,fontSize:15,color:"var(--text-main)"}}>{s.name}</div><div style={{fontSize:12,color:"var(--text-sub)",marginTop:4,fontWeight:600}}>GRUP: {s.groupName||"Belirtilmemiş"}</div></div>
-          <Btn sm style={{background:"#DCFCE7",color:"#16A34A",border:"none"}} onClick={()=>triggerInvite(s)}>Davet Gönder</Btn>
+      {filteredStudents.length === 0 ? <div style={{textAlign:"center",padding:"20px 0",color:"var(--text-sub)",fontSize:13,fontWeight:500}}>Kayıtlı aktif öğrenci bulunamadı.</div> :
+        filteredStudents.map(s=><div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid #F3F4F6`}}>
+          <div><div style={{fontWeight:600,fontSize:14,color:"var(--text-main)"}}>{s.name}</div><div style={{fontSize:11,color:"var(--text-sub)",marginTop:4,fontWeight:500}}>GRUP: {s.groupName||"Belirtilmemiş"}</div></div>
+          <Btn sm style={{background:"var(--success-bg)",color:"var(--success)",border:"1px solid #A7F3D0"}} onClick={()=>triggerInvite(s)}>Davet Gönder</Btn>
         </div>)
       }
     </Card>
 
     <Modal show={showInviteModal} onClose={()=>setShowInviteModal(false)} title="Hangi Grubu Gönderelim?">
-      <div style={{fontSize:14,color:"var(--text-sub)",marginBottom:20,lineHeight:1.6,fontWeight:500}}><strong>{selectedStudent?.name}</strong> isimli öğrencinin velisine aşağıdaki davet bağlantılarından hangisini göndermek istersiniz?</div>
+      <div style={{fontSize:13,color:"var(--text-main)",marginBottom:20,lineHeight:1.5,fontWeight:500}}><strong>{selectedStudent?.name}</strong> isimli öğrencinin velisine aşağıdaki davet bağlantılarından hangisini göndermek istersiniz?</div>
       <div style={{display:"flex", flexDirection:"column", gap:10}}>
-        {safeLinks.map(l=><button key={l.id} type="button" onClick={()=>completeInvite(l.url)} style={{width:"100%",padding:16,borderRadius:12,background:"#F8FAFC",border:`1px solid #E2E8F0`,color:"var(--accent)",fontWeight:800,fontSize:15,textAlign:"left",cursor:"pointer",transition:"all 0.2s",boxShadow:"0 2px 4px rgba(0,0,0,0.02)"}}>{l.name}</button>)}
+        {safeLinks.map(l=><button key={l.id} type="button" onClick={()=>completeInvite(l.url)} style={{width:"100%",padding:14,borderRadius:8,background:"#fff",border:`1px solid var(--border)`,color:"var(--accent)",fontWeight:700,fontSize:14,textAlign:"left",cursor:"pointer",transition:"all 0.2s",boxShadow:"0 1px 2px rgba(0,0,0,0.05)"}}>{l.name}</button>)}
       </div>
+    </Modal>
+  </div>
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DİĞER SAYFALAR
+═══════════════════════════════════════════════════════════════ */
+function PaymentsPage({students}){
+  const all=safeArr(students).flatMap(s=>safeArr(s.payments).map(p=>({...p,studentName:s.name}))).sort(sortDateDesc);
+  const total=all.reduce((t,p)=>t+Number(p.amount),0); const thisMonth=all.filter(p=>p.date&&p.date.startsWith(TODAY.slice(0,7))).reduce((t,p)=>t+Number(p.amount),0);
+  const unpaid = safeArr(students).filter(s => courseStatus(s) === "active" && totalPaid(s) < monthlyTotal(s));
+  return<div style={{padding:20, maxWidth:800, margin:"0 auto"}}>
+    <SectionTitle action={<Btn sm variant="success" onClick={()=>exportCSV("Odemeler", ["Ogrenci", "Tutar", "Tarih"], all.map(p => [p.studentName, p.amount, p.date]))}><Icon name="chart" size={14}/> Excel İndir</Btn>}>Muhasebe & Ödemeler</SectionTitle>
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}><StatCard label="Tüm Zamanlar Tahsilat" value={`${total.toLocaleString("tr-TR")} ₺`} col="var(--success)" span2/><StatCard label="Bu Ayki Ciro" value={`${thisMonth.toLocaleString("tr-TR")} ₺`}/><StatCard label="Eksik Ödeme" value={unpaid.length} col="var(--danger)"/></div>
+    <Card>{all.length===0?<div style={{textAlign:"center",padding:"30px 0",color:"var(--text-sub)",fontWeight:500}}>Ödeme kaydı bulunamadı.</div>:all.map((p,i)=><div key={i} style={{display:"flex",justifyContent:"space-between",padding:"12px 0",borderBottom:"1px solid #F3F4F6"}}><div><div style={{fontWeight:600,fontSize:13}}>{p.studentName}</div><div style={{fontSize:11,color:"var(--text-sub)",fontWeight:500,marginTop:2}}>{fmtDate(p.date)} {p.note?`- ${p.note}`:''}</div></div><div style={{fontWeight:700,color:"var(--success)",fontSize:14}}>+{Number(p.amount).toLocaleString("tr-TR")} ₺</div></div>)}</Card>
+  </div>
+}
+
+function ExpensesPage({expenses}){
+  const [show,setShow]=useState(false); const [f,setF]=useState(EMPTY_EXPENSE); const u=(k,v)=>setF(p=>({...p,[k]:v}));
+  const valid=safeArr(expenses).sort(sortDateDesc);
+  const total=valid.reduce((t,e)=>t+Number(e.amount),0);
+  function save(){ if(!f.title.trim()) return; const n = f.id ? valid.map(e=>e.id===f.id?{...f}:e) : [...valid,{...f,id:Date.now()}]; DB.set("expenses",n); setShow(false); setF(EMPTY_EXPENSE); }
+  return<div style={{padding:20, maxWidth:800, margin:"0 auto"}}><SectionTitle action={<Btn sm onClick={()=>{setF(EMPTY_EXPENSE);setShow(true);}}>+ Gider Ekle</Btn>}>Kurum Giderleri ({total.toLocaleString("tr-TR")} ₺)</SectionTitle>
+    {valid.length===0?<Card style={{textAlign:"center",padding:"40px 0",color:"var(--text-sub)",fontWeight:500,fontSize:14}}>Gider kaydı bulunamadı.</Card>:valid.map(e=><Card key={e.id} style={{padding:"16px"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div><div style={{fontWeight:700,fontSize:15,color:"var(--text-main)"}}>{e.title}</div><div style={{fontSize:11,color:"var(--text-sub)",marginTop:4,fontWeight:500}}>{fmtDate(e.date)}</div></div>
+        <div style={{fontWeight:700,color:"var(--danger)",fontSize:16}}>-{Number(e.amount).toLocaleString("tr-TR")} ₺</div>
+      </div>
+      <div style={{display:"flex",gap:10,marginTop:16}}><Btn sm variant="secondary" onClick={()=>{setF(e);setShow(true);}}>Düzenle</Btn><Btn sm variant="danger" onClick={()=>{if(confirm('Gider kaydı tamamen silinsin mi?')) DB.set("expenses", valid.filter(x=>x.id!==e.id));}}>Sil</Btn></div>
+    </Card>)}
+    <Modal show={show} onClose={()=>setShow(false)} title={f.id?"Gider Düzenle":"Yeni Gider Ekle"}><Inp label="Açıklama (Ne alındı?)" value={f.title} onChange={v=>u("title",v.toLocaleUpperCase("tr-TR"))} autoFocus/><Inp label="Tarih" value={f.date} onChange={v=>u("date",v)} type="date"/><Inp label="Tutar (₺)" value={f.amount} onChange={v=>u("amount",v)} type="number"/><Btn full onClick={save} style={{marginTop:16}}>Gideri Kaydet</Btn></Modal>
+  </div>
+}
+
+function InventoryPage({items}){
+  const validItems = safeArr(items); const [show,setShow]=useState(false); const [f,setF]=useState(EMPTY_ITEM); const u=(k,v)=>setF(p=>({...p,[k]:v}));
+  function save(){ if(!f.name.trim()) return; const n = f.id ? validItems.map(i=>i.id===f.id?{...f}:i) : [...validItems,{...f,id:Date.now()}]; DB.set("stock",n); setShow(false); setF(EMPTY_ITEM); }
+  return<div style={{padding:20, maxWidth:800, margin:"0 auto"}}><SectionTitle action={<Btn sm onClick={()=>{setF(EMPTY_ITEM);setShow(true);}}>+ Yeni Ürün</Btn>}>Depo & Envanter</SectionTitle>
+    {validItems.length===0 ? <Card style={{textAlign:"center",padding:"40px 0",color:"var(--text-sub)",fontWeight:500,fontSize:14}}>Envanterde ürün bulunmuyor.</Card> :
+      <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(300px, 1fr))", gap:16}}>
+      {validItems.map(item=>(item && item.id) && <Card key={item.id} style={{padding:"16px", margin:0}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+          <div><div style={{fontWeight:700,fontSize:15,color:"var(--text-main)"}}>{item.name}</div><div style={{fontSize:11,color:"var(--text-sub)",marginTop:4,fontWeight:600,textTransform:"uppercase"}}>{item.category || "Genel"}</div></div>
+          <div style={{fontWeight:700,color:"var(--success)",fontSize:15}}>{Number(item.price||0).toLocaleString("tr-TR")} ₺</div>
+        </div>
+        <div style={{background:"var(--bg-color)", borderRadius:6, padding:"10px 14px", marginTop:16, display:"flex", justifyContent:"space-between", alignItems:"center", border:"1px solid var(--border)"}}>
+          <div style={{fontSize:12, fontWeight:600, color:"var(--text-sub)"}}>Stok Miktarı</div>
+          <div style={{display:"flex",gap:14,alignItems:"center"}}><button type="button" onClick={()=>{DB.set("stock",validItems.map(i=>i.id===item.id?{...i,stock:Math.max(0,Number(i.stock||0)-1)}:i));}} style={{width:28,height:28,borderRadius:4,background:"#fff",border:`1px solid var(--border)`,cursor:"pointer",fontWeight:700,color:"var(--danger)",boxShadow:"0 1px 2px rgba(0,0,0,0.05)"}}>-</button><span style={{fontWeight:700,fontSize:16,color:"var(--text-main)"}}>{item.stock||0}</span><button type="button" onClick={()=>{DB.set("stock",validItems.map(i=>i.id===item.id?{...i,stock:Math.max(0,Number(i.stock||0)+1)}:i));}} style={{width:28,height:28,borderRadius:4,background:"#fff",border:`1px solid var(--border)`,cursor:"pointer",fontWeight:700,color:"var(--success)",boxShadow:"0 1px 2px rgba(0,0,0,0.05)"}}>+</button></div>
+        </div>
+        <div style={{display:"flex",gap:10,marginTop:16}}><Btn sm variant="secondary" style={{flex:1}} onClick={()=>{setF(item);setShow(true);}}>Düzenle</Btn><Btn sm variant="danger" onClick={()=>DB.set("stock", validItems.filter(i=>i.id!==item.id))}>Kaldır</Btn></div>
+      </Card>)}
+      </div>
+    }
+    <Modal show={show} onClose={()=>setShow(false)} title="Ürün İşlemi">
+      <Inp label="Ürün Adı *" value={f.name} onChange={v=>u("name",v.toLocaleUpperCase("tr-TR"))} autoFocus/>
+      <Sel label="Kategori" value={f.category} onChange={v=>u("category",v)} options={STOCK_CATS.map(c=>({value:c,label:c}))}/>
+      <div style={{display:"flex",gap:12}}><div style={{flex:1}}><Inp label="Satış Fiyatı (₺)" value={f.price} onChange={v=>u("price",v)} type="number"/></div><div style={{flex:1}}><Inp label="Mevcut Stok" value={f.stock} onChange={v=>u("stock",v)} type="number"/></div></div>
+      <Btn full onClick={save} style={{marginTop:16}}>Kaydet</Btn>
+    </Modal>
+  </div>
+}
+
+function StaffPage({staff}){
+  const validStaff = safeArr(staff); const [tab, setTab] = useState(0); const [showAdd, setShowAdd] = useState(false); const [f, setF] = useState(EMPTY_STAFF);
+  const [selectedMonth, setSelectedMonth] = useState(TODAY.slice(0,7)); const [activeStaffId, setActiveStaffId] = useState(null);
+  const u=(k,v)=>setF(p=>({...p,[k]:v}));
+
+  function save(){
+    if(!f.name.trim()) return;
+    const n = f.id ? validStaff.map(s=>s.id===f.id?{...s,...f}:s) : [...validStaff,{...f,id:Date.now(),attendance:{},dailyWage:Number(f.dailyWage||0)}];
+    DB.set("staff",n); setShowAdd(false); setF(EMPTY_STAFF);
+  }
+  const daysInMonth = new Date(Number(selectedMonth.split("-")[0]), Number(selectedMonth.split("-")[1]), 0).getDate();
+  const daysArray = Array.from({length: daysInMonth}, (_, i) => i + 1);
+
+  return<div style={{padding:20, maxWidth:800, margin:"0 auto"}}>
+    <TabBar tabs={["Personel Listesi","Yoklama & Maaş Hakediş"]} active={tab} onChange={setTab}/>
+    {tab===0&&<div>
+      <SectionTitle action={<Btn sm onClick={()=>{setF(EMPTY_STAFF);setShowAdd(true);}}>+ Personel Ekle</Btn>}>Kurum Çalışanları</SectionTitle>
+      {validStaff.length===0?<Card style={{textAlign:"center",padding:"40px 0",color:"var(--text-sub)",fontWeight:500,fontSize:14}}>Kayıtlı çalışan bulunmuyor.</Card>:
+      <div style={{display:"grid", gap:12}}>
+        {validStaff.map(s=><Card key={s.id} style={{margin:0, padding:"16px"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><div><div style={{fontWeight:700,fontSize:15,color:"var(--text-main)"}}>{s.name}</div><div style={{fontSize:12,color:"var(--text-sub)",fontWeight:600,marginTop:4}}>{Number(s.dailyWage||0).toLocaleString("tr-TR")} ₺ Günlük Yevmiye</div></div><Btn sm variant="danger" onClick={()=>{if(confirm('Personel kaydı silinsin mi?')) DB.set("staff", validStaff.filter(x=>x.id!==s.id))}}>Sil</Btn></div></Card>)}
+      </div>}
+    </div>}
+    {tab===1&&<div>
+      <Inp label="Takip Ayı Seçimi" type="month" value={selectedMonth} onChange={setSelectedMonth}/>
+      <div style={{display:"grid", gap:12}}>
+      {validStaff.map(s=>{
+        const daysCount = Object.keys(s.attendance||{}).filter(k=>k.startsWith(selectedMonth)&&s.attendance[k]).length;
+        const isExp = activeStaffId === s.id;
+        return <Card key={s.id} style={{margin:0, padding:isExp?"20px":"16px"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer"} } onClick={()=>setActiveStaffId(isExp?null:s.id)}>
+            <div><div style={{fontWeight:700,fontSize:15,color:"var(--text-main)"}}>{s.name}</div><div style={{fontSize:12,color:"var(--success)",fontWeight:700,marginTop:4}}>{daysCount} Gün Mesai • Toplam Hakediş: {(daysCount*Number(s.dailyWage||0)).toLocaleString("tr-TR")} ₺</div></div>
+            <Btn sm variant="secondary">{isExp?"Kapat ▲":"Puantaj Gir ▼"}</Btn>
+          </div>
+          {isExp && <div style={{marginTop:20, paddingTop:20, borderTop:`1px solid var(--border)`}}>
+            <Inp label="Günlük Yevmiye (₺) (Anlık Güncelleme)" type="number" value={s.dailyWage} onChange={(v)=>DB.set("staff", validStaff.map(x=>x.id===s.id?{...x,dailyWage:Number(v)}:x))}/>
+            <div style={{fontSize:11,fontWeight:700,color:"var(--text-sub)",marginBottom:12,textTransform:"uppercase",marginTop:16}}>Çalışılan Günleri İşaretleyin</div>
+            <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(40px, 1fr))", gap:8}}>
+              {daysArray.map(d=>{
+                const key = `${selectedMonth}-${String(d).padStart(2,'0')}`; const isP = !!s.attendance?.[key];
+                return <button key={d} type="button" onClick={()=>{
+                  const att={...(s.attendance||{})}; if(isP) delete att[key]; else att[key]=true;
+                  DB.set("staff", validStaff.map(x=>x.id===s.id?{...x,attendance:att}:x));
+                }} style={{padding:"10px 0", borderRadius:6, border:`1px solid ${isP?"var(--success)":"var(--border)"}`, background:isP?"var(--success-bg)":"#fff", color:isP?"var(--success)":"var(--text-sub)", fontWeight:700, cursor:"pointer", transition:"all 0.2s"}}>{d}</button>
+              })}
+            </div>
+          </div>}
+        </Card>
+      })}
+      </div>
+    </div>}
+    <Modal show={showAdd} onClose={()=>setShowAdd(false)} title="Personel Kaydı">
+      <Inp label="Ad Soyad *" value={f.name} onChange={v=>u("name",v.toLocaleUpperCase("tr-TR"))} autoFocus/>
+      <Inp label="Sabit Günlük Yevmiyesi (₺) *" value={f.dailyWage} onChange={v=>u("dailyWage",v)} type="number"/>
+      <Btn full onClick={save} style={{marginTop:16}}>Çalışanı Kaydet</Btn>
     </Modal>
   </div>
 }
@@ -997,71 +1154,71 @@ function Dashboard({students,expenses}){
   
   const total=totalRev+totalExp; const revPct=total===0?50:(totalRev/total)*100; const expPct=total===0?50:(totalExp/total)*100;
 
-  const recentRegistrations = [...safeStudents].sort((a,b) => b.id - a.id).slice(0, 5);
-  const recentPay = safeStudents.flatMap(s=>safeArr(s.payments).map(p=>({...p,studentName:s.name}))).sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
+  const recentRegistrations = [...safeStudents].sort((a,b) => (b.id||0) - (a.id||0)).slice(0, 5);
+  const recentPay = safeStudents.flatMap(s=>safeArr(s.payments).map(p=>({...p,studentName:s.name}))).sort(sortDateDesc).slice(0,5);
   const endingSoon = active.filter(s=>{const d=daysLeft(s);return d>=0&&d<=14;}).sort((a,b)=>daysLeft(a)-daysLeft(b)).slice(0,5);
 
   return<div style={{padding:20, maxWidth:1200, margin:"0 auto"}}>
     <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(240px, 1fr))", gap:16, marginBottom:20}}>
       <StatCard label="Aktif Kayıtlı Öğrenci" value={active.length} col="var(--accent)" />
-      <StatCard label="Kasadaki Net Kâr" value={`${netProfit.toLocaleString("tr-TR")} ₺`} col={netProfit>=0?"#059669":"#DC2626"} />
-      <StatCard label="Tüm Zamanlar Ciro" value={`${totalRev.toLocaleString("tr-TR")} ₺`} col="#059669" />
-      <StatCard label="Toplam Giderler" value={`${totalExp.toLocaleString("tr-TR")} ₺`} col="#DC2626" />
+      <StatCard label="Kasadaki Net Kâr" value={`${netProfit.toLocaleString("tr-TR")} ₺`} col={netProfit>=0?"var(--success)":"var(--danger)"} />
+      <StatCard label="Tüm Zamanlar Ciro" value={`${totalRev.toLocaleString("tr-TR")} ₺`} col="var(--success)" />
+      <StatCard label="Toplam Giderler" value={`${totalExp.toLocaleString("tr-TR")} ₺`} col="var(--danger)" />
     </div>
 
     <Card style={{marginBottom:24, padding:"20px"}}>
       <SectionTitle>Gelir / Gider Dağılımı</SectionTitle>
-      <div style={{display:"flex", height:28, borderRadius:14, overflow:"hidden", marginBottom:12, background:"#F1F5F9", border:`1px solid #E2E8F0`}}>
-        <div style={{width:`${revPct}%`, background:"#10B981", transition:"width 1s cubic-bezier(0.4, 0, 0.2, 1)"}}></div>
-        <div style={{width:`${expPct}%`, background:"#EF4444", transition:"width 1s cubic-bezier(0.4, 0, 0.2, 1)"}}></div>
+      <div style={{display:"flex", height:24, borderRadius:6, overflow:"hidden", marginBottom:12, background:"var(--bg-color)", border:`1px solid var(--border)`}}>
+        <div style={{width:`${revPct}%`, background:"var(--success)", transition:"width 1s cubic-bezier(0.4, 0, 0.2, 1)"}}></div>
+        <div style={{width:`${expPct}%`, background:"var(--danger)", transition:"width 1s cubic-bezier(0.4, 0, 0.2, 1)"}}></div>
       </div>
-      <div style={{display:"flex", justifyContent:"space-between", fontSize:14, fontWeight:900}}>
-        <span style={{color:"#059669"}}>Toplam Gelir: %{Math.round(revPct)}</span>
-        <span style={{color:"#DC2626"}}>Toplam Gider: %{Math.round(expPct)}</span>
+      <div style={{display:"flex", justifyContent:"space-between", fontSize:13, fontWeight:700}}>
+        <span style={{color:"var(--success)"}}>Toplam Gelir: %{Math.round(revPct)}</span>
+        <span style={{color:"var(--danger)"}}>Toplam Gider: %{Math.round(expPct)}</span>
       </div>
     </Card>
 
     <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(320px, 1fr))", gap:20, alignItems:"start"}}>
       <Card style={{padding:"20px", margin:0}}>
-        <div style={{fontSize:14, fontWeight:900, marginBottom:16, color:"var(--text-main)", textTransform:"uppercase", letterSpacing:-0.3}}>Son Kayıt Olanlar</div>
+        <div style={{fontSize:13, fontWeight:700, marginBottom:16, color:"var(--text-main)", textTransform:"uppercase", letterSpacing:0.5}}>Son Kayıt Olanlar</div>
         <div style={{display:"flex", flexDirection:"column", gap:8}}>
-          {recentRegistrations.length===0?<div style={{textAlign:"center", color:"var(--text-sub)", fontSize:13, padding:"10px 0"}}>Kayıt yok.</div>:recentRegistrations.map(s => (
-            <div key={s.id} style={{display:"flex", justifyContent:"space-between", alignItems:"center", padding:"12px 16px", background:"#F1F5F9", borderRadius:10}}>
+          {recentRegistrations.length===0?<div style={{textAlign:"center", color:"var(--text-sub)", fontSize:12, padding:"10px 0"}}>Kayıt yok.</div>:recentRegistrations.map(s => (
+            <div key={s.id} style={{display:"flex", justifyContent:"space-between", alignItems:"center", padding:"12px 14px", background:"var(--bg-color)", borderRadius:6, border:"1px solid var(--border)"}}>
               <div>
-                <div style={{fontWeight:800, fontSize:14, color:"var(--text-main)"}}>{s.name}</div>
-                <div style={{fontSize:11, color:"var(--text-sub)", marginTop:4, fontWeight:600}}>{fmtDate(s.courseStart)}</div>
+                <div style={{fontWeight:700, fontSize:13, color:"var(--text-main)"}}>{s.name}</div>
+                <div style={{fontSize:11, color:"var(--text-sub)", marginTop:4, fontWeight:500}}>{fmtDate(s.courseStart)}</div>
               </div>
-              <div style={{fontSize:12, fontWeight:800, color:"var(--accent)", background:"#fff", padding:"4px 8px", borderRadius:6, border:"1px solid #E2E8F0"}}>{s.groupName || "Grup Yok"}</div>
+              <div style={{fontSize:11, fontWeight:700, color:"var(--accent)", background:"#fff", padding:"4px 8px", borderRadius:4, border:"1px solid var(--border)"}}>{s.groupName || "Grup Yok"}</div>
             </div>
           ))}
         </div>
       </Card>
 
       <Card style={{padding:"20px", margin:0}}>
-        <div style={{fontSize:14, fontWeight:900, marginBottom:16, color:"var(--text-main)", textTransform:"uppercase", letterSpacing:-0.3}}>Son Ödemeler</div>
+        <div style={{fontSize:13, fontWeight:700, marginBottom:16, color:"var(--text-main)", textTransform:"uppercase", letterSpacing:0.5}}>Son Ödemeler</div>
         <div style={{display:"flex", flexDirection:"column", gap:8}}>
-          {recentPay.length===0?<div style={{textAlign:"center", color:"var(--text-sub)", fontSize:13, padding:"10px 0"}}>Tahsilat yok.</div>:recentPay.map((p, i) => (
-            <div key={i} style={{display:"flex", justifyContent:"space-between", alignItems:"center", padding:"12px 16px", background:"#F1F5F9", borderRadius:10}}>
+          {recentPay.length===0?<div style={{textAlign:"center", color:"var(--text-sub)", fontSize:12, padding:"10px 0"}}>Tahsilat yok.</div>:recentPay.map((p, i) => (
+            <div key={i} style={{display:"flex", justifyContent:"space-between", alignItems:"center", padding:"12px 14px", background:"var(--bg-color)", borderRadius:6, border:"1px solid var(--border)"}}>
               <div>
-                <div style={{fontWeight:800, fontSize:14, color:"var(--text-main)"}}>{p.studentName}</div>
-                <div style={{fontSize:11, color:"var(--text-sub)", marginTop:4, fontWeight:600}}>{fmtDate(p.date)}</div>
+                <div style={{fontWeight:700, fontSize:13, color:"var(--text-main)"}}>{p.studentName}</div>
+                <div style={{fontSize:11, color:"var(--text-sub)", marginTop:4, fontWeight:500}}>{fmtDate(p.date)}</div>
               </div>
-              <div style={{fontSize:14, fontWeight:900, color:"#059669"}}>+{Number(p.amount).toLocaleString("tr-TR")} ₺</div>
+              <div style={{fontSize:13, fontWeight:700, color:"var(--success)"}}>+{Number(p.amount).toLocaleString("tr-TR")} ₺</div>
             </div>
           ))}
         </div>
       </Card>
 
-      <Card style={{padding:"20px", margin:0, border:`1px solid #FCD34D`}}>
-        <div style={{fontSize:14, fontWeight:900, marginBottom:16, color:"#D97706", textTransform:"uppercase", letterSpacing:-0.3}}>Kayıt Bitişi Yaklaşanlar</div>
+      <Card style={{padding:"20px", margin:0, borderLeft:`4px solid #D97706`}}>
+        <div style={{fontSize:13, fontWeight:700, marginBottom:16, color:"#D97706", textTransform:"uppercase", letterSpacing:0.5}}>Kayıt Bitişi Yaklaşanlar</div>
         <div style={{display:"flex", flexDirection:"column", gap:8}}>
-          {endingSoon.length===0?<div style={{textAlign:"center", color:"var(--text-sub)", fontSize:13, padding:"10px 0"}}>Yaklaşan kayıt yok.</div>:endingSoon.map(s => (
-            <div key={s.id} style={{display:"flex", justifyContent:"space-between", alignItems:"center", padding:"12px 16px", background:"#FEF2F2", borderRadius:10}}>
+          {endingSoon.length===0?<div style={{textAlign:"center", color:"var(--text-sub)", fontSize:12, padding:"10px 0"}}>Yaklaşan kayıt yok.</div>:endingSoon.map(s => (
+            <div key={s.id} style={{display:"flex", justifyContent:"space-between", alignItems:"center", padding:"12px 14px", background:"#FEF3C7", borderRadius:6, border:"1px solid #FCD34D"}}>
               <div>
-                <div style={{fontWeight:800, fontSize:14, color:"#B91C1C"}}>{s.name}</div>
-                <div style={{fontSize:11, color:"#DC2626", marginTop:4, fontWeight:600}}>Bitiş: {fmtDate(s.courseEnd)}</div>
+                <div style={{fontWeight:700, fontSize:13, color:"#92400E"}}>{s.name}</div>
+                <div style={{fontSize:11, color:"#B45309", marginTop:4, fontWeight:500}}>Bitiş: {fmtDate(s.courseEnd)}</div>
               </div>
-              <div style={{fontSize:13, fontWeight:900, color:"#DC2626"}}>{daysLeft(s)} Gün</div>
+              <div style={{fontSize:12, fontWeight:800, color:"#92400E", display:"flex", alignItems:"center", gap:4}}><Icon name="warning" size={14}/> {daysLeft(s)} Gün</div>
             </div>
           ))}
         </div>
@@ -1106,8 +1263,8 @@ function SettingsPage({navItems, clubName, logoUrl, appUsers}){
       {safeArr(appUsers).map(u=><Card key={u.id} style={{padding:"16px 20px"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
           <div>
-            <div style={{fontWeight:900,fontSize:16,color:"var(--text-main)"}}>{u.username}</div>
-            <div style={{fontSize:11,color:u.role==='admin'?"#059669":"var(--text-sub)",fontWeight:800,textTransform:"uppercase",marginTop:6}}>{u.role==='admin'?'Tam Yetkili Yönetici (Silinemez)':'Kısıtlı Çalışan'}</div>
+            <div style={{fontWeight:700,fontSize:15,color:"var(--text-main)"}}>{u.username}</div>
+            <div style={{fontSize:11,color:u.role==='admin'?"var(--success)":"var(--text-sub)",fontWeight:700,textTransform:"uppercase",marginTop:4}}>{u.role==='admin'?'Tam Yetkili Yönetici (Silinemez)':'Kısıtlı Çalışan'}</div>
           </div>
           <div style={{display:"flex",gap:8}}>
             <Btn variant="secondary" sm onClick={()=>{setUForm(u);setShowUserModal(true);}}>Yetkileri Düzenle</Btn>
@@ -1122,12 +1279,12 @@ function SettingsPage({navItems, clubName, logoUrl, appUsers}){
         
         {uForm.id !== "admin" && (
           <div style={{marginTop: 20}}>
-            <div style={{fontSize:12, fontWeight:800, marginBottom:12, color:"var(--text-main)", textTransform:"uppercase"}}>Çalışanın Görebileceği Menüler</div>
+            <div style={{fontSize:11, fontWeight:700, marginBottom:12, color:"var(--text-main)", textTransform:"uppercase"}}>Çalışanın Görebileceği Menüler</div>
             <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:10}}>
               {navItems.map(nav => nav.id !== "settings" && (
-                <label key={nav.id} style={{display:"flex", alignItems:"center", gap:8, padding:"12px", background:"var(--bg-color)", borderRadius:12, cursor:"pointer", border:`2px solid ${(uForm.allowedTabs||[]).includes(nav.id)?"var(--accent)":"transparent"}`, transition:"all 0.2s"}}>
+                <label key={nav.id} style={{display:"flex", alignItems:"center", gap:8, padding:"10px", background:"var(--bg-color)", borderRadius:6, cursor:"pointer", border:`1px solid ${(uForm.allowedTabs||[]).includes(nav.id)?"var(--accent)":"var(--border)"}`, transition:"all 0.2s"}}>
                   <input type="checkbox" checked={(uForm.allowedTabs||[]).includes(nav.id)} onChange={() => toggleMenuAccess(nav.id)} style={{width:16,height:16,accentColor:"var(--accent)"}}/>
-                  <span style={{fontSize:13, fontWeight:700, color:"var(--text-main)"}}>{nav.label}</span>
+                  <span style={{fontSize:13, fontWeight:600, color:"var(--text-main)"}}>{nav.label}</span>
                 </label>
               ))}
             </div>
@@ -1140,14 +1297,14 @@ function SettingsPage({navItems, clubName, logoUrl, appUsers}){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   APP ROOT
+   APP ROOT (GÜVENLİK ZIRHLI)
 ═══════════════════════════════════════════════════════════════ */
 function App(){
   const [currentUser, setCurrentUser] = useState(() => { try { return JSON.parse(sessionStorage.getItem("aqua_user")); } catch { return null; } });
   const [isDbLoaded, setIsDbLoaded] = useState(false);
   const [students,setStudents]=useState([]); const [staff,setStaff]=useState([]); const [stockItems,setStockItems]=useState([]); const [movements,setMovements]=useState([]); const [expenses,setExpenses]=useState([]);
   const [clubName,setClubName]=useState("AquaClub Pro"); const [navItems,setNavItems]=useState(NAV_ITEMS); const [appUsers, setAppUsers]=useState([]); const [oldPinCode, setOldPinCode]=useState("0309"); const [waLinks,setWaLinks]=useState([]);
-  const [logoUrl,setLogoUrl]=useState(""); const [activeTab,setActiveTab]=useState("dashboard"); const [sidebarOpen,setSidebarOpen]=useState(false);
+  const [activeTab,setActiveTab]=useState("dashboard"); const [sidebarOpen,setSidebarOpen]=useState(false);
   const [routes, setRoutes] = useState([]);
 
   useEffect(() => {
@@ -1168,7 +1325,6 @@ function App(){
           let loadedUsers = safeArr(d.appUsers);
           if (loadedUsers.length === 0) { loadedUsers = [{ id:"admin", username:"admin", password: d.pinCode || "0309", role:"admin", allowedTabs: NAV_ITEMS.map(n=>n.id) }]; }
           setAppUsers(loadedUsers);
-          if (d.logoUrl) setLogoUrl(d.logoUrl);
         }
         setIsDbLoaded(true);
       });
@@ -1176,40 +1332,42 @@ function App(){
     } catch(e) { console.error(e); setIsDbLoaded(true); }
   }, []);
 
-  if (!isDbLoaded) return <div style={{display:"flex",flexDirection:"column",height:"100vh",alignItems:"center",justifyContent:"center",background:"var(--bg-color)"}}><div className="spinner"></div><div style={{color:"var(--text-main)",fontWeight:800,marginTop:16,letterSpacing:0.5}}>Kurumsal Sistem Yükleniyor...</div></div>;
+  if (!isDbLoaded) return <div style={{display:"flex",flexDirection:"column",height:"100vh",alignItems:"center",justifyContent:"center",background:"var(--bg-color)"}}><div className="spinner"></div><div style={{color:"var(--text-main)",fontWeight:700,marginTop:16,letterSpacing:0.5}}>Kurumsal Sistem Yükleniyor...</div></div>;
   if (!currentUser) return <LoginScreen onSuccess={(user) => { sessionStorage.setItem("aqua_user", JSON.stringify(user)); setCurrentUser(user); }} appUsers={appUsers} adminPin={oldPinCode} />;
 
   const visibleNav = NAV_ITEMS.filter(n => currentUser.role === "admin" || (currentUser.allowedTabs || []).includes(n.id));
 
   return<div style={{display:"flex",height:"100vh",overflow:"hidden",background:"var(--bg-color)"}}>
-    <div className="sidebar-desktop" style={{width:260, background:"var(--sidebar-bg)", borderRight:`1px solid #E2E8F0`, display:"flex", flexDirection:"column", boxShadow:"4px 0 24px rgba(0,0,0,0.02)", zIndex:100}}>
-      <div style={{padding:"28px 20px 20px", borderBottom:`1px solid #F1F5F9`, display:"flex", alignItems:"center", gap:14}}>
-        <div style={{width:44,height:44,borderRadius:12,background:`linear-gradient(135deg,var(--accent),var(--accent-hover))`,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",boxShadow:"0 4px 12px rgba(59, 130, 246, 0.2)"}}>
-          {logoUrl ? <img src={logoUrl} alt="Logo" style={{width:"100%",height:"100%",objectFit:"cover"}}/> : <span style={{color:"white", fontWeight:900, fontSize:16}}>AC</span>}
+    <div className="sidebar-desktop" style={{width:240, background:"var(--sidebar-bg)", borderRight:`1px solid var(--border)`, display:"flex", flexDirection:"column", boxShadow:"1px 0 3px rgba(0,0,0,0.05)", zIndex:100}}>
+      <div style={{padding:"24px 20px 20px", borderBottom:`1px solid var(--border)`, display:"flex", alignItems:"center", gap:12}}>
+        <div style={{width:36,height:36,borderRadius:8,background:`var(--accent)`,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
+          <span style={{color:"white", fontWeight:800, fontSize:15}}>AC</span>
         </div>
-        <div><div style={{fontSize:16,fontWeight:900,color:"var(--text-main)",letterSpacing:-0.5}}>{clubName}</div><div style={{fontSize:11,color:"var(--text-sub)",fontWeight:800,textTransform:"uppercase",marginTop:4}}>{currentUser.username}</div></div>
+        <div><div style={{fontSize:15,fontWeight:800,color:"var(--text-main)",letterSpacing:-0.3}}>{clubName}</div><div style={{fontSize:11,color:"var(--text-sub)",fontWeight:700,textTransform:"uppercase",marginTop:2}}>{currentUser.username}</div></div>
       </div>
-      <div style={{flex:1, overflowY:"auto", padding:"20px 14px"}}>
-        {visibleNav.map(item=><button key={item.id} type="button" onClick={()=>setActiveTab(item.id)} style={{display:"flex",alignItems:"center",gap:14,width:"100%", padding:"14px 16px", marginBottom:8, background:activeTab===item.id?"rgba(59, 130, 246, 0.08)":"transparent", border:"none", borderRadius:12, color:activeTab===item.id?"var(--accent)":"var(--text-sub)", cursor:"pointer", textAlign:"left", fontSize:14, fontWeight:activeTab===item.id?800:600, transition:"all 0.2s"}}><Icon d={item.icon} size={18} style={{opacity:activeTab===item.id?1:0.7}}/> {item.label}</button>)}
+      <div style={{flex:1, overflowY:"auto", padding:"16px 12px"}}>
+        {visibleNav.map(item=><button key={item.id} type="button" onClick={()=>setActiveTab(item.id)} style={{display:"flex",alignItems:"center",gap:12,width:"100%", padding:"12px 14px", marginBottom:4, background:activeTab===item.id?"var(--accent-light)":"transparent", border:"none", borderRadius:6, color:activeTab===item.id?"var(--accent)":"var(--text-sub)", cursor:"pointer", textAlign:"left", fontSize:13, fontWeight:activeTab===item.id?700:500, transition:"all 0.2s"}}><Icon name={item.icon} size={16}/> {item.label}</button>)}
       </div>
-      <div style={{padding:"20px"}}><button type="button" onClick={()=>{sessionStorage.removeItem("aqua_user"); window.location.reload();}} style={{width:"100%", padding:"14px", background:"#FEF2F2", border:"none", borderRadius:12, color:"#DC2626", fontWeight:800, cursor:"pointer", transition:"all 0.2s"}}>Güvenli Çıkış Yap</button></div>
+      <div style={{padding:"16px"}}><button type="button" onClick={()=>{sessionStorage.removeItem("aqua_user"); window.location.reload();}} style={{width:"100%", padding:"12px", background:"var(--danger-bg)", border:"none", borderRadius:6, color:"var(--danger)", fontWeight:700, cursor:"pointer", transition:"all 0.2s", fontSize:13}}>Güvenli Çıkış Yap</button></div>
     </div>
     
     <div style={{flex:1, display:"flex", flexDirection:"column", overflow:"hidden", position:"relative"}}>
-      <div style={{padding:"20px 24px", background:"var(--sidebar-bg)", borderBottom:`1px solid #E2E8F0`, fontWeight:900, fontSize:18, display:"flex", alignItems:"center", gap:16, color:"var(--text-main)", zIndex:50}}>
-        <button type="button" onClick={()=>setSidebarOpen(!sidebarOpen)} className="menu-btn" style={{background:"#F8FAFC", border:`1px solid #E2E8F0`, color:"var(--text-main)", width:40, height:40, borderRadius:12, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center"}}>☰</button>
+      <div style={{padding:"16px 24px", background:"var(--sidebar-bg)", borderBottom:`1px solid var(--border)`, fontWeight:700, fontSize:16, display:"flex", alignItems:"center", gap:16, color:"var(--text-main)", zIndex:50}}>
+        <button type="button" onClick={()=>setSidebarOpen(!sidebarOpen)} className="menu-btn" style={{background:"var(--bg-color)", border:`1px solid var(--border)`, color:"var(--text-main)", width:36, height:36, borderRadius:6, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center"}}>☰</button>
         {(visibleNav.find(n=>n.id===activeTab)||{}).label}
       </div>
       <div style={{flex:1, overflowY:"auto"}}>
-        {activeTab==="dashboard"&&<Dashboard students={students} expenses={expenses}/>}
-        {activeTab==="students"&&<StudentsPage students={students} stockItems={stockItems} routes={routes} setRoutes={setRoutes}/>}
-        {activeTab==="attendance"&&<AttendancePage students={students}/>}
-        {activeTab==="payments"&&<PaymentsPage students={students}/>}
-        {activeTab==="expenses"&&<ExpensesPage expenses={expenses}/>}
-        {activeTab==="whatsapp"&&<WhatsAppPage students={students} waLinks={waLinks} />}
-        {activeTab==="staff"&&<StaffPage staff={staff}/>}
-        {activeTab==="inventory"&&<InventoryPage items={stockItems}/>}
-        {activeTab==="settings"&&currentUser.role==='admin'&&<SettingsPage navItems={NAV_ITEMS} clubName={clubName} logoUrl={logoUrl} appUsers={appUsers}/>}
+        <ErrorBoundary>
+          {activeTab==="dashboard"&&<Dashboard students={students} expenses={expenses}/>}
+          {activeTab==="students"&&<StudentsPage students={students} stockItems={stockItems} routes={routes} setRoutes={setRoutes}/>}
+          {activeTab==="attendance"&&<AttendancePage students={students}/>}
+          {activeTab==="payments"&&<PaymentsPage students={students}/>}
+          {activeTab==="expenses"&&<ExpensesPage expenses={expenses}/>}
+          {activeTab==="whatsapp"&&<WhatsAppPage students={students} waLinks={waLinks} />}
+          {activeTab==="staff"&&<StaffPage staff={staff}/>}
+          {activeTab==="inventory"&&<InventoryPage items={stockItems}/>}
+          {activeTab==="settings"&&currentUser.role==='admin'&&<SettingsPage navItems={NAV_ITEMS} clubName={clubName} appUsers={appUsers}/>}
+        </ErrorBoundary>
       </div>
     </div>
   </div>

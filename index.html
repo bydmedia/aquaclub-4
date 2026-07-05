@@ -256,7 +256,7 @@ function exportCSV(filename, headers, rows) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   3. UI BİLEŞENLERİ
+   3. UI BİLEŞENLERİ 
 ═══════════════════════════════════════════════════════════════ */
 function Icon({d,size=18,color="currentColor",style={}}){
   return<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style}>
@@ -340,7 +340,6 @@ function DayPicker({value=[],onChange}){
   </div>
 }
 
-/* YENİ MODAL (KAPANMAMA VE INSET HATASI ÇÖZÜLDÜ) */
 function Modal({show,onClose,title,children}){
   if(!show)return null;
   return<div style={{position:"fixed",top:0,left:0,right:0,bottom:0,backgroundColor:"rgba(15, 23, 42, 0.7)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:9999,padding:16}}>
@@ -355,7 +354,7 @@ function Modal({show,onClose,title,children}){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   4. EKRAN BİLEŞENLERİ
+   4. EKRAN BİLEŞENLERİ (GİRİŞ EKRANI)
 ═══════════════════════════════════════════════════════════════ */
 function LoginScreen({ onSuccess, appUsers, adminPin }) {
   const [user, setUser] = useState("");
@@ -598,26 +597,20 @@ function StudentForm({initial,onSave,onCancel,stockItems,students,routes}){
     </div>}
 
     {tab===4&&<div>
-      <div style={{fontSize:13,color:"var(--text-sub)",marginBottom:16,fontWeight:600}}>
-        Kayıt anında nakit veya kart ile alınan ilk ödemeyi buraya girebilirsiniz.
-      </div>
+      <div style={{fontSize:13,color:"var(--text-sub)",marginBottom:16,fontWeight:600}}>Kayıt anında nakit veya kart ile alınan ilk ödemeyi buraya girebilirsiniz.</div>
       <div style={{display:"flex",gap:12}}>
         <div style={{flex:1}}><Inp label="Şu An Yapılan Ödeme (₺)" value={f.initialPaymentAmount} onChange={v=>u("initialPaymentAmount",v)} type="number"/></div>
         <div style={{flex:1}}><Inp label="Ödeme Tarihi" value={f.initialPaymentDate} onChange={v=>u("initialPaymentDate",v)} type="date"/></div>
       </div>
-      
       <div style={{background:"#F8FAFC", border:`1px solid #E2E8F0`, borderRadius:12, padding:"16px", marginTop:20}}>
          <div style={{fontSize:12, fontWeight:800, color:"var(--text-main)", marginBottom:12, textTransform:"uppercase"}}>Maliyet Özeti</div>
          <Row label="Aylık Kurs Ücreti" val={`${Number(f.monthlyFee||0)} ₺`}/>
          {Number(f.discount)>0 && <Row label="İndirim" val={`-${Number(f.discount)} ₺`} col="#DC2626"/>}
          {f.hasTransport && <Row label="Servis Ücreti" val={`${Number(f.transportFee||0)} ₺`}/>}
          {safeArr(f.equipment).length>0 && <Row label="Ekipmanlar Toplamı" val={`${safeArr(f.equipment).reduce((t,e)=>t+Number(e.price||0),0)} ₺`}/>}
-         
          <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:12, paddingTop:12, borderTop:"2px dashed #CBD5E1"}}>
            <span style={{fontSize:14, fontWeight:900, color:"var(--text-main)"}}>TOPLAM ÖDENMESİ GEREKEN</span>
-           <span style={{fontSize:20, fontWeight:900, color:"var(--accent)"}}>
-             {(Number(f.monthlyFee||0) - Number(f.discount||0) + (f.hasTransport?Number(f.transportFee||0):0) + safeArr(f.equipment).reduce((t,e)=>t+Number(e.price||0),0)).toLocaleString("tr-TR")} ₺
-           </span>
+           <span style={{fontSize:20, fontWeight:900, color:"var(--accent)"}}>{(Number(f.monthlyFee||0) - Number(f.discount||0) + (f.hasTransport?Number(f.transportFee||0):0) + safeArr(f.equipment).reduce((t,e)=>t+Number(e.price||0),0)).toLocaleString("tr-TR")} ₺</span>
          </div>
       </div>
     </div>}
@@ -630,7 +623,7 @@ function StudentForm({initial,onSave,onCancel,stockItems,students,routes}){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   ÖĞRENCİ LİSTESİ (ÇIKTI VE YENİ GÖRÜNÜM)
+   5. ANA LİSTELER (ÖĞRENCİ SAYFASI VE DETAYLARI)
 ═══════════════════════════════════════════════════════════════ */
 function StudentsPage({students, stockItems, routes, setRoutes}){
   const [search,setSearch]=useState(""); 
@@ -989,9 +982,6 @@ function WhatsAppPage({students, waLinks}) {
   </div>
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   DİĞER SAYFALAR
-═══════════════════════════════════════════════════════════════ */
 function PaymentsPage({students}){
   const all=safeArr(students).flatMap(s=>safeArr(s.payments).map(p=>({...p,studentName:s.name}))).sort((a,b)=>new Date(b.date)-new Date(a.date));
   const total=all.reduce((t,p)=>t+Number(p.amount),0); const thisMonth=all.filter(p=>p.date&&p.date.startsWith(TODAY.slice(0,7))).reduce((t,p)=>t+Number(p.amount),0);
@@ -1106,6 +1096,58 @@ function StaffPage({staff}){
   </div>
 }
 
+function Dashboard({students,expenses}){
+  const safeStudents = safeArr(students); const safeExpenses = safeArr(expenses); const active=safeStudents.filter(s=>courseStatus(s)==="active");
+  const totalRev=safeStudents.reduce((t,s)=>t+totalPaid(s),0); const totalExp=safeExpenses.reduce((t,e)=>t+Number(e.amount||0),0); const netProfit = totalRev - totalExp;
+  
+  const total=totalRev+totalExp; const revPct=total===0?50:(totalRev/total)*100; const expPct=total===0?50:(totalExp/total)*100;
+
+  const recentRegistrations = [...safeStudents].sort((a,b) => b.id - a.id).slice(0, 5);
+  const recentPay = safeStudents.flatMap(s=>safeArr(s.payments).map(p=>({...p,studentName:s.name}))).sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
+  const endingSoon = active.filter(s=>{const d=daysLeft(s);return d>=0&&d<=14;}).sort((a,b)=>daysLeft(a)-daysLeft(b)).slice(0,5);
+
+  return<div style={{padding:20, maxWidth:1200, margin:"0 auto"}}>
+    <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(240px, 1fr))", gap:16, marginBottom:20}}>
+      <StatCard label="Aktif Kayıtlı Öğrenci" value={active.length} col="var(--accent)" />
+      <StatCard label="Kasadaki Net Kâr" value={`${netProfit.toLocaleString("tr-TR")} ₺`} col={netProfit>=0?"#059669":"#DC2626"} />
+      <StatCard label="Tüm Zamanlar Ciro" value={`${totalRev.toLocaleString("tr-TR")} ₺`} col="#059669" />
+      <StatCard label="Toplam Giderler" value={`${totalExp.toLocaleString("tr-TR")} ₺`} col="#DC2626" />
+    </div>
+
+    <Card style={{marginBottom:24, padding:"20px"}}>
+      <SectionTitle>Gelir / Gider Dağılımı</SectionTitle>
+      <div style={{display:"flex", height:28, borderRadius:14, overflow:"hidden", marginBottom:12, background:"#F1F5F9", border:`1px solid #E2E8F0`}}>
+        <div style={{width:`${revPct}%`, background:"#10B981", transition:"width 1s cubic-bezier(0.4, 0, 0.2, 1)"}}></div>
+        <div style={{width:`${expPct}%`, background:"#EF4444", transition:"width 1s cubic-bezier(0.4, 0, 0.2, 1)"}}></div>
+      </div>
+      <div style={{display:"flex", justifyContent:"space-between", fontSize:14, fontWeight:900}}>
+        <span style={{color:"#059669"}}>Toplam Gelir: %{Math.round(revPct)}</span>
+        <span style={{color:"#DC2626"}}>Toplam Gider: %{Math.round(expPct)}</span>
+      </div>
+    </Card>
+
+    <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(320px, 1fr))", gap:20, alignItems:"start"}}>
+      <Card style={{padding:"20px", margin:0}}>
+        <div style={{fontSize:14, fontWeight:900, marginBottom:16, color:"var(--text-main)", textTransform:"uppercase", letterSpacing:-0.3}}>Son Kayıt Olanlar</div>
+        <div className="data-row data-header"><div>Ad Soyad</div><div>Kayıt Trh.</div><div className="data-col-right">Grup</div></div>
+        {recentRegistrations.length===0?<div style={{padding:"16px 0",fontSize:13,color:"var(--text-sub)",textAlign:"center",fontWeight:600}}>Kayıt yok.</div>:recentRegistrations.map(s => <div className="data-row" key={s.id}><div className="data-col">{s.name}</div><div className="data-col data-col-sub">{fmtDate(s.courseStart)}</div><div className="data-col data-col-right" style={{color:"var(--accent)"}}>{s.groupName || "-"}</div></div>)}
+      </Card>
+
+      <Card style={{padding:"20px", margin:0}}>
+        <div style={{fontSize:14, fontWeight:900, marginBottom:16, color:"var(--text-main)", textTransform:"uppercase", letterSpacing:-0.3}}>Son Ödemeler</div>
+        <div className="data-row data-header"><div>Ad Soyad</div><div>Tarih</div><div className="data-col-right">Tutar</div></div>
+        {recentPay.length===0?<div style={{padding:"16px 0",fontSize:13,color:"var(--text-sub)",textAlign:"center",fontWeight:600}}>Tahsilat yok.</div>:recentPay.map((p, i) => <div className="data-row" key={i}><div className="data-col">{p.studentName}</div><div className="data-col data-col-sub">{fmtDate(p.date)}</div><div className="data-col data-col-right" style={{color:"#059669"}}>+{Number(p.amount).toLocaleString("tr-TR")} ₺</div></div>)}
+      </Card>
+
+      <Card style={{padding:"20px", margin:0, border:`1px solid #FCD34D`}}>
+        <div style={{fontSize:14, fontWeight:900, marginBottom:16, color:"#D97706", textTransform:"uppercase", letterSpacing:-0.3}}>Kayıt Bitişi Yaklaşanlar</div>
+        <div className="data-row data-header"><div>Ad Soyad</div><div>Bitiş Trh.</div><div className="data-col-right">Kalan</div></div>
+        {endingSoon.length===0?<div style={{padding:"16px 0",fontSize:13,color:"var(--text-sub)",textAlign:"center",fontWeight:600}}>Yaklaşan kayıt yok.</div>:endingSoon.map(s => <div className="data-row" key={s.id}><div className="data-col">{s.name}</div><div className="data-col data-col-sub">{fmtDate(s.courseEnd)}</div><div className="data-col data-col-right" style={{color:"#D97706"}}>{daysLeft(s)} Gün</div></div>)}
+      </Card>
+    </div>
+  </div>
+}
+
 function SettingsPage({navItems, clubName, logoUrl, appUsers}){
   const [tab, setTab] = useState(0); const [nameVal, setNameVal] = useState(clubName); const [logoVal, setLogoVal] = useState(logoUrl);
   const [showUserModal, setShowUserModal] = useState(false); const [uForm, setUForm] = useState({ id:null, username:"", password:"", role:"staff", allowedTabs:[] });
@@ -1176,7 +1218,7 @@ function SettingsPage({navItems, clubName, logoUrl, appUsers}){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   APP ROOT
+   APP ROOT (TAMAMLANMIŞ VE GÜVENLİ)
 ═══════════════════════════════════════════════════════════════ */
 function App(){
   const [currentUser, setCurrentUser] = useState(() => { try { return JSON.parse(sessionStorage.getItem("aqua_user")); } catch { return null; } });

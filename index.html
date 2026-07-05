@@ -12,6 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 <title>AquaClub Pro</title>
 <style>
+/* 🌟 ULTRA MODERN CSS (SOFT UI) 🌟 */
 :root {
   --bg-color: #F8FAFC; 
   --sidebar-bg: #FFFFFF;
@@ -30,6 +31,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.4)}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:10px}
 
+/* MODERN İNPUTLAR VE BUTONLAR */
 .modern-inp {
   width: 100%; padding: 12px 16px; background-color: #F1F5F9; border: 2px solid transparent;
   border-radius: 12px; color: var(--text-main); font-size: 14px; font-weight: 600;
@@ -56,11 +58,13 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.4)}
 .modern-btn-danger:hover { background: #FEE2E2; color: #B91C1C; }
 .modern-btn-success { background: #ECFDF5; color: #059669; }
 
+/* KAVİSLİ VE GÖLGELİ MODERN KARTLAR */
 .modern-card {
   background: var(--card-bg); border-radius: 20px; padding: 20px; margin-bottom: 16px;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
   border: 1px solid rgba(226, 232, 240, 0.8); transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+.modern-card:hover { box-shadow: 0 20px 35px -5px rgba(0, 0, 0, 0.08); }
 
 .spinner {border: 4px solid rgba(0,0,0,0.05); border-left-color: var(--accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 16px;}
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -94,11 +98,12 @@ const EMPTY_ITEM={id:null,name:"",category:"",price:"",stock:"",minStock:"",supp
 const EMPTY_EXPENSE={id:null, title:"", amount:"", date:TODAY, category:"", isFood:false, expiryDate:"", note:"", qty:""};
 const EMPTY_STAFF={id:null,name:"",role:"trainer",age:"",phone:"",email:"",dailyWage:0,attendance:{}};
 
+/* DİKKAT: SEANS SAYISI 12 OLARAK GÜNCELLENDİ VE İLK ÖDEME DEĞİŞKENLERİ EKLENDİ */
 const EMPTY_S={
   id:null,name:"",dob:"",guardianName:"",guardianPhone1:"",guardianPhone2:"",notes:"",
-  courseStart:TODAY,courseEnd:"",totalSessions:48,weekDays:[1,3,5],swimLevel:"",poolLane:"",groupName:"",
+  courseStart:TODAY,courseEnd:"",totalSessions:12,weekDays:[1,3,5],swimLevel:"",poolLane:"",groupName:"",
   monthlyFee:"",discount:"",paymentNote:"",hasTransport:false,address:"",transportFee:"",driverName:"",driverPhone:"",
-  equipment:[],payments:[],attendance:{}
+  equipment:[],payments:[],attendance:{}, initialPaymentAmount:"", initialPaymentDate:TODAY
 };
 
 const STOCK_CATS=["Gözlük","Bone","Palet","Şamandıra","Aksesuar","Kıyafet","Temizlik","Diğer"];
@@ -129,9 +134,11 @@ const firebaseConfig = {
 
 let db = null;
 try {
-  if (window.firebase && !window.firebase.apps.length) { window.firebase.initializeApp(firebaseConfig); }
-  if (window.firebase) { db = window.firebase.firestore(); }
-} catch(e) { console.error("Firebase init error", e); }
+  if (window.firebase && !window.firebase.apps.length) {
+    window.firebase.initializeApp(firebaseConfig);
+  }
+  if(window.firebase) { db = window.firebase.firestore(); }
+} catch (error) { console.error("Firebase Hatası:", error); }
 
 function safeArr(val) { 
   if (!val) return [];
@@ -166,7 +173,6 @@ function courseStatus(s){
 function daysLeft(s){
   try { return Math.ceil((new Date(s?.courseEnd)-new Date(TODAY))/86400000); } catch(e){ return 0; }
 }
-function attendanceCount(s){return Object.values(s?.attendance||{}).filter(Boolean).length}
 function age(dob){
   if(!dob)return"—";
   try { return Math.floor((Date.now()-new Date(dob))/31557600000)+" Yaş"; } catch(e){ return "—"; }
@@ -204,7 +210,7 @@ function calcRemainingSessions(s) {
     let iter = new Date(start);
     const safeDays = safeArr(s.weekDays).map(Number);
     
-    while (iter <= targetEnd && passedSessions < total) {
+    while (iter <= targetEnd && iter.getTime() <= targetEnd.getTime()) {
       if (safeDays.includes(iter.getDay())) passedSessions++;
       iter.setDate(iter.getDate() + 1);
     }
@@ -247,11 +253,11 @@ function Toggle({checked,onChange}){
   </button>
 }
 
-function Inp({label,value,onChange,type="text",placeholder,rows,half,autoFocus,style}){
+function Inp({label,value,onChange,type="text",placeholder,rows,half,autoFocus,style,disabled}){
   return<div style={{marginBottom:14,flex:half?"1":"unset"}}>
     {label&&<div style={{fontSize:11,color:"var(--text-sub)",marginBottom:6,fontWeight:800,textTransform:"uppercase",letterSpacing:0.5}}>{label}</div>}
-    {rows?<textarea className="modern-inp" style={{minHeight:80,...style}} rows={rows} value={value||""} onChange={e=>onChange(e.target.value)} placeholder={placeholder}/>
-         :<input className="modern-inp" style={style} type={type} value={value||""} onChange={e=>onChange(e.target.value)} placeholder={placeholder} autoFocus={autoFocus}/>}
+    {rows?<textarea className="modern-inp" style={{minHeight:80,...style}} rows={rows} value={value||""} onChange={e=>onChange(e.target.value)} placeholder={placeholder} disabled={disabled}/>
+         :<input className="modern-inp" style={style} type={type} value={value||""} onChange={e=>onChange(e.target.value)} placeholder={placeholder} autoFocus={autoFocus} disabled={disabled}/>}
   </div>
 }
 
@@ -283,7 +289,7 @@ function Badge({label,color}){
 
 function SectionTitle({children,action}){
   return<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16,marginTop:8}}>
-    <div style={{fontSize:14,fontWeight:800,color:"var(--text-main)",letterSpacing:-0.5}}>{children}</div>
+    <div style={{fontSize:14,fontWeight:900,color:"var(--text-main)",letterSpacing:-0.5}}>{children}</div>
     {action}
   </div>
 }
@@ -317,21 +323,22 @@ function DayPicker({value=[],onChange}){
   </div>
 }
 
+/* YENİ MODAL: SADECE ÇARPI İLE KAPANIR, YÜKSEKLİK SABİT */
 function Modal({show,onClose,title,children}){
   if(!show)return null;
   return<div style={{position:"fixed",top:0,left:0,right:0,bottom:0,backgroundColor:"rgba(15, 23, 42, 0.7)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:9999,padding:16}}>
-    <div style={{background:"#fff",borderRadius:24,padding:"28px",width:"100%",maxWidth:580,maxHeight:"90vh",display:"flex",flexDirection:"column",boxShadow:"0 25px 50px -12px rgba(0,0,0,0.25)"}}>
+    <div style={{background:"#fff",borderRadius:24,padding:"28px",width:"100%",maxWidth:580,height:"650px",minHeight:"650px",display:"flex",flexDirection:"column",boxShadow:"0 25px 50px -12px rgba(0,0,0,0.25)"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24,flexShrink:0}}>
         <div style={{fontSize:18,fontWeight:900,color:"var(--text-main)",letterSpacing:-0.5}}>{title}</div>
         <button type="button" onClick={onClose} style={{background:"#F1F5F9",border:"none",color:"#64748B",width:36,height:36,borderRadius:10,cursor:"pointer",fontSize:20,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.2s"}}>×</button>
       </div>
-      <div style={{flex:1,overflowY:"auto",paddingRight:8}}>{children}</div>
+      <div style={{flex:1,overflowY:"auto",paddingRight:8,minHeight:0}}>{children}</div>
     </div>
   </div>
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   GİRİŞ EKRANI (LOGIN EKSİKTİ, EKLENDİ)
+   4. EKRAN BİLEŞENLERİ
 ═══════════════════════════════════════════════════════════════ */
 function LoginScreen({ onSuccess, appUsers, adminPin }) {
   const [user, setUser] = useState("");
@@ -363,9 +370,6 @@ function LoginScreen({ onSuccess, appUsers, adminPin }) {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   EKRAN BİLEŞENLERİ
-═══════════════════════════════════════════════════════════════ */
 function EqPicker({stockItems,current,onAdd,onRemove}){
   const [sel,setSel]=useState(""); const safeStock = safeArr(stockItems);
   return<div>
@@ -383,6 +387,7 @@ function EqPicker({stockItems,current,onAdd,onRemove}){
   </div>
 }
 
+/* YENİ "ÖDEME" SEKMESİ EKLENMİŞ ÖĞRENCİ FORMU */
 function StudentForm({initial,onSave,onCancel,stockItems,students}){
   const [tab,setTab]=useState(0);
   const [f,setF]=useState({...EMPTY_S,...initial});
@@ -409,8 +414,27 @@ function StudentForm({initial,onSave,onCancel,stockItems,students}){
     } catch(err) {}
   },[f.courseStart,f.totalSessions,JSON.stringify(safeWeekDays)]);
 
+  function handleSave(){
+    if(!f.name){alert("Öğrenci adı girmeden kayıt yapılamaz.");return;}
+    let finalF = {...f};
+    
+    // Eğer ilk kayıt esnasında ödeme yapılmışsa otomatik tahsilata işle
+    if(Number(finalF.initialPaymentAmount) > 0) {
+       const newPayment = {
+         id: Date.now(), 
+         amount: Number(finalF.initialPaymentAmount), 
+         date: finalF.initialPaymentDate || TODAY, 
+         note: "Kayıt Esnası İlk Ödeme"
+       };
+       finalF.payments = [...safeArr(finalF.payments), newPayment];
+       finalF.initialPaymentAmount = ""; // Çift girişi engellemek için sıfırla
+    }
+    
+    onSave(finalF);
+  }
+
   return<div>
-    <TabBar tabs={["Kişisel","Kurs Bilgisi","Servis","Ekipman"]} active={tab} onChange={setTab}/>
+    <TabBar tabs={["Kişisel","Kurs Bilgisi","Servis","Ekipman", "Ödeme"]} active={tab} onChange={setTab}/>
     
     {tab===0&&<div>
       <Inp label="Ad Soyad *" value={f.name} onChange={v=>u("name",v)} autoFocus/>
@@ -490,11 +514,131 @@ function StudentForm({initial,onSave,onCancel,stockItems,students}){
       <div style={{fontSize:13,color:"var(--text-sub)",marginBottom:16,fontWeight:600}}>Öğrencinin kurumdan satın aldığı ekstra ekipmanlar faturasına yansıtılır.</div>
       <EqPicker stockItems={stockItems} current={currentEq} onAdd={(item)=>u("equipment",[...currentEq,{id:Date.now(),...item,addedDate:TODAY}])} onRemove={(id)=>u("equipment",currentEq.filter(e=>e.id!==id))}/>
     </div>}
+
+    {/* YENİ ÖDEME SEKMESİ EKLENDİ */}
+    {tab===4&&<div>
+      <div style={{fontSize:13,color:"var(--text-sub)",marginBottom:16,fontWeight:600}}>
+        Kayıt anında nakit veya kart ile alınan ilk ödemeyi buraya girebilirsiniz.
+      </div>
+      <div style={{display:"flex",gap:12}}>
+        <div style={{flex:1}}><Inp label="Şu An Yapılan Ödeme (₺)" value={f.initialPaymentAmount} onChange={v=>u("initialPaymentAmount",v)} type="number"/></div>
+        <div style={{flex:1}}><Inp label="Ödeme Tarihi" value={f.initialPaymentDate} onChange={v=>u("initialPaymentDate",v)} type="date"/></div>
+      </div>
+      
+      <div style={{background:"#F8FAFC", border:`1px solid #E2E8F0`, borderRadius:12, padding:"16px", marginTop:20}}>
+         <div style={{fontSize:12, fontWeight:800, color:"var(--text-main)", marginBottom:12, textTransform:"uppercase"}}>Maliyet Özeti</div>
+         <Row label="Aylık Kurs Ücreti" val={`${Number(f.monthlyFee||0)} ₺`}/>
+         {Number(f.discount)>0 && <Row label="İndirim" val={`-${Number(f.discount)} ₺`} col="#DC2626"/>}
+         {f.hasTransport && <Row label="Servis Ücreti" val={`${Number(f.transportFee||0)} ₺`}/>}
+         {safeArr(f.equipment).length>0 && <Row label="Ekipmanlar Toplamı" val={`${safeArr(f.equipment).reduce((t,e)=>t+Number(e.price||0),0)} ₺`}/>}
+         
+         <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:12, paddingTop:12, borderTop:"2px dashed #CBD5E1"}}>
+           <span style={{fontSize:14, fontWeight:900, color:"var(--text-main)"}}>TOPLAM ÖDENMESİ GEREKEN</span>
+           <span style={{fontSize:20, fontWeight:900, color:"var(--accent)"}}>
+             {(Number(f.monthlyFee||0) - Number(f.discount||0) + (f.hasTransport?Number(f.transportFee||0):0) + safeArr(f.equipment).reduce((t,e)=>t+Number(e.price||0),0)).toLocaleString("tr-TR")} ₺
+           </span>
+         </div>
+      </div>
+    </div>}
     
     <div style={{display:"flex",gap:12,marginTop:24}}>
       <Btn variant="secondary" onClick={onCancel} style={{flex:1}}>İptal Et</Btn>
-      <Btn onClick={()=>{ if(!f.name){alert("Öğrenci adı girmeden kayıt yapılamaz.");return;} onSave(f); }} style={{flex:2}}>Kaydı Tamamla</Btn>
+      <Btn onClick={handleSave} style={{flex:2}}>Kaydı Tamamla</Btn>
     </div>
+  </div>
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ÖĞRENCİ LİSTESİ (GRUP FİLTRELEME VE YATAY KARTLAR)
+═══════════════════════════════════════════════════════════════ */
+function StudentsPage({students,stockItems}){
+  const [search,setSearch]=useState(""); 
+  const [groupFilter,setGroupFilter]=useState("ALL");
+  const [showAdd,setShowAdd]=useState(false); 
+  const [detailId,setDetailId]=useState(null);
+  
+  const safeStudents = safeArr(students); 
+  const student=detailId?safeStudents.find(s=>s.id===detailId):null;
+  
+  // Benzersiz grupları çıkart
+  const allGroups = Array.from(new Set(safeStudents.map(s=>s.groupName).filter(Boolean)));
+
+  const filtered = safeStudents.filter(s => {
+    const matchName = s && s.name && s.name.toLowerCase().includes(search.toLowerCase());
+    const matchGroup = groupFilter === "ALL" || s.groupName === groupFilter;
+    return matchName && matchGroup;
+  });
+
+  function save(f){
+    let n; if(f.id){n=safeStudents.map(s=>s.id===f.id?{...f}:s);}
+    else{n=[...safeStudents,{...f,id:Date.now()}];} // equipment and payments already initialized in EMPTY_S or appended inside form
+    DB.set("students",n);setShowAdd(false);
+  }
+
+  if(student)return<StudentDetail student={student} onBack={()=>setDetailId(null)} students={safeStudents} stockItems={stockItems}/>;
+
+  return<div style={{padding:20, maxWidth:1200, margin:"0 auto"}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+      <div style={{fontSize:20,fontWeight:900,color:"var(--text-main)",letterSpacing:-0.5}}>Öğrenci Rehberi ({filtered.length})</div>
+      <Btn onClick={()=>setShowAdd(true)}>+ Yeni Kayıt Ekle</Btn>
+    </div>
+    
+    <div style={{display:"flex", gap:12, marginBottom:20}}>
+      <input className="modern-inp" style={{flex:2, boxShadow:"0 2px 8px rgba(0,0,0,0.02)"}} placeholder="Öğrenci adı ile arama yapın..." value={search} onChange={e=>setSearch(e.target.value)}/>
+      <select className="modern-inp" style={{flex:1, cursor:"pointer", boxShadow:"0 2px 8px rgba(0,0,0,0.02)"}} value={groupFilter} onChange={e=>setGroupFilter(e.target.value)}>
+        <option value="ALL">Tüm Gruplar</option>
+        {allGroups.map(g=><option key={g} value={g}>{g}</option>)}
+      </select>
+    </div>
+    
+    {filtered.length===0 && <div style={{textAlign:"center", padding:"40px 0", color:"var(--text-sub)", fontWeight:700, fontSize:15}}>Aradığınız kriterlere uygun öğrenci bulunamadı.</div>}
+
+    <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(340px, 1fr))", gap:16}}>
+      {filtered.map(s=>{
+        const expected = monthlyTotal(s); const paid = totalPaid(s); const debt = expected - paid;
+        return <div key={s.id} className="modern-card" style={{margin:0, display:"flex", flexDirection:"column", justifyContent:"space-between"}}>
+          
+          <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", borderBottom:`1px solid #F1F5F9`, paddingBottom:12, marginBottom:12}}>
+            <div style={{fontWeight:800,fontSize:16,color:"var(--text-main)",letterSpacing:-0.3}}>{s.name}</div>
+            <div style={{display:"flex",gap:6}}>
+              <Btn variant="secondary" sm onClick={()=>setDetailId(s.id)}>Detay</Btn>
+              <Btn variant="danger" sm onClick={()=>{if(confirm(`${s.name} kaydını silmek istediğinize emin misiniz?`))DB.set("students",safeStudents.filter(x=>x.id!==s.id));}}>Sil</Btn>
+            </div>
+          </div>
+          
+          <div style={{display:"flex", flexDirection:"column", gap:10}}>
+            <div style={{display:"flex", alignItems:"center", gap:8, fontSize:13, color:"var(--text-sub)", fontWeight:600}}>
+              <div style={{width:28,height:28,borderRadius:8,background:"#F1F5F9",display:"flex",alignItems:"center",justifyContent:"center"}}>👥</div>
+              <span style={{color:"var(--text-main)"}}>{s.groupName||"Grup Atanmamış"}</span>
+            </div>
+            
+            <div style={{display:"flex", alignItems:"center", gap:8, fontSize:13, color:"var(--text-sub)", fontWeight:600}}>
+              <div style={{width:28,height:28,borderRadius:8,background:s.hasTransport?"#EDE9FE":"#F1F5F9",color:s.hasTransport?"#6D28D9":"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>🚌</div>
+              {s.hasTransport ? <span style={{color:"#6D28D9", fontWeight:800}}>Servis Kullanıyor</span> : "Servis Yok"}
+            </div>
+
+            <div style={{display:"flex", alignItems:"center", gap:8, fontSize:13, color:"var(--text-sub)", fontWeight:600}}>
+              <div style={{width:28,height:28,borderRadius:8,background:"rgba(59, 130, 246, 0.1)",color:"var(--accent)",display:"flex",alignItems:"center",justifyContent:"center"}}>🔄</div>
+              Kalan Seans: <strong style={{color:"var(--accent)", fontSize:14}}>{calcRemainingSessions(s)} / {s.totalSessions || 0}</strong>
+            </div>
+
+            {/* Yatay Tarih Kapsülü */}
+            <div style={{background:"#F8FAFC", border:`1px solid #E2E8F0`, borderRadius:8, padding:"8px 12px", display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:4}}>
+              <div style={{fontSize:11, fontWeight:800, color:"var(--text-sub)"}}>BŞL: <span style={{color:"var(--text-main)", marginLeft:4}}>{fmtDate(s.courseStart)}</span></div>
+              <div style={{width:1, height:14, background:"#CBD5E1"}}></div>
+              <div style={{fontSize:11, fontWeight:800, color:"var(--text-sub)"}}>BİT: <span style={{color:"var(--text-main)", marginLeft:4}}>{fmtDate(s.courseEnd)}</span></div>
+            </div>
+            
+            <div style={{marginTop:4}}>
+              {debt > 0 ? <div style={{background:"#FEF2F2", border:`1px solid #FCA5A5`, color:"#DC2626", padding:"8px 12px", borderRadius:8, fontWeight:800, fontSize:12, textAlign:"center"}}>⚠️ {debt.toLocaleString("tr-TR")} ₺ BORÇ KALDI</div>
+                       : <div style={{background:"#ECFDF5", border:`1px solid #6EE7B7`, color:"#059669", padding:"8px 12px", borderRadius:8, fontWeight:800, fontSize:12, textAlign:"center"}}>✓ ÖDEME TAMAMLANDI</div>}
+            </div>
+          </div>
+          
+        </div>
+      })}
+    </div>
+    <Modal show={showAdd} onClose={()=>setShowAdd(false)} title="Öğrenci Kaydı Oluştur"><StudentForm initial={{}} onSave={save} onCancel={()=>setShowAdd(false)} stockItems={stockItems} students={safeStudents}/></Modal>
   </div>
 }
 
@@ -526,7 +670,7 @@ function StudentDetail({student,onBack,students,stockItems}){
           <Btn style={{background:"#16A34A", color:"#fff", border:"none"}} onClick={()=>{const phone=student.guardianPhone1.replace(/\D/g,""); window.open(`https://wa.me/${phone.startsWith('0')?'90'+phone.slice(1):'90'+phone}?text=${encodeURIComponent(`SAYIN VELİMİZ, ${student.name} İSİMLİ ÖĞRENCİMİZ BUGÜNKÜ ANTRENMANA KATILMAMIŞTIR. BİLGİNİZE SUNARIZ.`)}`, "_blank")}}>💬 Devamsızlık Bildir</Btn>
         </div>
       )}
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}><StatCard label="Mevcut Katılım" value={`${attendanceCount(student)} Gün`} col="#059669"/><StatCard label="Aylık Bakiye" value={`${balance>=0?"+":""}${balance.toLocaleString("tr-TR")} ₺`} col={balance>=0?"#059669":"#DC2626"}/></div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}><StatCard label="Mevcut Katılım" value={`${attendanceCount(student)} Gün`} col="#059669"/><StatCard label="Aylık Bakiye Durumu" value={`${balance>=0?"+":""}${balance.toLocaleString("tr-TR")} ₺`} col={balance>=0?"#059669":"#DC2626"}/></div>
       <Btn variant="secondary" full onClick={()=>setEditing(true)}>Tüm Bilgileri Düzenle</Btn>
     </div>}
     {tab===1&&<div><Card><Row label="Yüzme Seviyesi" val={swimLevelLabel(student.swimLevel)}/><Row label="Kayıtlı Olduğu Grup" val={student.groupName||"—"}/><Row label="Antrenman Günleri" val={safeDays.map(d=>DAYS_TR[d]).join(", ")||"—"}/><Row label="Kayıt Başlangıç Tarihi" val={fmtDate(student.courseStart)}/><Row label="Planlanan Bitiş Tarihi" val={fmtDate(student.courseEnd)}/><Row label="Tarih Bazlı Kalan Seans" val={`${calcRemainingSessions(student)} / ${student.totalSessions||0}`} col="var(--accent)"/></Card></div>}
@@ -538,142 +682,74 @@ function StudentDetail({student,onBack,students,stockItems}){
   </div>
 }
 
-function StudentsPage({students,stockItems}){
-  const [search,setSearch]=useState(""); 
-  const [groupFilter,setGroupFilter]=useState("ALL");
-  const [showAdd,setShowAdd]=useState(false); 
-  const [detailId,setDetailId]=useState(null);
-  
-  const safeStudents = safeArr(students); 
-  const student=detailId?safeStudents.find(s=>s.id===detailId):null;
+/* ═══════════════════════════════════════════════════════════════
+   GRUP BAZLI YOKLAMA VE GEÇMİŞ LOGLARI (YENİ SİSTEM)
+═══════════════════════════════════════════════════════════════ */
+function AttendancePage({students}){
+  const [tab, setTab] = useState(0);
+  const [date, setDate] = useState(TODAY);
+  const [selectedGroup, setSelectedGroup] = useState("");
+  const [logDate, setLogDate] = useState(TODAY);
+
+  const safeStudents = safeArr(students);
   const allGroups = Array.from(new Set(safeStudents.map(s=>s.groupName).filter(Boolean)));
 
-  const filtered = safeStudents.filter(s => {
-    const matchName = s && s.name && s.name.toLowerCase().includes(search.toLowerCase());
-    const matchGroup = groupFilter === "ALL" || s.groupName === groupFilter;
-    return matchName && matchGroup;
-  });
-
-  function save(f){
-    let n; if(f.id){n=safeStudents.map(s=>s.id===f.id?{...f}:s);}
-    else{n=[...safeStudents,{...f,id:Date.now(),payments:[],attendance:{},equipment:[]}];}
-    DB.set("students",n);setShowAdd(false);
-  }
-
-  if(student)return<StudentDetail student={student} onBack={()=>setDetailId(null)} students={safeStudents} stockItems={stockItems}/>;
-
-  return<div style={{padding:20, maxWidth:1200, margin:"0 auto"}}>
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
-      <div style={{fontSize:20,fontWeight:900,color:"var(--text-main)",letterSpacing:-0.5}}>Öğrenci Rehberi ({filtered.length})</div>
-      <Btn onClick={()=>setShowAdd(true)}>+ Yeni Kayıt Ekle</Btn>
-    </div>
-    
-    <div style={{display:"flex", gap:12, marginBottom:20}}>
-      <input className="modern-inp" style={{flex:2, boxShadow:"0 2px 8px rgba(0,0,0,0.02)"}} placeholder="Öğrenci adı ile arama yapın..." value={search} onChange={e=>setSearch(e.target.value)}/>
-      <select className="modern-inp" style={{flex:1, cursor:"pointer", boxShadow:"0 2px 8px rgba(0,0,0,0.02)"}} value={groupFilter} onChange={e=>setGroupFilter(e.target.value)}>
-        <option value="ALL">Tüm Gruplar</option>
-        {allGroups.map(g=><option key={g} value={g}>{g}</option>)}
-      </select>
-    </div>
-    
-    {filtered.length===0 && <div style={{textAlign:"center", padding:"40px 0", color:"var(--text-sub)", fontWeight:700, fontSize:15}}>Aradığınız kriterlere uygun öğrenci bulunamadı.</div>}
-
-    <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(340px, 1fr))", gap:16}}>
-      {filtered.map(s=>{
-        const expected = monthlyTotal(s); const paid = totalPaid(s); const debt = expected - paid;
-        return <div key={s.id} className="modern-card" style={{margin:0, display:"flex", flexDirection:"column", justifyContent:"space-between"}}>
-          <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", borderBottom:`1px solid #F1F5F9`, paddingBottom:12, marginBottom:12}}>
-            <div style={{fontWeight:800,fontSize:16,color:"var(--text-main)",letterSpacing:-0.3}}>{s.name}</div>
-            <div style={{display:"flex",gap:6}}>
-              <Btn variant="secondary" sm onClick={()=>setDetailId(s.id)}>Detay</Btn>
-              <Btn variant="danger" sm onClick={()=>{if(confirm(`${s.name} kaydını silmek istediğinize emin misiniz?`))DB.set("students",safeStudents.filter(x=>x.id!==s.id));}}>Sil</Btn>
-            </div>
-          </div>
-          <div style={{display:"flex", flexDirection:"column", gap:10}}>
-            <div style={{display:"flex", alignItems:"center", gap:8, fontSize:13, color:"var(--text-sub)", fontWeight:600}}>
-              <div style={{width:28,height:28,borderRadius:8,background:"#F1F5F9",display:"flex",alignItems:"center",justifyContent:"center"}}>👥</div>
-              <span style={{color:"var(--text-main)"}}>{s.groupName||"Grup Atanmamış"}</span>
-            </div>
-            <div style={{display:"flex", alignItems:"center", gap:8, fontSize:13, color:"var(--text-sub)", fontWeight:600}}>
-              <div style={{width:28,height:28,borderRadius:8,background:s.hasTransport?"#EDE9FE":"#F1F5F9",color:s.hasTransport?"#6D28D9":"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>🚌</div>
-              {s.hasTransport ? <span style={{color:"#6D28D9", fontWeight:800}}>Servis Kullanıyor</span> : "Servis Yok"}
-            </div>
-            <div style={{display:"flex", alignItems:"center", gap:8, fontSize:13, color:"var(--text-sub)", fontWeight:600}}>
-              <div style={{width:28,height:28,borderRadius:8,background:"rgba(59, 130, 246, 0.1)",color:"var(--accent)",display:"flex",alignItems:"center",justifyContent:"center"}}>🔄</div>
-              Kalan Seans: <strong style={{color:"var(--accent)", fontSize:14}}>{calcRemainingSessions(s)} / {s.totalSessions || 0}</strong>
-            </div>
-            <div style={{background:"#F8FAFC", border:`1px solid #E2E8F0`, borderRadius:8, padding:"8px 12px", display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:4}}>
-              <div style={{fontSize:11, fontWeight:800, color:"var(--text-sub)"}}>BŞL: <span style={{color:"var(--text-main)", marginLeft:4}}>{fmtDate(s.courseStart)}</span></div>
-              <div style={{width:1, height:14, background:"#CBD5E1"}}></div>
-              <div style={{fontSize:11, fontWeight:800, color:"var(--text-sub)"}}>BİT: <span style={{color:"var(--text-main)", marginLeft:4}}>{fmtDate(s.courseEnd)}</span></div>
-            </div>
-            <div style={{marginTop:4}}>
-              {debt > 0 ? <div style={{background:"#FEF2F2", border:`1px solid #FCA5A5`, color:"#DC2626", padding:"8px 12px", borderRadius:8, fontWeight:800, fontSize:12, textAlign:"center"}}>⚠️ {debt.toLocaleString("tr-TR")} ₺ BORÇ KALDI</div>
-                       : <div style={{background:"#ECFDF5", border:`1px solid #6EE7B7`, color:"#059669", padding:"8px 12px", borderRadius:8, fontWeight:800, fontSize:12, textAlign:"center"}}>✓ ÖDEME TAMAMLANDI</div>}
-            </div>
-          </div>
-        </div>
-      })}
-    </div>
-    <Modal show={showAdd} onClose={()=>setShowAdd(false)} title="Öğrenci Kaydı Oluştur"><StudentForm initial={{}} onSave={save} onCancel={()=>setShowAdd(false)} stockItems={stockItems} students={safeStudents}/></Modal>
-  </div>
-}
-
-function WhatsAppPage({students, waLinks}) {
-  const safeLinks = safeArr(waLinks); const [title, setTitle] = useState(""); const [url, setUrl] = useState(""); const [search, setSearch] = useState("");
-  const [selectedStudent, setSelectedStudent] = useState(null); const [showInviteModal, setShowInviteModal] = useState(false);
-  function addLink() { if(!title.trim() || !url.trim()) return; const n = [...safeLinks, { id:Date.now(), name: title.toLocaleUpperCase("tr-TR"), url: url }]; DB.set("waLinks", n); setTitle(""); setUrl(""); }
-  function triggerInvite(student) { if(safeLinks.length === 0) { alert("Lütfen önce yukarıdaki alandan en az bir grup davet bağlantısı ekleyin."); return; } setSelectedStudent(student); setShowInviteModal(true); }
-  function completeInvite(linkUrl) { if(!selectedStudent.guardianPhone1) return; const phone = selectedStudent.guardianPhone1.replace(/\D/g,""); const msg = `SAYIN VELİMİZ,\n${selectedStudent.name} İSİMLİ ÖĞRENCİMİZİN ANTRENMAN VE DUYURU TAKİBİ İÇİN KULÜBÜMÜZÜN RESMİ WHATSAPP GRUBUNA AŞAĞIDAKİ LİNKTEN KATILABİLİRSİNİZ:\n\n${linkUrl}`; window.open(`https://wa.me/${phone.startsWith('0')?'90'+phone.slice(1):'90'+phone}?text=${encodeURIComponent(msg)}`, "_blank"); setShowInviteModal(false); }
-  const filteredStudents = safeArr(students).filter(s => courseStatus(s) === "active" && s.guardianPhone1 && s.name.toLowerCase().includes(search.toLowerCase()));
-
-  return <div style={{padding:20, maxWidth:800, margin:"0 auto"}}>
-    <SectionTitle>WhatsApp Web Merkezi</SectionTitle>
-    <Card style={{marginBottom:24}}><Btn full style={{background:"#16A34A", color:"#fff", border:"none", padding:"14px", fontSize:15}} onClick={()=>window.open("https://web.whatsapp.com", "_blank")}>WhatsApp Web Sekmesini Aç</Btn></Card>
-    <SectionTitle>İsimli Grup Davet Bağlantıları</SectionTitle>
-    <Card style={{marginBottom:24}}>
-      <div style={{display:"flex", gap:10}}><input className="modern-inp" style={{flex:1}} value={title} onChange={e=>setTitle(e.target.value)} placeholder="Grup Adı (Örn: CUMARTESİ)" /><input className="modern-inp" style={{flex:2}} value={url} onChange={e=>setUrl(e.target.value)} placeholder="https://chat.whatsapp.com/..." /><Btn onClick={addLink}>Ekle</Btn></div>
-      <div style={{marginTop:16}}>{safeLinks.length === 0 && <div style={{fontSize:13, color:"var(--text-sub)", textAlign:"center", fontWeight:600}}>Sisteme kayıtlı davet bağlantısı yok.</div>}
-        {safeLinks.map(l=><div key={l.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 16px",background:"#F8FAFC",borderRadius:12,marginBottom:8}}><span style={{fontSize:14,fontWeight:800,color:"var(--text-main)"}}>🔗 {l.name}</span><button type="button" onClick={()=>DB.set("waLinks", safeLinks.filter(x=>x.id!==l.id))} style={{background:"#FEE2E2",border:"none",color:"#DC2626",cursor:"pointer",fontWeight:800,padding:"6px 12px",borderRadius:8}}>Sil</button></div>)}</div>
-    </Card>
-    <SectionTitle>Öğrenci Davet Takip Paneli</SectionTitle>
-    <div style={{marginBottom:16}}><input className="modern-inp" placeholder="Veliye göndermek için listeden öğrenci arayın..." value={search} onChange={e=>setSearch(e.target.value)}/></div>
-    <Card>{filteredStudents.length === 0 ? <div style={{textAlign:"center",padding:"20px 0",color:"var(--text-sub)",fontSize:14,fontWeight:600}}>Kayıtlı aktif öğrenci bulunamadı.</div> :
-        filteredStudents.map(s=><div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid #F1F5F9`}}><div><div style={{fontWeight:800,fontSize:15,color:"var(--text-main)"}}>{s.name}</div><div style={{fontSize:12,color:"var(--text-sub)",marginTop:4,fontWeight:600}}>GRUP: {s.groupName||"Belirtilmemiş"}</div></div><Btn sm style={{background:"#DCFCE7",color:"#16A34A",border:"none"}} onClick={()=>triggerInvite(s)}>Davet Gönder</Btn></div>)}
-    </Card>
-    <Modal show={showInviteModal} onClose={()=>setShowInviteModal(false)} title="Hangi Grubu Gönderelim?"><div style={{fontSize:14,color:"var(--text-sub)",marginBottom:20,lineHeight:1.6,fontWeight:500}}><strong>{selectedStudent?.name}</strong> isimli öğrencinin velisine aşağıdaki davet bağlantılarından hangisini göndermek istersiniz?</div><div style={{display:"flex", flexDirection:"column", gap:10}}>{safeLinks.map(l=><button key={l.id} type="button" onClick={()=>completeInvite(l.url)} style={{width:"100%",padding:16,borderRadius:12,background:"#F8FAFC",border:`1px solid #E2E8F0`,color:"var(--accent)",fontWeight:800,fontSize:15,textAlign:"left",cursor:"pointer",transition:"all 0.2s",boxShadow:"0 2px 4px rgba(0,0,0,0.02)"}}>{l.name}</button>)}</div></Modal>
-  </div>
-}
-
-function AttendancePage({students}){
-  const [tab, setTab] = useState(0); const [date, setDate] = useState(TODAY); const [selectedGroup, setSelectedGroup] = useState(""); const [logDate, setLogDate] = useState(TODAY);
-  const safeStudents = safeArr(students); const allGroups = Array.from(new Set(safeStudents.map(s=>s.groupName).filter(Boolean)));
   const activeInGroup = safeStudents.filter(s => courseStatus(s) === "active" && s.groupName === selectedGroup);
   const presentCount = activeInGroup.filter(s => (s.attendance||{})[date]).length;
   const presentOnLogDate = safeStudents.filter(s => (s.attendance||{})[logDate]);
 
   return <div style={{padding:20, maxWidth:800, margin:"0 auto"}}>
     <TabBar tabs={["Grup Bazlı Yoklama", "Geçmiş Kayıtlar (Log)"]} active={tab} onChange={setTab}/>
+    
     {tab === 0 && <div>
       <SectionTitle>Grup Bazlı Yoklama Al</SectionTitle>
       <Card>
-         <div style={{display:"flex", gap:12, marginBottom:16}}><Inp label="Yoklama Tarihi" type="date" value={date} onChange={setDate} half/><div style={{flex:1}}><Sel label="Öğrenci Grubu Seçin" value={selectedGroup} onChange={setSelectedGroup} options={allGroups.map(g=>({value:g, label:g}))}/></div></div>
+         <div style={{display:"flex", gap:12, marginBottom:16}}>
+            <Inp label="Yoklama Tarihi" type="date" value={date} onChange={setDate} half/>
+            <div style={{flex:1}}>
+              <Sel label="Öğrenci Grubu Seçin" value={selectedGroup} onChange={setSelectedGroup} options={allGroups.map(g=>({value:g, label:g}))}/>
+            </div>
+         </div>
+         
          {!selectedGroup ? <div style={{textAlign:"center", padding:"30px", color:"var(--text-sub)", fontWeight:700}}>Lütfen yoklama almak için bir grup seçiniz.</div> : 
            <div>
-              <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12, background:"#F8FAFC", padding:"12px 16px", borderRadius:12, border:"1px solid #E2E8F0"}}><span style={{fontWeight:800, color:"var(--text-main)"}}>Toplam Öğrenci: {activeInGroup.length}</span><span style={{fontWeight:800, color:"#059669"}}>Katılanlar: {presentCount}</span></div>
+              <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12, background:"#F8FAFC", padding:"12px 16px", borderRadius:12, border:"1px solid #E2E8F0"}}>
+                <span style={{fontWeight:800, color:"var(--text-main)"}}>Toplam Öğrenci: {activeInGroup.length}</span>
+                <span style={{fontWeight:800, color:"#059669"}}>Katılanlar: {presentCount}</span>
+              </div>
               {activeInGroup.length === 0 ? <div style={{textAlign:"center", padding:"20px", color:"var(--text-sub)", fontWeight:700}}>Bu grupta aktif öğrenci bulunmuyor.</div> : 
-                activeInGroup.map(s => <div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid #F1F5F9`}}><div style={{fontWeight:800,fontSize:15,color:"var(--text-main)"}}>{s.name}</div><Toggle checked={!!(s.attendance||{})[date]} onChange={(v)=>{const n=safeStudents.map(st=>{if(st.id!==s.id)return st; const att={...(st.attendance||{})}; if(v)att[date]=true; else delete att[date]; return{...st,attendance:att};}); DB.set("students",n);}}/></div>)
+                activeInGroup.map(s => <div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid #F1F5F9`}}>
+                  <div style={{fontWeight:800,fontSize:15,color:"var(--text-main)"}}>{s.name}</div>
+                  <Toggle checked={!!(s.attendance||{})[date]} onChange={(v)=>{
+                    const n=safeStudents.map(st=>{
+                      if(st.id!==s.id)return st; 
+                      const att={...(st.attendance||{})}; 
+                      if(v)att[date]=true; else delete att[date]; 
+                      return{...st,attendance:att};
+                    }); 
+                    DB.set("students",n);
+                  }}/>
+                </div>)
               }
            </div>
          }
       </Card>
     </div>}
+
     {tab === 1 && <div>
       <SectionTitle>Geçmiş Yoklama Logları</SectionTitle>
-      <Card><Inp label="İncelenecek Tarih" type="date" value={logDate} onChange={setLogDate}/>
-        <div style={{marginTop:20}}><div style={{fontSize:14, fontWeight:800, color:"var(--accent)", marginBottom:12, borderBottom:"1px solid #E2E8F0", paddingBottom:8}}>Bu Tarihte Derse Katılan Tüm Öğrenciler ({presentOnLogDate.length})</div>
+      <Card>
+        <Inp label="İncelenecek Tarih" type="date" value={logDate} onChange={setLogDate}/>
+        <div style={{marginTop:20}}>
+          <div style={{fontSize:14, fontWeight:800, color:"var(--accent)", marginBottom:12, borderBottom:"1px solid #E2E8F0", paddingBottom:8}}>Bu Tarihte Derse Katılan Tüm Öğrenciler ({presentOnLogDate.length})</div>
           {presentOnLogDate.length === 0 ? <div style={{textAlign:"center", padding:"30px", color:"var(--text-sub)", fontWeight:700}}>Bu tarihte derse katılan öğrenci kaydı bulunamadı.</div> : 
-            presentOnLogDate.map(s => <div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid #F1F5F9`}}><div><div style={{fontWeight:800, fontSize:15, color:"var(--text-main)"}}>{s.name}</div><div style={{fontSize:12, fontWeight:600, color:"var(--text-sub)", marginTop:2}}>{s.groupName || "Grup Yok"}</div></div><Badge label="KATILDI" color="#059669"/></div>)
+            presentOnLogDate.map(s => <div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid #F1F5F9`}}>
+              <div>
+                <div style={{fontWeight:800, fontSize:15, color:"var(--text-main)"}}>{s.name}</div>
+                <div style={{fontSize:12, fontWeight:600, color:"var(--text-sub)", marginTop:2}}>{s.groupName || "Grup Yok"}</div>
+              </div>
+              <Badge label="KATILDI" color="#059669"/>
+            </div>)
           }
         </div>
       </Card>
@@ -681,6 +757,80 @@ function AttendancePage({students}){
   </div>
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   WHATSAPP DAVET PANELİ (ÇOKLU GRUP DAVETİ)
+═══════════════════════════════════════════════════════════════ */
+function WhatsAppPage({students, waLinks}) {
+  const safeLinks = safeArr(waLinks);
+  const [title, setTitle] = useState("");
+  const [url, setUrl] = useState("");
+  const [search, setSearch] = useState("");
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+
+  function addLink() {
+    if(!title.trim() || !url.trim()) return;
+    const n = [...safeLinks, { id:Date.now(), name: title.toLocaleUpperCase("tr-TR"), url: url }];
+    DB.set("waLinks", n); setTitle(""); setUrl("");
+  }
+
+  function triggerInvite(student) {
+    if(safeLinks.length === 0) { alert("Lütfen önce yukarıdaki alandan en az bir grup davet bağlantısı ekleyin."); return; }
+    setSelectedStudent(student);
+    setShowInviteModal(true);
+  }
+
+  function completeInvite(linkUrl) {
+    const msg = `SAYIN VELİMİZ,\n${selectedStudent.name} İSİMLİ ÖĞRENCİMİZİN DUYURU VE ANTRENMAN TAKİBİ İÇİN KULÜBÜMÜZÜN RESMİ WHATSAPP GRUBUNA AŞAĞIDAKİ LİNKTEN KATILABİLİRSİNİZ:\n\n${linkUrl}`;
+    openWA(selectedStudent.guardianPhone1, msg);
+    setShowInviteModal(false);
+  }
+
+  const activeStudents = safeArr(students).filter(s => courseStatus(s) === "active" && s.guardianPhone1);
+  const filteredStudents = activeStudents.filter(s => s.name && s.name.toLowerCase().includes(search.toLowerCase()));
+
+  return <div style={{padding:20, maxWidth:800, margin:"0 auto"}}>
+    <SectionTitle>WhatsApp Web Merkezi</SectionTitle>
+    <Card style={{marginBottom:24}}><Btn full style={{background:"#16A34A", color:"#fff", border:"none", padding:"14px", fontSize:15}} onClick={()=>window.open("https://web.whatsapp.com", "_blank")}>WhatsApp Web Sekmesini Aç</Btn></Card>
+    
+    <SectionTitle>İsimli Grup Davet Bağlantıları</SectionTitle>
+    <Card style={{marginBottom:24}}>
+      <div style={{display:"flex", gap:10}}>
+        <input className="modern-inp" style={{flex:1}} value={title} onChange={e=>setTitle(e.target.value)} placeholder="Grup Adı (Örn: CUMARTESİ)" />
+        <input className="modern-inp" style={{flex:2}} value={url} onChange={e=>setUrl(e.target.value)} placeholder="https://chat.whatsapp.com/..." />
+        <Btn onClick={addLink}>Ekle</Btn>
+      </div>
+      <div style={{marginTop:16}}>
+        {safeLinks.length === 0 && <div style={{fontSize:13, color:"var(--text-sub)", textAlign:"center", fontWeight:600}}>Sisteme kayıtlı davet bağlantısı yok.</div>}
+        {safeLinks.map(l=><div key={l.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 16px",background:"#F8FAFC",borderRadius:12,marginBottom:8}}><span style={{fontSize:14,fontWeight:800,color:"var(--text-main)"}}>🔗 {l.name}</span><button type="button" onClick={()=>DB.set("waLinks", safeLinks.filter(x=>x.id!==l.id))} style={{background:"#FEE2E2",border:"none",color:"#DC2626",cursor:"pointer",fontWeight:800,padding:"6px 12px",borderRadius:8}}>Sil</button></div>)}
+      </div>
+    </Card>
+
+    <SectionTitle>Öğrenci Davet Takip Paneli</SectionTitle>
+    <div style={{marginBottom:16}}>
+      <input className="modern-inp" placeholder="Veliye göndermek için listeden öğrenci arayın..." value={search} onChange={e=>setSearch(e.target.value)}/>
+    </div>
+    <Card>
+      {filteredStudents.length === 0 ? <div style={{textAlign:"center",padding:"20px 0",color:"var(--text-sub)",fontSize:14,fontWeight:600}}>Kayıtlı aktif öğrenci bulunamadı.</div> :
+        filteredStudents.map(s=><div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid #F1F5F9`}}>
+          <div><div style={{fontWeight:800,fontSize:15,color:"var(--text-main)"}}>{s.name}</div><div style={{fontSize:12,color:"var(--text-sub)",marginTop:4,fontWeight:600}}>GRUP: {s.groupName||"Belirtilmemiş"}</div></div>
+          <Btn sm style={{background:"#DCFCE7",color:"#16A34A",border:"none"}} onClick={()=>triggerInvite(s)}>Davet Gönder</Btn>
+        </div>)
+      }
+    </Card>
+
+    <Modal show={showInviteModal} onClose={()=>setShowInviteModal(false)} title="Hangi Grubu Gönderelim?">
+      <div style={{fontSize:14,color:"var(--text-sub)",marginBottom:20,lineHeight:1.6,fontWeight:500}}><strong>{selectedStudent?.name}</strong> isimli öğrencinin velisine aşağıdaki davet bağlantılarından hangisini göndermek istersiniz?</div>
+      <div style={{display:"flex", flexDirection:"column", gap:10}}>
+        {safeLinks.map(l=><button key={l.id} type="button" onClick={()=>completeInvite(l.url)} style={{width:"100%",padding:16,borderRadius:12,background:"#F8FAFC",border:`1px solid #E2E8F0`,color:"var(--accent)",fontWeight:800,fontSize:15,textAlign:"left",cursor:"pointer",transition:"all 0.2s",boxShadow:"0 2px 4px rgba(0,0,0,0.02)"}}>{l.name}</button>)}
+      </div>
+    </Modal>
+  </div>
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DİĞER SAYFALAR
+═══════════════════════════════════════════════════════════════ */
 function PaymentsPage({students}){
   const all=safeArr(students).flatMap(s=>safeArr(s.payments).map(p=>({...p,studentName:s.name}))).sort((a,b)=>new Date(b.date)-new Date(a.date));
   const total=all.reduce((t,p)=>t+Number(p.amount),0); const thisMonth=all.filter(p=>p.date&&p.date.startsWith(TODAY.slice(0,7))).reduce((t,p)=>t+Number(p.amount),0);
@@ -694,10 +844,17 @@ function PaymentsPage({students}){
 
 function ExpensesPage({expenses}){
   const [show,setShow]=useState(false); const [f,setF]=useState(EMPTY_EXPENSE); const u=(k,v)=>setF(p=>({...p,[k]:v}));
-  const valid=safeArr(expenses).sort((a,b)=>new Date(b.date)-new Date(a.date)); const total=valid.reduce((t,e)=>t+Number(e.amount),0);
+  const valid=safeArr(expenses).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const total=valid.reduce((t,e)=>t+Number(e.amount),0);
   function save(){ if(!f.title.trim()) return; const n = f.id ? valid.map(e=>e.id===f.id?{...f}:e) : [...valid,{...f,id:Date.now()}]; DB.set("expenses",n); setShow(false); setF(EMPTY_EXPENSE); }
   return<div style={{padding:20, maxWidth:800, margin:"0 auto"}}><SectionTitle action={<Btn sm onClick={()=>{setF(EMPTY_EXPENSE);setShow(true);}}>+ Gider Ekle</Btn>}>Kurum Giderleri ({total.toLocaleString("tr-TR")} ₺)</SectionTitle>
-    {valid.length===0?<Card style={{textAlign:"center",padding:"40px 0",color:"var(--text-sub)",fontWeight:700,fontSize:15}}>Gider kaydı bulunamadı.</Card>:valid.map(e=><Card key={e.id} style={{padding:"16px"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><div><div style={{fontWeight:900,fontSize:16,color:"var(--text-main)"}}>{e.title}</div><div style={{fontSize:12,color:"var(--text-sub)",marginTop:4,fontWeight:600}}>{fmtDate(e.date)}</div></div><div style={{fontWeight:900,color:"#DC2626",fontSize:18}}>-{Number(e.amount).toLocaleString("tr-TR")} ₺</div></div><div style={{display:"flex",gap:10,marginTop:16}}><Btn sm variant="secondary" onClick={()=>{setF(e);setShow(true);}}>Düzenle</Btn><Btn sm variant="danger" onClick={()=>{if(confirm('Gider kaydı tamamen silinsin mi?')) DB.set("expenses", valid.filter(x=>x.id!==e.id));}}>Sil</Btn></div></Card>)}
+    {valid.length===0?<Card style={{textAlign:"center",padding:"40px 0",color:"var(--text-sub)",fontWeight:700,fontSize:15}}>Gider kaydı bulunamadı.</Card>:valid.map(e=><Card key={e.id} style={{padding:"16px"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div><div style={{fontWeight:900,fontSize:16,color:"var(--text-main)"}}>{e.title}</div><div style={{fontSize:12,color:"var(--text-sub)",marginTop:4,fontWeight:600}}>{fmtDate(e.date)}</div></div>
+        <div style={{fontWeight:900,color:"#DC2626",fontSize:18}}>-{Number(e.amount).toLocaleString("tr-TR")} ₺</div>
+      </div>
+      <div style={{display:"flex",gap:10,marginTop:16}}><Btn sm variant="secondary" onClick={()=>{setF(e);setShow(true);}}>Düzenle</Btn><Btn sm variant="danger" onClick={()=>{if(confirm('Gider kaydı tamamen silinsin mi?')) DB.set("expenses", valid.filter(x=>x.id!==e.id));}}>Sil</Btn></div>
+    </Card>)}
     <Modal show={show} onClose={()=>setShow(false)} title={f.id?"Gider Düzenle":"Yeni Gider Ekle"}><Inp label="Açıklama (Ne alındı?)" value={f.title} onChange={v=>u("title",v.toLocaleUpperCase("tr-TR"))} autoFocus/><Inp label="Tarih" value={f.date} onChange={v=>u("date",v)} type="date"/><Inp label="Tutar (₺)" value={f.amount} onChange={v=>u("amount",v)} type="number"/><Btn full onClick={save} style={{marginTop:16}}>Gideri Kaydet</Btn></Modal>
   </div>
 }
@@ -708,10 +865,25 @@ function InventoryPage({items}){
   return<div style={{padding:20, maxWidth:800, margin:"0 auto"}}><SectionTitle action={<Btn sm onClick={()=>{setF(EMPTY_ITEM);setShow(true);}}>+ Yeni Ürün</Btn>}>Depo & Envanter</SectionTitle>
     {validItems.length===0 ? <Card style={{textAlign:"center",padding:"40px 0",color:"var(--text-sub)",fontWeight:700,fontSize:15}}>Envanterde ürün bulunmuyor.</Card> :
       <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(300px, 1fr))", gap:16}}>
-      {validItems.map(item=>(item && item.id) && <Card key={item.id} style={{padding:"16px", margin:0}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}><div><div style={{fontWeight:900,fontSize:16,color:"var(--text-main)"}}>{item.name}</div><div style={{fontSize:11,color:"var(--text-sub)",marginTop:4,fontWeight:800,textTransform:"uppercase"}}>{item.category || "Genel"}</div></div><div style={{fontWeight:900,color:"#059669",fontSize:16}}>{Number(item.price||0).toLocaleString("tr-TR")} ₺</div></div><div style={{background:"#F8FAFC", borderRadius:10, padding:"10px 14px", marginTop:16, display:"flex", justifyContent:"space-between", alignItems:"center"}}><div style={{fontSize:13, fontWeight:800, color:"var(--text-sub)"}}>Stok Miktarı</div><div style={{display:"flex",gap:14,alignItems:"center"}}><button type="button" onClick={()=>{DB.set("stock",validItems.map(i=>i.id===item.id?{...i,stock:Math.max(0,Number(i.stock||0)-1)}:i));}} style={{width:32,height:32,borderRadius:8,background:"#fff",border:`1px solid #E2E8F0`,cursor:"pointer",fontWeight:900,color:"#DC2626",boxShadow:"0 2px 4px rgba(0,0,0,0.02)"}}>-</button><span style={{fontWeight:900,fontSize:18,color:"var(--text-main)"}}>{item.stock||0}</span><button type="button" onClick={()=>{DB.set("stock",validItems.map(i=>i.id===item.id?{...i,stock:Math.max(0,Number(i.stock||0)+1)}:i));}} style={{width:32,height:32,borderRadius:8,background:"#fff",border:`1px solid #E2E8F0`,cursor:"pointer",fontWeight:900,color:"#059669",boxShadow:"0 2px 4px rgba(0,0,0,0.02)"}}>+</button></div></div><div style={{display:"flex",gap:10,marginTop:16}}><Btn sm variant="secondary" style={{flex:1}} onClick={()=>{setF(item);setShow(true);}}>Düzenle</Btn><Btn sm variant="danger" onClick={()=>DB.set("stock", validItems.filter(i=>i.id!==item.id))}>Kaldır</Btn></div></Card>)}
+      {validItems.map(item=>(item && item.id) && <Card key={item.id} style={{padding:"16px", margin:0}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+          <div><div style={{fontWeight:900,fontSize:16,color:"var(--text-main)"}}>{item.name}</div><div style={{fontSize:11,color:"var(--text-sub)",marginTop:4,fontWeight:800,textTransform:"uppercase"}}>{item.category || "Genel"}</div></div>
+          <div style={{fontWeight:900,color:"#059669",fontSize:16}}>{Number(item.price||0).toLocaleString("tr-TR")} ₺</div>
+        </div>
+        <div style={{background:"#F8FAFC", borderRadius:10, padding:"10px 14px", marginTop:16, display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+          <div style={{fontSize:13, fontWeight:800, color:"var(--text-sub)"}}>Stok Miktarı</div>
+          <div style={{display:"flex",gap:14,alignItems:"center"}}><button type="button" onClick={()=>{DB.set("stock",validItems.map(i=>i.id===item.id?{...i,stock:Math.max(0,Number(i.stock||0)-1)}:i));}} style={{width:32,height:32,borderRadius:8,background:"#fff",border:`1px solid #E2E8F0`,cursor:"pointer",fontWeight:900,color:"#DC2626",boxShadow:"0 2px 4px rgba(0,0,0,0.02)"}}>-</button><span style={{fontWeight:900,fontSize:18,color:"var(--text-main)"}}>{item.stock||0}</span><button type="button" onClick={()=>{DB.set("stock",validItems.map(i=>i.id===item.id?{...i,stock:Math.max(0,Number(i.stock||0)+1)}:i));}} style={{width:32,height:32,borderRadius:8,background:"#fff",border:`1px solid #E2E8F0`,cursor:"pointer",fontWeight:900,color:"#059669",boxShadow:"0 2px 4px rgba(0,0,0,0.02)"}}>+</button></div>
+        </div>
+        <div style={{display:"flex",gap:10,marginTop:16}}><Btn sm variant="secondary" style={{flex:1}} onClick={()=>{setF(item);setShow(true);}}>Düzenle</Btn><Btn sm variant="danger" onClick={()=>DB.set("stock", validItems.filter(i=>i.id!==item.id))}>Kaldır</Btn></div>
+      </Card>)}
       </div>
     }
-    <Modal show={show} onClose={()=>setShow(false)} title="Ürün İşlemi"><Inp label="Ürün Adı *" value={f.name} onChange={v=>u("name",v.toLocaleUpperCase("tr-TR"))} autoFocus/><Sel label="Kategori" value={f.category} onChange={v=>u("category",v)} options={STOCK_CATS.map(c=>({value:c,label:c}))}/><div style={{display:"flex",gap:12}}><div style={{flex:1}}><Inp label="Satış Fiyatı (₺)" value={f.price} onChange={v=>u("price",v)} type="number"/></div><div style={{flex:1}}><Inp label="Mevcut Stok" value={f.stock} onChange={v=>u("stock",v)} type="number"/></div></div><Btn full onClick={save} style={{marginTop:16}}>Kaydet</Btn></Modal>
+    <Modal show={show} onClose={()=>setShow(false)} title="Ürün İşlemi">
+      <Inp label="Ürün Adı *" value={f.name} onChange={v=>u("name",v.toLocaleUpperCase("tr-TR"))} autoFocus/>
+      <Sel label="Kategori" value={f.category} onChange={v=>u("category",v)} options={STOCK_CATS.map(c=>({value:c,label:c}))}/>
+      <div style={{display:"flex",gap:12}}><div style={{flex:1}}><Inp label="Satış Fiyatı (₺)" value={f.price} onChange={v=>u("price",v)} type="number"/></div><div style={{flex:1}}><Inp label="Mevcut Stok" value={f.stock} onChange={v=>u("stock",v)} type="number"/></div></div>
+      <Btn full onClick={save} style={{marginTop:16}}>Kaydet</Btn>
+    </Modal>
   </div>
 }
 
@@ -720,59 +892,176 @@ function StaffPage({staff}){
   const [selectedMonth, setSelectedMonth] = useState(TODAY.slice(0,7)); const [activeStaffId, setActiveStaffId] = useState(null);
   const u=(k,v)=>setF(p=>({...p,[k]:v}));
 
-  function save(){ if(!f.name.trim()) return; const n = f.id ? validStaff.map(s=>s.id===f.id?{...s,...f}:s) : [...validStaff,{...f,id:Date.now(),attendance:{},dailyWage:Number(f.dailyWage||0)}]; DB.set("staff",n); setShowAdd(false); setF(EMPTY_STAFF); }
-  const daysInMonth = new Date(Number(selectedMonth.split("-")[0]), Number(selectedMonth.split("-")[1]), 0).getDate(); const daysArray = Array.from({length: daysInMonth}, (_, i) => i + 1);
+  function save(){
+    if(!f.name.trim()) return;
+    const n = f.id ? validStaff.map(s=>s.id===f.id?{...s,...f}:s) : [...validStaff,{...f,id:Date.now(),attendance:{},dailyWage:Number(f.dailyWage||0)}];
+    DB.set("staff",n); setShowAdd(false); setF(EMPTY_STAFF);
+  }
+  const daysInMonth = new Date(Number(selectedMonth.split("-")[0]), Number(selectedMonth.split("-")[1]), 0).getDate();
+  const daysArray = Array.from({length: daysInMonth}, (_, i) => i + 1);
 
   return<div style={{padding:20, maxWidth:800, margin:"0 auto"}}>
     <TabBar tabs={["Personel Listesi","Yoklama & Maaş Hakediş"]} active={tab} onChange={setTab}/>
-    {tab===0&&<div><SectionTitle action={<Btn sm onClick={()=>{setF(EMPTY_STAFF);setShowAdd(true);}}>+ Personel Ekle</Btn>}>Kurum Çalışanları</SectionTitle>
+    {tab===0&&<div>
+      <SectionTitle action={<Btn sm onClick={()=>{setF(EMPTY_STAFF);setShowAdd(true);}}>+ Personel Ekle</Btn>}>Kurum Çalışanları</SectionTitle>
       {validStaff.length===0?<Card style={{textAlign:"center",padding:"40px 0",color:"var(--text-sub)",fontWeight:700,fontSize:15}}>Kayıtlı çalışan bulunmuyor.</Card>:
-      <div style={{display:"grid", gap:12}}>{validStaff.map(s=><Card key={s.id} style={{margin:0, padding:"16px"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><div><div style={{fontWeight:900,fontSize:16,color:"var(--text-main)"}}>{s.name}</div><div style={{fontSize:12,color:"var(--text-sub)",fontWeight:700,marginTop:4}}>{Number(s.dailyWage||0).toLocaleString("tr-TR")} ₺ Günlük Yevmiye</div></div><Btn sm variant="danger" onClick={()=>{if(confirm('Personel kaydı silinsin mi?')) DB.set("staff", validStaff.filter(x=>x.id!==s.id))}}>Sil</Btn></div></Card>)}</div>}
+      <div style={{display:"grid", gap:12}}>
+        {validStaff.map(s=><Card key={s.id} style={{margin:0, padding:"16px"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><div><div style={{fontWeight:900,fontSize:16,color:"var(--text-main)"}}>{s.name}</div><div style={{fontSize:12,color:"var(--text-sub)",fontWeight:700,marginTop:4}}>{Number(s.dailyWage||0).toLocaleString("tr-TR")} ₺ Günlük Yevmiye</div></div><Btn sm variant="danger" onClick={()=>{if(confirm('Personel kaydı silinsin mi?')) DB.set("staff", validStaff.filter(x=>x.id!==s.id))}}>Sil</Btn></div></Card>)}
+      </div>}
     </div>}
-    {tab===1&&<div><Inp label="Takip Ayı Seçimi" type="month" value={selectedMonth} onChange={setSelectedMonth}/>
-      <div style={{display:"grid", gap:12}}>{validStaff.map(s=>{
-        const daysCount = Object.keys(s.attendance||{}).filter(k=>k.startsWith(selectedMonth)&&s.attendance[k]).length; const isExp = activeStaffId === s.id;
-        return <Card key={s.id} style={{margin:0, padding:isExp?"20px":"16px"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer"} } onClick={()=>setActiveStaffId(isExp?null:s.id)}><div><div style={{fontWeight:900,fontSize:16,color:"var(--text-main)"}}>{s.name}</div><div style={{fontSize:13,color:"#059669",fontWeight:800,marginTop:4}}>{daysCount} Gün Mesai • Toplam Hakediş: {(daysCount*Number(s.dailyWage||0)).toLocaleString("tr-TR")} ₺</div></div><Btn sm variant="secondary">{isExp?"Kapat ▲":"Puantaj Gir ▼"}</Btn></div>
-          {isExp && <div style={{marginTop:20, paddingTop:20, borderTop:`1px solid #E2E8F0`}}><Inp label="Günlük Yevmiye (₺) (Anlık Güncelleme)" type="number" value={s.dailyWage} onChange={(v)=>DB.set("staff", validStaff.map(x=>x.id===s.id?{...x,dailyWage:Number(v)}:x))}/><div style={{fontSize:11,fontWeight:800,color:"var(--text-sub)",marginBottom:12,textTransform:"uppercase",marginTop:16}}>Çalışılan Günleri İşaretleyin</div><div style={{display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(44px, 1fr))", gap:8}}>{daysArray.map(d=>{
-            const key = `${selectedMonth}-${String(d).padStart(2,'0')}`; const isP = !!s.attendance?.[key];
-            return <button key={d} type="button" onClick={()=>{ const att={...(s.attendance||{})}; if(isP) delete att[key]; else att[key]=true; DB.set("staff", validStaff.map(x=>x.id===s.id?{...x,attendance:att}:x)); }} style={{padding:"12px 0", borderRadius:10, border:`2px solid ${isP?"#059669":"#E2E8F0"}`, background:isP?"#ECFDF5":"#fff", color:isP?"#059669":"var(--text-sub)", fontWeight:800, cursor:"pointer", transition:"all 0.2s"}}>{d}</button>
-          })}</div></div>}</Card>})}</div>
+    {tab===1&&<div>
+      <Inp label="Takip Ayı Seçimi" type="month" value={selectedMonth} onChange={setSelectedMonth}/>
+      <div style={{display:"grid", gap:12}}>
+      {validStaff.map(s=>{
+        const daysCount = Object.keys(s.attendance||{}).filter(k=>k.startsWith(selectedMonth)&&s.attendance[k]).length;
+        const isExp = activeStaffId === s.id;
+        return <Card key={s.id} style={{margin:0, padding:isExp?"20px":"16px"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer"} } onClick={()=>setActiveStaffId(isExp?null:s.id)}>
+            <div><div style={{fontWeight:900,fontSize:16,color:"var(--text-main)"}}>{s.name}</div><div style={{fontSize:13,color:"#059669",fontWeight:800,marginTop:4}}>{daysCount} Gün Mesai • Toplam Hakediş: {(daysCount*Number(s.dailyWage||0)).toLocaleString("tr-TR")} ₺</div></div>
+            <Btn sm variant="secondary">{isExp?"Kapat ▲":"Puantaj Gir ▼"}</Btn>
+          </div>
+          {isExp && <div style={{marginTop:20, paddingTop:20, borderTop:`1px solid #E2E8F0`}}>
+            <Inp label="Günlük Yevmiye (₺) (Anlık Güncelleme)" type="number" value={s.dailyWage} onChange={(v)=>DB.set("staff", validStaff.map(x=>x.id===s.id?{...x,dailyWage:Number(v)}:x))}/>
+            <div style={{fontSize:11,fontWeight:800,color:"var(--text-sub)",marginBottom:12,textTransform:"uppercase",marginTop:16}}>Çalışılan Günleri İşaretleyin</div>
+            <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(44px, 1fr))", gap:8}}>
+              {daysArray.map(d=>{
+                const key = `${selectedMonth}-${String(d).padStart(2,'0')}`; const isP = !!s.attendance?.[key];
+                return <button key={d} type="button" onClick={()=>{
+                  const att={...(s.attendance||{})}; if(isP) delete att[key]; else att[key]=true;
+                  DB.set("staff", validStaff.map(x=>x.id===s.id?{...x,attendance:att}:x));
+                }} style={{padding:"12px 0", borderRadius:10, border:`2px solid ${isP?"#059669":"#E2E8F0"}`, background:isP?"#ECFDF5":"#fff", color:isP?"#059669":"var(--text-sub)", fontWeight:800, cursor:"pointer", transition:"all 0.2s"}}>{d}</button>
+              })}
+            </div>
+          </div>}
+        </Card>
+      })}
+      </div>
     </div>}
-    <Modal show={showAdd} onClose={()=>setShowAdd(false)} title="Personel Kaydı"><Inp label="Ad Soyad *" value={f.name} onChange={v=>u("name",v.toLocaleUpperCase("tr-TR"))} autoFocus/><Inp label="Sabit Günlük Yevmiyesi (₺) *" value={f.dailyWage} onChange={v=>u("dailyWage",v)} type="number"/><Btn full onClick={save} style={{marginTop:16}}>Çalışanı Kaydet</Btn></Modal>
+    <Modal show={showAdd} onClose={()=>setShowAdd(false)} title="Personel Kaydı">
+      <Inp label="Ad Soyad *" value={f.name} onChange={v=>u("name",v.toLocaleUpperCase("tr-TR"))} autoFocus/>
+      <Inp label="Sabit Günlük Yevmiyesi (₺) *" value={f.dailyWage} onChange={v=>u("dailyWage",v)} type="number"/>
+      <Btn full onClick={save} style={{marginTop:16}}>Çalışanı Kaydet</Btn>
+    </Modal>
   </div>
 }
 
 function Dashboard({students,expenses}){
   const safeStudents = safeArr(students); const safeExpenses = safeArr(expenses); const active=safeStudents.filter(s=>courseStatus(s)==="active");
   const totalRev=safeStudents.reduce((t,s)=>t+totalPaid(s),0); const totalExp=safeExpenses.reduce((t,e)=>t+Number(e.amount||0),0); const netProfit = totalRev - totalExp;
+  
   const total=totalRev+totalExp; const revPct=total===0?50:(totalRev/total)*100; const expPct=total===0?50:(totalExp/total)*100;
-  const recentRegistrations = [...safeStudents].sort((a,b) => b.id - a.id).slice(0, 5); const recentPay = safeStudents.flatMap(s=>safeArr(s.payments).map(p=>({...p,studentName:s.name}))).sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5); const endingSoon = active.filter(s=>{const d=daysLeft(s);return d>=0&&d<=14;}).sort((a,b)=>daysLeft(a)-daysLeft(b)).slice(0,5);
+
+  const recentRegistrations = [...safeStudents].sort((a,b) => b.id - a.id).slice(0, 5);
+  const recentPay = safeStudents.flatMap(s=>safeArr(s.payments).map(p=>({...p,studentName:s.name}))).sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,5);
+  const endingSoon = active.filter(s=>{const d=daysLeft(s);return d>=0&&d<=14;}).sort((a,b)=>daysLeft(a)-daysLeft(b)).slice(0,5);
 
   return<div style={{padding:20, maxWidth:1200, margin:"0 auto"}}>
-    <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(240px, 1fr))", gap:16, marginBottom:20}}><StatCard label="Aktif Kayıtlı Öğrenci" value={active.length} col="var(--accent)" /><StatCard label="Kasadaki Net Kâr" value={`${netProfit.toLocaleString("tr-TR")} ₺`} col={netProfit>=0?"#059669":"#DC2626"} /><StatCard label="Tüm Zamanlar Ciro" value={`${totalRev.toLocaleString("tr-TR")} ₺`} col="#059669" /><StatCard label="Toplam Giderler" value={`${totalExp.toLocaleString("tr-TR")} ₺`} col="#DC2626" /></div>
-    <Card style={{marginBottom:24, padding:"20px"}}><SectionTitle>Gelir / Gider Dağılımı</SectionTitle><div style={{display:"flex", height:28, borderRadius:14, overflow:"hidden", marginBottom:12, background:"#F1F5F9", border:`1px solid #E2E8F0`}}><div style={{width:`${revPct}%`, background:"#10B981", transition:"width 1s cubic-bezier(0.4, 0, 0.2, 1)"}}></div><div style={{width:`${expPct}%`, background:"#EF4444", transition:"width 1s cubic-bezier(0.4, 0, 0.2, 1)"}}></div></div><div style={{display:"flex", justifyContent:"space-between", fontSize:14, fontWeight:900}}><span style={{color:"#059669"}}>Toplam Gelir: %{Math.round(revPct)}</span><span style={{color:"#DC2626"}}>Toplam Gider: %{Math.round(expPct)}</span></div></Card>
+    <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(240px, 1fr))", gap:16, marginBottom:20}}>
+      <StatCard label="Aktif Kayıtlı Öğrenci" value={active.length} col="var(--accent)" />
+      <StatCard label="Kasadaki Net Kâr" value={`${netProfit.toLocaleString("tr-TR")} ₺`} col={netProfit>=0?"#059669":"#DC2626"} />
+      <StatCard label="Tüm Zamanlar Ciro" value={`${totalRev.toLocaleString("tr-TR")} ₺`} col="#059669" />
+      <StatCard label="Toplam Giderler" value={`${totalExp.toLocaleString("tr-TR")} ₺`} col="#DC2626" />
+    </div>
+
+    <Card style={{marginBottom:24, padding:"20px"}}>
+      <SectionTitle>Gelir / Gider Dağılımı</SectionTitle>
+      <div style={{display:"flex", height:28, borderRadius:14, overflow:"hidden", marginBottom:12, background:"#F1F5F9", border:`1px solid #E2E8F0`}}>
+        <div style={{width:`${revPct}%`, background:"#10B981", transition:"width 1s cubic-bezier(0.4, 0, 0.2, 1)"}}></div>
+        <div style={{width:`${expPct}%`, background:"#EF4444", transition:"width 1s cubic-bezier(0.4, 0, 0.2, 1)"}}></div>
+      </div>
+      <div style={{display:"flex", justifyContent:"space-between", fontSize:14, fontWeight:900}}>
+        <span style={{color:"#059669"}}>Toplam Gelir: %{Math.round(revPct)}</span>
+        <span style={{color:"#DC2626"}}>Toplam Gider: %{Math.round(expPct)}</span>
+      </div>
+    </Card>
+
     <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(320px, 1fr))", gap:20, alignItems:"start"}}>
-      <Card style={{padding:"20px", margin:0}}><div style={{fontSize:14, fontWeight:900, marginBottom:16, color:"var(--text-main)", textTransform:"uppercase", letterSpacing:-0.3}}>Son Kayıt Olanlar</div><div className="data-row data-header"><div>Ad Soyad</div><div>Kayıt Trh.</div><div className="data-col-right">Grup</div></div>{recentRegistrations.length===0?<div style={{padding:"16px 0",fontSize:13,color:"var(--text-sub)",textAlign:"center",fontWeight:600}}>Kayıt yok.</div>:recentRegistrations.map(s => <div className="data-row" key={s.id}><div className="data-col">{s.name}</div><div className="data-col data-col-sub">{fmtDate(s.courseStart)}</div><div className="data-col data-col-right" style={{color:"var(--accent)"}}>{s.groupName || "-"}</div></div>)}</Card>
-      <Card style={{padding:"20px", margin:0}}><div style={{fontSize:14, fontWeight:900, marginBottom:16, color:"var(--text-main)", textTransform:"uppercase", letterSpacing:-0.3}}>Son Ödemeler</div><div className="data-row data-header"><div>Ad Soyad</div><div>Tarih</div><div className="data-col-right">Tutar</div></div>{recentPay.length===0?<div style={{padding:"16px 0",fontSize:13,color:"var(--text-sub)",textAlign:"center",fontWeight:600}}>Tahsilat yok.</div>:recentPay.map((p, i) => <div className="data-row" key={i}><div className="data-col">{p.studentName}</div><div className="data-col data-col-sub">{fmtDate(p.date)}</div><div className="data-col data-col-right" style={{color:"#059669"}}>+{Number(p.amount).toLocaleString("tr-TR")} ₺</div></div>)}</Card>
-      <Card style={{padding:"20px", margin:0, border:`1px solid #FCD34D`}}><div style={{fontSize:14, fontWeight:900, marginBottom:16, color:"#D97706", textTransform:"uppercase", letterSpacing:-0.3}}>Kayıt Bitişi Yaklaşanlar</div><div className="data-row data-header"><div>Ad Soyad</div><div>Bitiş Trh.</div><div className="data-col-right">Kalan</div></div>{endingSoon.length===0?<div style={{padding:"16px 0",fontSize:13,color:"var(--text-sub)",textAlign:"center",fontWeight:600}}>Yaklaşan kayıt yok.</div>:endingSoon.map(s => <div className="data-row" key={s.id}><div className="data-col">{s.name}</div><div className="data-col data-col-sub">{fmtDate(s.courseEnd)}</div><div className="data-col data-col-right" style={{color:"#D97706"}}>{daysLeft(s)} Gün</div></div>)}</Card>
+      <Card style={{padding:"20px", margin:0}}>
+        <div style={{fontSize:14, fontWeight:900, marginBottom:16, color:"var(--text-main)", textTransform:"uppercase", letterSpacing:-0.3}}>Son Kayıt Olanlar</div>
+        <div className="data-row data-header"><div>Ad Soyad</div><div>Kayıt Trh.</div><div className="data-col-right">Grup</div></div>
+        {recentRegistrations.length===0?<div style={{padding:"16px 0",fontSize:13,color:"var(--text-sub)",textAlign:"center",fontWeight:600}}>Kayıt yok.</div>:recentRegistrations.map(s => <div className="data-row" key={s.id}><div className="data-col">{s.name}</div><div className="data-col data-col-sub">{fmtDate(s.courseStart)}</div><div className="data-col data-col-right" style={{color:"var(--accent)"}}>{s.groupName || "-"}</div></div>)}
+      </Card>
+
+      <Card style={{padding:"20px", margin:0}}>
+        <div style={{fontSize:14, fontWeight:900, marginBottom:16, color:"var(--text-main)", textTransform:"uppercase", letterSpacing:-0.3}}>Son Ödemeler</div>
+        <div className="data-row data-header"><div>Ad Soyad</div><div>Tarih</div><div className="data-col-right">Tutar</div></div>
+        {recentPay.length===0?<div style={{padding:"16px 0",fontSize:13,color:"var(--text-sub)",textAlign:"center",fontWeight:600}}>Tahsilat yok.</div>:recentPay.map((p, i) => <div className="data-row" key={i}><div className="data-col">{p.studentName}</div><div className="data-col data-col-sub">{fmtDate(p.date)}</div><div className="data-col data-col-right" style={{color:"#059669"}}>+{Number(p.amount).toLocaleString("tr-TR")} ₺</div></div>)}
+      </Card>
+
+      <Card style={{padding:"20px", margin:0, border:`1px solid #FCD34D`}}>
+        <div style={{fontSize:14, fontWeight:900, marginBottom:16, color:"#D97706", textTransform:"uppercase", letterSpacing:-0.3}}>Kayıt Bitişi Yaklaşanlar</div>
+        <div className="data-row data-header"><div>Ad Soyad</div><div>Bitiş Trh.</div><div className="data-col-right">Kalan</div></div>
+        {endingSoon.length===0?<div style={{padding:"16px 0",fontSize:13,color:"var(--text-sub)",textAlign:"center",fontWeight:600}}>Yaklaşan kayıt yok.</div>:endingSoon.map(s => <div className="data-row" key={s.id}><div className="data-col">{s.name}</div><div className="data-col data-col-sub">{fmtDate(s.courseEnd)}</div><div className="data-col data-col-right" style={{color:"#D97706"}}>{daysLeft(s)} Gün</div></div>)}
+      </Card>
     </div>
   </div>
 }
 
 function SettingsPage({navItems, clubName, logoUrl, appUsers}){
-  const [tab, setTab] = useState(0); const [nameVal, setNameVal] = useState(clubName); const [logoVal, setLogoVal] = useState(logoUrl); const [showUserModal, setShowUserModal] = useState(false); const [uForm, setUForm] = useState({ id:null, username:"", password:"", role:"staff", allowedTabs:[] });
-  function toggleMenuAccess(menuId) { const tabs = uForm.allowedTabs || []; if(tabs.includes(menuId)) setUForm({...uForm, allowedTabs: tabs.filter(t=>t!==menuId)}); else setUForm({...uForm, allowedTabs: [...tabs, menuId]}); }
-  function saveUser() { if(!uForm.username||!uForm.password)return; let n = safeArr(appUsers); if(uForm.id) n = n.map(u => u.id === uForm.id ? {...uForm} : u); else n = [...n, {...uForm, id:Date.now()}]; DB.set("appUsers", n); setShowUserModal(false); }
-  function deleteUser(id) { if(id === "admin") { alert("Ana yönetici (admin) hesabı silinemez."); return; } if(confirm("Bu çalışan hesabını tamamen silmek ve sisteme erişimini kesmek istediğinize emin misiniz?")) { DB.set("appUsers", safeArr(appUsers).filter(x=>x.id!==id)); } }
+  const [tab, setTab] = useState(0); const [nameVal, setNameVal] = useState(clubName); const [logoVal, setLogoVal] = useState(logoUrl);
+  const [showUserModal, setShowUserModal] = useState(false); const [uForm, setUForm] = useState({ id:null, username:"", password:"", role:"staff", allowedTabs:[] });
+  
+  function toggleMenuAccess(menuId) {
+    const tabs = uForm.allowedTabs || [];
+    if(tabs.includes(menuId)) setUForm({...uForm, allowedTabs: tabs.filter(t=>t!==menuId)});
+    else setUForm({...uForm, allowedTabs: [...tabs, menuId]});
+  }
+  
+  function saveUser() { 
+    if(!uForm.username||!uForm.password)return; 
+    let n = safeArr(appUsers); 
+    if(uForm.id) n = n.map(u => u.id === uForm.id ? {...uForm} : u); 
+    else n = [...n, {...uForm, id:Date.now()}]; 
+    DB.set("appUsers", n); setShowUserModal(false); 
+  }
+
+  function deleteUser(id) {
+    if(id === "admin") { alert("Ana yönetici (admin) hesabı silinemez."); return; }
+    if(confirm("Bu çalışan hesabını tamamen silmek ve sisteme erişimini kesmek istediğinize emin misiniz?")) {
+      DB.set("appUsers", safeArr(appUsers).filter(x=>x.id!==id));
+    }
+  }
 
   return<div style={{padding:20, maxWidth:800, margin:"0 auto"}}>
     <TabBar tabs={["Genel Kurum Ayarları", "Personel Hesap Yetkileri"]} active={tab} onChange={setTab}/>
-    {tab === 0 && (<div><Card style={{padding:"24px"}}><Inp label="Kulüp/Kurum Adı" value={nameVal} onChange={setNameVal}/><Inp label="Logo URL (İsteğe Bağlı)" value={logoVal} onChange={setLogoVal}/></Card><Btn full onClick={()=>{DB.set("clubName",nameVal); DB.set("logoUrl",logoVal); alert("Kurum bilgileri başarıyla kaydedildi.");}}>Sisteme Kaydet</Btn></div>)}
-    {tab===1&&<div><SectionTitle action={<Btn sm onClick={()=>{setUForm({id:null,username:"",password:"",role:"staff",allowedTabs:["dashboard","students","attendance"]});setShowUserModal(true);}}>+ Yeni Personel Hesabı Aç</Btn>}>Sisteme Giriş İzinleri</SectionTitle>
-      {safeArr(appUsers).map(u=><Card key={u.id} style={{padding:"16px 20px"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><div><div style={{fontWeight:900,fontSize:16,color:"var(--text-main)"}}>{u.username}</div><div style={{fontSize:11,color:u.role==='admin'?"#059669":"var(--text-sub)",fontWeight:800,textTransform:"uppercase",marginTop:6}}>{u.role==='admin'?'Tam Yetkili Yönetici (Silinemez)':'Kısıtlı Çalışan'}</div></div><div style={{display:"flex",gap:8}}><Btn variant="secondary" sm onClick={()=>{setUForm(u);setShowUserModal(true);}}>Yetkileri Düzenle</Btn>{u.role !== 'admin' && <Btn variant="danger" sm onClick={()=>deleteUser(u.id)}>Hesabı Kaldır</Btn>}</div></div></Card>)}
-      <Modal show={showUserModal} onClose={()=>setShowUserModal(false)} title="Personel Hesabı Tanımla"><Inp label="Sisteme Giriş Kullanıcı Adı" value={uForm.username} onChange={v=>setUForm({...uForm,username:v})} autoFocus/><Inp label="Giriş Şifresi" value={uForm.password} onChange={v=>setUForm({...uForm,password:v})}/>
-        {uForm.id !== "admin" && (<div style={{marginTop: 20}}><div style={{fontSize:12, fontWeight:800, marginBottom:12, color:"var(--text-main)", textTransform:"uppercase"}}>Çalışanın Görebileceği Menüler</div><div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:10}}>{navItems.map(nav => nav.id !== "settings" && (<label key={nav.id} style={{display:"flex", alignItems:"center", gap:8, padding:"12px", background:"var(--bg-color)", borderRadius:12, cursor:"pointer", border:`2px solid ${(uForm.allowedTabs||[]).includes(nav.id)?"var(--accent)":"transparent"}`, transition:"all 0.2s"}}><input type="checkbox" checked={(uForm.allowedTabs||[]).includes(nav.id)} onChange={() => toggleMenuAccess(nav.id)} style={{width:16,height:16,accentColor:"var(--accent)"}}/><span style={{fontSize:13, fontWeight:700, color:"var(--text-main)"}}>{nav.label}</span></label>))}</div></div>)}
-        <Btn full onClick={saveUser} style={{marginTop:24}}>Hesabı Kaydet</Btn></Modal>
+    {tab === 0 && (
+      <div><Card style={{padding:"24px"}}><Inp label="Kulüp/Kurum Adı" value={nameVal} onChange={setNameVal}/><Inp label="Logo URL (İsteğe Bağlı)" value={logoVal} onChange={setLogoVal}/></Card><Btn full onClick={()=>{DB.set("clubName",nameVal); DB.set("logoUrl",logoVal); alert("Kurum bilgileri başarıyla kaydedildi.");}}>Sisteme Kaydet</Btn></div>
+    )}
+    {tab===1&&<div>
+      <SectionTitle action={<Btn sm onClick={()=>{setUForm({id:null,username:"",password:"",role:"staff",allowedTabs:["dashboard","students","attendance"]});setShowUserModal(true);}}>+ Yeni Personel Hesabı Aç</Btn>}>Sisteme Giriş İzinleri</SectionTitle>
+      
+      {safeArr(appUsers).map(u=><Card key={u.id} style={{padding:"16px 20px"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div>
+            <div style={{fontWeight:900,fontSize:16,color:"var(--text-main)"}}>{u.username}</div>
+            <div style={{fontSize:11,color:u.role==='admin'?"#059669":"var(--text-sub)",fontWeight:800,textTransform:"uppercase",marginTop:6}}>{u.role==='admin'?'Tam Yetkili Yönetici (Silinemez)':'Kısıtlı Çalışan'}</div>
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            <Btn variant="secondary" sm onClick={()=>{setUForm(u);setShowUserModal(true);}}>Yetkileri Düzenle</Btn>
+            {u.role !== 'admin' && <Btn variant="danger" sm onClick={()=>deleteUser(u.id)}>Hesabı Kaldır</Btn>}
+          </div>
+        </div>
+      </Card>)}
+
+      <Modal show={showUserModal} onClose={()=>setShowUserModal(false)} title="Personel Hesabı Tanımla">
+        <Inp label="Sisteme Giriş Kullanıcı Adı" value={uForm.username} onChange={v=>setUForm({...uForm,username:v})} autoFocus/>
+        <Inp label="Giriş Şifresi" value={uForm.password} onChange={v=>setUForm({...uForm,password:v})}/>
+        
+        {uForm.id !== "admin" && (
+          <div style={{marginTop: 20}}>
+            <div style={{fontSize:12, fontWeight:800, marginBottom:12, color:"var(--text-main)", textTransform:"uppercase"}}>Çalışanın Görebileceği Menüler</div>
+            <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:10}}>
+              {navItems.map(nav => nav.id !== "settings" && (
+                <label key={nav.id} style={{display:"flex", alignItems:"center", gap:8, padding:"12px", background:"var(--bg-color)", borderRadius:12, cursor:"pointer", border:`2px solid ${(uForm.allowedTabs||[]).includes(nav.id)?"var(--accent)":"transparent"}`, transition:"all 0.2s"}}>
+                  <input type="checkbox" checked={(uForm.allowedTabs||[]).includes(nav.id)} onChange={() => toggleMenuAccess(nav.id)} style={{width:16,height:16,accentColor:"var(--accent)"}}/>
+                  <span style={{fontSize:13, fontWeight:700, color:"var(--text-main)"}}>{nav.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+        <Btn full onClick={saveUser} style={{marginTop:24}}>Hesabı Kaydet</Btn>
+      </Modal>
     </div>}
   </div>
 }
@@ -786,6 +1075,9 @@ function App(){
   const [students,setStudents]=useState([]); const [staff,setStaff]=useState([]); const [stockItems,setStockItems]=useState([]); const [movements,setMovements]=useState([]); const [expenses,setExpenses]=useState([]);
   const [clubName,setClubName]=useState("AquaClub Pro"); const [navItems,setNavItems]=useState(NAV_ITEMS); const [appUsers, setAppUsers]=useState([]); const [oldPinCode, setOldPinCode]=useState("0309"); const [waLinks,setWaLinks]=useState([]);
   const [logoUrl,setLogoUrl]=useState(""); const [activeTab,setActiveTab]=useState("dashboard"); const [sidebarOpen,setSidebarOpen]=useState(false);
+  const [themeColor,setThemeColor]=useState("#F8FAFC"); const [sidebarColor,setSidebarColor]=useState("#FFFFFF"); const [cardColor,setCardColor]=useState("#FFFFFF"); const [textColor,setTextColor]=useState("#0F172A");
+
+  useEffect(() => { document.documentElement.style.setProperty('--bg-color', themeColor); document.documentElement.style.setProperty('--sidebar-bg', sidebarColor); document.documentElement.style.setProperty('--card-bg', cardColor); document.documentElement.style.setProperty('--text-main', textColor); }, [themeColor, sidebarColor, cardColor, textColor]);
 
   useEffect(() => {
     if(!db) { setIsDbLoaded(true); return; }

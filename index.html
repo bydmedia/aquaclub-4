@@ -12,7 +12,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 <title>AquaClub Pro</title>
 <style>
-/* 🌟 ULTRA MODERN CSS (SOFT UI) 🌟 */
 :root {
   --bg-color: #F8FAFC; 
   --sidebar-bg: #FFFFFF;
@@ -31,7 +30,6 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.4)}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:10px}
 
-/* MODERN İNPUTLAR VE BUTONLAR */
 .modern-inp {
   width: 100%; padding: 12px 16px; background-color: #F1F5F9; border: 2px solid transparent;
   border-radius: 12px; color: var(--text-main); font-size: 14px; font-weight: 600;
@@ -58,25 +56,33 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.4)}
 .modern-btn-danger:hover { background: #FEE2E2; color: #B91C1C; }
 .modern-btn-success { background: #ECFDF5; color: #059669; }
 
-/* KAVİSLİ VE GÖLGELİ MODERN KARTLAR */
 .modern-card {
   background: var(--card-bg); border-radius: 20px; padding: 20px; margin-bottom: 16px;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
   border: 1px solid rgba(226, 232, 240, 0.8); transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-.modern-card:hover { box-shadow: 0 20px 35px -5px rgba(0, 0, 0, 0.08); }
 
 .spinner {border: 4px solid rgba(0,0,0,0.05); border-left-color: var(--accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 16px;}
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-.data-row { display: grid; grid-template-columns: 2fr 1.2fr 1fr; gap: 10px; align-items: center; padding: 12px 6px; border-bottom: 1px solid #F1F5F9; }
-.data-row:last-child { border-bottom: none; }
-.data-col { font-size: 13px; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700; }
-.data-col-sub { font-size: 11px; color: var(--text-sub); font-weight: 600; }
-.data-col-right { text-align: right; font-weight: 800; }
-.data-header { font-size: 11px; font-weight: 800; color: #94A3B8; text-transform: uppercase; border-bottom: 2px solid #E2E8F0; padding-bottom: 8px; margin-bottom: 4px; }
-</style>
+/* YENİ LİSTE GÖRÜNÜMÜ İÇİN TABLO ROW YAPISI */
+.list-row {
+  display: grid; grid-template-columns: 2.5fr 1.5fr 1.5fr 1.5fr 1fr; gap: 16px; align-items: center; 
+  padding: 16px 20px; background: #fff; border: 1px solid #E2E8F0; border-radius: 14px; 
+  margin-bottom: 8px; transition: all 0.2s ease;
+}
+.list-row:hover { border-color: #CBD5E1; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+.list-header {
+  display: grid; grid-template-columns: 2.5fr 1.5fr 1.5fr 1.5fr 1fr; gap: 16px; align-items: center; 
+  padding: 12px 20px; background: #F1F5F9; border-radius: 12px; font-weight: 800; color: var(--text-sub); 
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;
+}
+@media (max-width: 900px) {
+  .list-row, .list-header { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+  .list-header { display: none; }
+}
 
+</style>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
@@ -94,11 +100,23 @@ const {useState,useEffect,useRef}=React;
 const TODAY=new Date().toISOString().split("T")[0];
 const DAYS_TR=["Paz","Pzt","Sal","Çar","Per","Cum","Cmt"];
 
+const C={
+  bg:"var(--bg-color)", surface:"var(--card-bg)", card:"var(--card-bg)", sidebar:"var(--sidebar-bg)",
+  border:"#CBD5E1", borderLight:"#E2E8F0",
+  accent:"#3B82F6", accentDark:"#2563EB", accentGlow:"#EFF6FF",
+  text:"var(--text-main)", textSub:"#64748B", textMuted:"#94A3B8",
+  success:"#059669", successBg:"#D1FAE5",
+  warning:"#D97706", warningBg:"#FEF3C7",
+  danger:"#DC2626",  dangerBg:"#FEE2E2",
+  purple:"#6D28D9",  purpleBg:"#EDE9FE",
+  whatsapp:"#16A34A", whatsappBg:"#DCFCE7",
+};
+
+const STOCK_CATS=["Gözlük","Bone","Palet","Şamandıra","Aksesuar","Kıyafet","Temizlik","Diğer"];
 const EMPTY_ITEM={id:null,name:"",category:"",price:"",stock:"",minStock:"",supplier:"",notes:""};
 const EMPTY_EXPENSE={id:null, title:"", amount:"", date:TODAY, category:"", isFood:false, expiryDate:"", note:"", qty:""};
 const EMPTY_STAFF={id:null,name:"",role:"trainer",age:"",phone:"",email:"",dailyWage:0,attendance:{}};
 
-/* DİKKAT: SEANS SAYISI 12 OLARAK GÜNCELLENDİ VE İLK ÖDEME DEĞİŞKENLERİ EKLENDİ */
 const EMPTY_S={
   id:null,name:"",dob:"",guardianName:"",guardianPhone1:"",guardianPhone2:"",notes:"",
   courseStart:TODAY,courseEnd:"",totalSessions:12,weekDays:[1,3,5],swimLevel:"",poolLane:"",groupName:"",
@@ -106,7 +124,6 @@ const EMPTY_S={
   equipment:[],payments:[],attendance:{}, initialPaymentAmount:"", initialPaymentDate:TODAY
 };
 
-const STOCK_CATS=["Gözlük","Bone","Palet","Şamandıra","Aksesuar","Kıyafet","Temizlik","Diğer"];
 const NAV_ITEMS=[
   {id:"dashboard",label:"Genel Bakış",icon:"M3 12l9-9 9 9M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9"},
   {id:"students",label:"Öğrenciler",icon:"M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 7a4 4 0 100 8 4 4 0 000-8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"},
@@ -120,7 +137,7 @@ const NAV_ITEMS=[
 ];
 
 /* ═══════════════════════════════════════════════════════════════
-   2. FIREBASE & UTILS 
+   2. FIREBASE & UTILS (BEYAZ EKRAN ZIRHI)
 ═══════════════════════════════════════════════════════════════ */
 const firebaseConfig = {
   apiKey: "AIzaSyA6d55XjKFlj4-eZPCYrfTl1451f-IKdq0",
@@ -134,11 +151,9 @@ const firebaseConfig = {
 
 let db = null;
 try {
-  if (window.firebase && !window.firebase.apps.length) {
-    window.firebase.initializeApp(firebaseConfig);
-  }
-  if(window.firebase) { db = window.firebase.firestore(); }
-} catch (error) { console.error("Firebase Hatası:", error); }
+  if (window.firebase && !window.firebase.apps.length) { window.firebase.initializeApp(firebaseConfig); }
+  if (window.firebase) { db = window.firebase.firestore(); }
+} catch(e) { console.error("Firebase Hatası:", e); }
 
 function safeArr(val) { 
   if (!val) return [];
@@ -173,6 +188,7 @@ function courseStatus(s){
 function daysLeft(s){
   try { return Math.ceil((new Date(s?.courseEnd)-new Date(TODAY))/86400000); } catch(e){ return 0; }
 }
+function attendanceCount(s){return Object.values(s?.attendance||{}).filter(Boolean).length}
 function age(dob){
   if(!dob)return"—";
   try { return Math.floor((Date.now()-new Date(dob))/31557600000)+" Yaş"; } catch(e){ return "—"; }
@@ -210,7 +226,7 @@ function calcRemainingSessions(s) {
     let iter = new Date(start);
     const safeDays = safeArr(s.weekDays).map(Number);
     
-    while (iter <= targetEnd && iter.getTime() <= targetEnd.getTime()) {
+    while (iter <= targetEnd && passedSessions < total) {
       if (safeDays.includes(iter.getDay())) passedSessions++;
       iter.setDate(iter.getDate() + 1);
     }
@@ -222,10 +238,12 @@ function swimLevelLabel(v){return{BAŞLANGIÇ:"Başlangıç",ORTA:"Orta",İLERİ
 
 function openWA(phone, text) {
   if (!phone) { alert("Sisteme kayıtlı telefon bulunamadı."); return; }
-  let p = phone.replace(/\D/g, "");
-  if (p.startsWith("0")) p = "90" + p.slice(1);
-  else if (p.length === 10) p = "90" + p;
-  window.open(`https://wa.me/${p}?text=${encodeURIComponent(text)}`, "_blank");
+  try {
+    let p = phone.toString().replace(/\D/g, "");
+    if (p.startsWith("0")) p = "90" + p.slice(1);
+    else if (p.length === 10) p = "90" + p;
+    window.open(`https://wa.me/${p}?text=${encodeURIComponent(text)}`, "_blank");
+  } catch(e) { alert("Telefon numarası hatalı."); }
 }
 
 function exportCSV(filename, headers, rows) {
@@ -323,7 +341,7 @@ function DayPicker({value=[],onChange}){
   </div>
 }
 
-/* YENİ MODAL: SADECE ÇARPI İLE KAPANIR, YÜKSEKLİK SABİT */
+/* YENİ MODAL (KAPANMAMA) */
 function Modal({show,onClose,title,children}){
   if(!show)return null;
   return<div style={{position:"fixed",top:0,left:0,right:0,bottom:0,backgroundColor:"rgba(15, 23, 42, 0.7)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:9999,padding:16}}>
@@ -338,7 +356,7 @@ function Modal({show,onClose,title,children}){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   4. EKRAN BİLEŞENLERİ
+   GİRİŞ EKRANI
 ═══════════════════════════════════════════════════════════════ */
 function LoginScreen({ onSuccess, appUsers, adminPin }) {
   const [user, setUser] = useState("");
@@ -370,6 +388,9 @@ function LoginScreen({ onSuccess, appUsers, adminPin }) {
   );
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   YARDIMCI BİLEŞENLER
+═══════════════════════════════════════════════════════════════ */
 function EqPicker({stockItems,current,onAdd,onRemove}){
   const [sel,setSel]=useState(""); const safeStock = safeArr(stockItems);
   return<div>
@@ -387,13 +408,63 @@ function EqPicker({stockItems,current,onAdd,onRemove}){
   </div>
 }
 
-/* YENİ "ÖDEME" SEKMESİ EKLENMİŞ ÖĞRENCİ FORMU */
-function StudentForm({initial,onSave,onCancel,stockItems,students}){
+/* ═══════════════════════════════════════════════════════════════
+   ROTALAMA SİSTEMİ (YENİ)
+═══════════════════════════════════════════════════════════════ */
+function RoutesManager({routes, setRoutes, onClose}) {
+  const [f, setF] = useState({id:null, routeName:"", driverName:"", driverPhone:"", neighborhoods:""});
+  const safeRoutes = safeArr(routes);
+
+  function save() {
+    if(!f.routeName || !f.driverName) return;
+    const n = f.id ? safeRoutes.map(r=>r.id===f.id?{...f}:r) : [...safeRoutes,{...f, id:Date.now()}];
+    DB.set("routes", n);
+    setRoutes(n);
+    setF({id:null, routeName:"", driverName:"", driverPhone:"", neighborhoods:""});
+  }
+
+  return <div>
+    <div style={{display:"flex", gap:12, marginBottom:16}}>
+      <div style={{flex:1}}>
+        <Inp label="Rota Adı *" value={f.routeName} onChange={v=>setF({...f,routeName:v.toLocaleUpperCase("tr-TR")})} placeholder="Örn: 1. BÖLGE"/>
+        <Inp label="Şoför Adı Soyadı *" value={f.driverName} onChange={v=>setF({...f,driverName:v.toLocaleUpperCase("tr-TR")})}/>
+      </div>
+      <div style={{flex:1}}>
+        <Inp label="Şoför Telefonu" value={f.driverPhone} onChange={v=>setF({...f,driverPhone:v})}/>
+        <Inp label="Gittiği Mahalleler (Virgülle Ayırın)" value={f.neighborhoods} onChange={v=>setF({...f,neighborhoods:v.toLocaleUpperCase("tr-TR")})} placeholder="ÇAYDAÇIRA, SÜRSÜRÜ..."/>
+      </div>
+    </div>
+    <Btn full onClick={save} style={{marginBottom:24}}>{f.id ? "Rotayı Güncelle" : "Yeni Rota Kaydet"}</Btn>
+    
+    <div style={{fontSize:12, fontWeight:800, color:"var(--text-sub)", marginBottom:10, textTransform:"uppercase"}}>Mevcut Rotalar</div>
+    {safeRoutes.length === 0 ? <div style={{textAlign:"center", padding:"20px 0", color:"var(--text-sub)", fontWeight:600}}>Kayıtlı rota bulunmuyor.</div> : 
+      safeRoutes.map(r=><Card key={r.id} style={{padding:"12px 16px", marginBottom:8}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+          <div>
+            <div style={{fontWeight:800,fontSize:15,color:"var(--text-main)"}}>📍 {r.routeName}</div>
+            <div style={{fontSize:12,color:"var(--text-sub)",fontWeight:600,marginTop:4}}>Şoför: {r.driverName} ({r.driverPhone})</div>
+            <div style={{fontSize:11,color:"var(--accent)",fontWeight:700,marginTop:4}}>Mahalleler: {r.neighborhoods}</div>
+          </div>
+          <div style={{display:"flex",gap:6}}>
+            <Btn sm variant="secondary" onClick={()=>{setF(r);}}>Düzenle</Btn>
+            <Btn sm variant="danger" onClick={()=>{if(confirm('Rota silinsin mi?')) { const n = safeRoutes.filter(x=>x.id!==r.id); DB.set("routes",n); setRoutes(n); }}}>Sil</Btn>
+          </div>
+        </div>
+      </Card>)
+    }
+  </div>
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ÖĞRENCİ FORMU (ROTALAMA ENTEGRELİ & ÖDEME SEKMELİ)
+═══════════════════════════════════════════════════════════════ */
+function StudentForm({initial,onSave,onCancel,stockItems,students,routes}){
   const [tab,setTab]=useState(0);
   const [f,setF]=useState({...EMPTY_S,...initial});
   const [isNewGroup, setIsNewGroup]=useState(false); 
 
   const existingGroups = Array.from(new Set(safeArr(students).map(s=>s.groupName).filter(Boolean)));
+  const safeRoutes = safeArr(routes);
 
   const u=(k,v)=>{
     if(typeof v === "string" && !["dob","courseStart","courseEnd","guardianPhone1","guardianPhone2"].includes(k)){
@@ -414,22 +485,30 @@ function StudentForm({initial,onSave,onCancel,stockItems,students}){
     } catch(err) {}
   },[f.courseStart,f.totalSessions,JSON.stringify(safeWeekDays)]);
 
+  // OTOMATİK ROTA BULUCU
+  const handleAddressChange = (val) => {
+    u("address", val);
+    if(val.length > 3) {
+       const vLower = val.toLowerCase();
+       const match = safeRoutes.find(r => {
+          const mahalleler = (r.neighborhoods||"").toLowerCase().split(",").map(x=>x.trim()).filter(Boolean);
+          return mahalleler.some(m => vLower.includes(m));
+       });
+       if(match) {
+          u("driverName", match.driverName);
+          u("driverPhone", match.driverPhone);
+       }
+    }
+  };
+
   function handleSave(){
     if(!f.name){alert("Öğrenci adı girmeden kayıt yapılamaz.");return;}
     let finalF = {...f};
-    
-    // Eğer ilk kayıt esnasında ödeme yapılmışsa otomatik tahsilata işle
     if(Number(finalF.initialPaymentAmount) > 0) {
-       const newPayment = {
-         id: Date.now(), 
-         amount: Number(finalF.initialPaymentAmount), 
-         date: finalF.initialPaymentDate || TODAY, 
-         note: "Kayıt Esnası İlk Ödeme"
-       };
+       const newPayment = { id: Date.now(), amount: Number(finalF.initialPaymentAmount), date: finalF.initialPaymentDate || TODAY, note: "Kayıt Esnası İlk Ödeme" };
        finalF.payments = [...safeArr(finalF.payments), newPayment];
-       finalF.initialPaymentAmount = ""; // Çift girişi engellemek için sıfırla
+       finalF.initialPaymentAmount = ""; 
     }
-    
     onSave(finalF);
   }
 
@@ -499,15 +578,25 @@ function StudentForm({initial,onSave,onCancel,stockItems,students}){
         <div><div style={{fontWeight:800,fontSize:15,color:"var(--text-main)"}}>Servis Kullanıyor mu?</div></div>
         <Toggle checked={f.hasTransport} onChange={v=>u("hasTransport",v)}/>
       </div>
-      {f.hasTransport?<div>
-        <Inp label="Öğrenci Adresi" value={f.address} onChange={v=>u("address",v)} rows={2}/>
-        <Inp label="Aylık Servis Ücreti (₺)" value={f.transportFee} onChange={v=>u("transportFee",v)} type="number"/>
-        <div style={{height:1,background:"#F1F5F9",margin:"16px 0"}}/>
-        <div style={{display:"flex",gap:12}}>
-          <div style={{flex:1}}><Inp label="Şoför Adı" value={f.driverName} onChange={v=>u("driverName",v)}/></div>
-          <div style={{flex:1}}><Inp label="Şoför Tel" value={f.driverPhone} onChange={v=>u("driverPhone",v)} type="tel"/></div>
+      {f.hasTransport?
+        <div style={{display:"flex", gap:20}}>
+          <div style={{flex:1}}>
+            <Inp label="Öğrenci Adresi (Mahalle vb.)" value={f.address} onChange={handleAddressChange} rows={2} placeholder="Adres yazarken şoför otomatik eşleşir..."/>
+            <Inp label="Aylık Servis Ücreti (₺)" value={f.transportFee} onChange={v=>u("transportFee",v)} type="number"/>
+            <div style={{height:1,background:"#F1F5F9",margin:"16px 0"}}/>
+            <Inp label="Şoför Adı" value={f.driverName} onChange={v=>u("driverName",v)}/>
+            <Inp label="Şoför Tel" value={f.driverPhone} onChange={v=>u("driverPhone",v)} type="tel"/>
+          </div>
+          <div style={{width: 200, background:"#F8FAFC", padding:"16px", borderRadius:12, border:"1px solid #E2E8F0"}}>
+            <div style={{fontSize:11, fontWeight:800, color:"var(--text-sub)", textTransform:"uppercase", marginBottom:12}}>Manuel Rota Seç</div>
+            {safeRoutes.length === 0 ? <div style={{fontSize:12, color:"var(--text-sub)"}}>Rota bulunmuyor.</div> : 
+              <div style={{display:"flex", flexDirection:"column", gap:8}}>
+                {safeRoutes.map(r=><button key={r.id} type="button" onClick={()=>{u("driverName", r.driverName); u("driverPhone", r.driverPhone);}} style={{padding:"8px", background:"#fff", border:"1px solid #CBD5E1", borderRadius:8, cursor:"pointer", textAlign:"left", fontSize:12, fontWeight:700, color:"var(--text-main)"}}>{r.routeName}</button>)}
+              </div>
+            }
+          </div>
         </div>
-      </div>:<div style={{textAlign:"center",padding:"40px 0",color:"var(--text-sub)",fontWeight:600}}>Öğrenci servis kullanmıyor.</div>}
+      :<div style={{textAlign:"center",padding:"40px 0",color:"var(--text-sub)",fontWeight:600}}>Öğrenci servis kullanmıyor.</div>}
     </div>}
     
     {tab===3&&<div>
@@ -515,28 +604,21 @@ function StudentForm({initial,onSave,onCancel,stockItems,students}){
       <EqPicker stockItems={stockItems} current={currentEq} onAdd={(item)=>u("equipment",[...currentEq,{id:Date.now(),...item,addedDate:TODAY}])} onRemove={(id)=>u("equipment",currentEq.filter(e=>e.id!==id))}/>
     </div>}
 
-    {/* YENİ ÖDEME SEKMESİ EKLENDİ */}
     {tab===4&&<div>
-      <div style={{fontSize:13,color:"var(--text-sub)",marginBottom:16,fontWeight:600}}>
-        Kayıt anında nakit veya kart ile alınan ilk ödemeyi buraya girebilirsiniz.
-      </div>
+      <div style={{fontSize:13,color:"var(--text-sub)",marginBottom:16,fontWeight:600}}>Kayıt anında nakit veya kart ile alınan ilk ödemeyi buraya girebilirsiniz.</div>
       <div style={{display:"flex",gap:12}}>
         <div style={{flex:1}}><Inp label="Şu An Yapılan Ödeme (₺)" value={f.initialPaymentAmount} onChange={v=>u("initialPaymentAmount",v)} type="number"/></div>
         <div style={{flex:1}}><Inp label="Ödeme Tarihi" value={f.initialPaymentDate} onChange={v=>u("initialPaymentDate",v)} type="date"/></div>
       </div>
-      
       <div style={{background:"#F8FAFC", border:`1px solid #E2E8F0`, borderRadius:12, padding:"16px", marginTop:20}}>
          <div style={{fontSize:12, fontWeight:800, color:"var(--text-main)", marginBottom:12, textTransform:"uppercase"}}>Maliyet Özeti</div>
          <Row label="Aylık Kurs Ücreti" val={`${Number(f.monthlyFee||0)} ₺`}/>
          {Number(f.discount)>0 && <Row label="İndirim" val={`-${Number(f.discount)} ₺`} col="#DC2626"/>}
          {f.hasTransport && <Row label="Servis Ücreti" val={`${Number(f.transportFee||0)} ₺`}/>}
          {safeArr(f.equipment).length>0 && <Row label="Ekipmanlar Toplamı" val={`${safeArr(f.equipment).reduce((t,e)=>t+Number(e.price||0),0)} ₺`}/>}
-         
          <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:12, paddingTop:12, borderTop:"2px dashed #CBD5E1"}}>
            <span style={{fontSize:14, fontWeight:900, color:"var(--text-main)"}}>TOPLAM ÖDENMESİ GEREKEN</span>
-           <span style={{fontSize:20, fontWeight:900, color:"var(--accent)"}}>
-             {(Number(f.monthlyFee||0) - Number(f.discount||0) + (f.hasTransport?Number(f.transportFee||0):0) + safeArr(f.equipment).reduce((t,e)=>t+Number(e.price||0),0)).toLocaleString("tr-TR")} ₺
-           </span>
+           <span style={{fontSize:20, fontWeight:900, color:"var(--accent)"}}>{(Number(f.monthlyFee||0) - Number(f.discount||0) + (f.hasTransport?Number(f.transportFee||0):0) + safeArr(f.equipment).reduce((t,e)=>t+Number(e.price||0),0)).toLocaleString("tr-TR")} ₺</span>
          </div>
       </div>
     </div>}
@@ -549,100 +631,108 @@ function StudentForm({initial,onSave,onCancel,stockItems,students}){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   ÖĞRENCİ LİSTESİ (GRUP FİLTRELEME VE YATAY KARTLAR)
+   ÖĞRENCİ LİSTESİ VE DETAY (YENİ TABLO YAPISI VE FİLTRELER)
 ═══════════════════════════════════════════════════════════════ */
-function StudentsPage({students,stockItems}){
+function StudentsPage({students, stockItems, routes, setRoutes}){
   const [search,setSearch]=useState(""); 
   const [groupFilter,setGroupFilter]=useState("ALL");
+  const [payFilter,setPayFilter]=useState("ALL");
+  
   const [showAdd,setShowAdd]=useState(false); 
+  const [showRoutes,setShowRoutes]=useState(false); 
   const [detailId,setDetailId]=useState(null);
   
   const safeStudents = safeArr(students); 
   const student=detailId?safeStudents.find(s=>s.id===detailId):null;
-  
-  // Benzersiz grupları çıkart
   const allGroups = Array.from(new Set(safeStudents.map(s=>s.groupName).filter(Boolean)));
 
   const filtered = safeStudents.filter(s => {
+    const expected = monthlyTotal(s); const paid = totalPaid(s); const debt = expected - paid;
     const matchName = s && s.name && s.name.toLowerCase().includes(search.toLowerCase());
     const matchGroup = groupFilter === "ALL" || s.groupName === groupFilter;
-    return matchName && matchGroup;
+    let matchPay = true;
+    if(payFilter === "PAID") matchPay = debt <= 0;
+    if(payFilter === "UNPAID") matchPay = debt > 0;
+    
+    return matchName && matchGroup && matchPay;
   });
 
   function save(f){
     let n; if(f.id){n=safeStudents.map(s=>s.id===f.id?{...f}:s);}
-    else{n=[...safeStudents,{...f,id:Date.now()}];} // equipment and payments already initialized in EMPTY_S or appended inside form
+    else{n=[...safeStudents,{...f,id:Date.now()}];} 
     DB.set("students",n);setShowAdd(false);
   }
 
-  if(student)return<StudentDetail student={student} onBack={()=>setDetailId(null)} students={safeStudents} stockItems={stockItems}/>;
+  if(student)return<StudentDetail student={student} onBack={()=>setDetailId(null)} students={safeStudents} stockItems={stockItems} routes={routes}/>;
 
-  return<div style={{padding:20, maxWidth:1200, margin:"0 auto"}}>
+  return<div style={{padding:20, maxWidth:1300, margin:"0 auto"}}>
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
       <div style={{fontSize:20,fontWeight:900,color:"var(--text-main)",letterSpacing:-0.5}}>Öğrenci Rehberi ({filtered.length})</div>
-      <Btn onClick={()=>setShowAdd(true)}>+ Yeni Kayıt Ekle</Btn>
+      <div style={{display:"flex", gap:10}}>
+        <Btn variant="secondary" onClick={()=>setShowRoutes(true)}>📍 Rotalama Yap</Btn>
+        <Btn onClick={()=>setShowAdd(true)}>+ Yeni Kayıt Ekle</Btn>
+      </div>
     </div>
     
-    <div style={{display:"flex", gap:12, marginBottom:20}}>
-      <input className="modern-inp" style={{flex:2, boxShadow:"0 2px 8px rgba(0,0,0,0.02)"}} placeholder="Öğrenci adı ile arama yapın..." value={search} onChange={e=>setSearch(e.target.value)}/>
-      <select className="modern-inp" style={{flex:1, cursor:"pointer", boxShadow:"0 2px 8px rgba(0,0,0,0.02)"}} value={groupFilter} onChange={e=>setGroupFilter(e.target.value)}>
+    <div style={{display:"flex", gap:12, marginBottom:20, flexWrap:"wrap"}}>
+      <input className="modern-inp" style={{flex:2, minWidth:200, boxShadow:"0 2px 8px rgba(0,0,0,0.02)"}} placeholder="Öğrenci adı ile arama yapın..." value={search} onChange={e=>setSearch(e.target.value)}/>
+      <select className="modern-inp" style={{flex:1, minWidth:150, cursor:"pointer", boxShadow:"0 2px 8px rgba(0,0,0,0.02)"}} value={groupFilter} onChange={e=>setGroupFilter(e.target.value)}>
         <option value="ALL">Tüm Gruplar</option>
         {allGroups.map(g=><option key={g} value={g}>{g}</option>)}
+      </select>
+      <select className="modern-inp" style={{flex:1, minWidth:150, cursor:"pointer", boxShadow:"0 2px 8px rgba(0,0,0,0.02)"}} value={payFilter} onChange={e=>setPayFilter(e.target.value)}>
+        <option value="ALL">Tüm Ödeme Durumları</option>
+        <option value="PAID">Ödemesi Tamamlananlar</option>
+        <option value="UNPAID">Borcu Olanlar</option>
       </select>
     </div>
     
     {filtered.length===0 && <div style={{textAlign:"center", padding:"40px 0", color:"var(--text-sub)", fontWeight:700, fontSize:15}}>Aradığınız kriterlere uygun öğrenci bulunamadı.</div>}
 
-    <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(340px, 1fr))", gap:16}}>
+    {filtered.length > 0 && <div className="list-header">
+      <div>Öğrenci Bilgisi</div>
+      <div>Durum / Seans</div>
+      <div>Servis & Şoför</div>
+      <div>Bakiye</div>
+      <div style={{textAlign:"right"}}>İşlemler</div>
+    </div>}
+
+    <div style={{display:"flex", flexDirection:"column", gap:8}}>
       {filtered.map(s=>{
         const expected = monthlyTotal(s); const paid = totalPaid(s); const debt = expected - paid;
-        return <div key={s.id} className="modern-card" style={{margin:0, display:"flex", flexDirection:"column", justifyContent:"space-between"}}>
-          
-          <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", borderBottom:`1px solid #F1F5F9`, paddingBottom:12, marginBottom:12}}>
-            <div style={{fontWeight:800,fontSize:16,color:"var(--text-main)",letterSpacing:-0.3}}>{s.name}</div>
-            <div style={{display:"flex",gap:6}}>
-              <Btn variant="secondary" sm onClick={()=>setDetailId(s.id)}>Detay</Btn>
-              <Btn variant="danger" sm onClick={()=>{if(confirm(`${s.name} kaydını silmek istediğinize emin misiniz?`))DB.set("students",safeStudents.filter(x=>x.id!==s.id));}}>Sil</Btn>
-            </div>
+        return <div key={s.id} className="list-row">
+          <div>
+            <div style={{fontWeight:800,fontSize:15,color:"var(--text-main)"}}>{s.name}</div>
+            <div style={{fontSize:12,color:"var(--text-sub)",fontWeight:600,marginTop:4}}>{s.groupName||"Grup Yok"} • {s.guardianPhone1||"Tel Yok"}</div>
           </div>
-          
-          <div style={{display:"flex", flexDirection:"column", gap:10}}>
-            <div style={{display:"flex", alignItems:"center", gap:8, fontSize:13, color:"var(--text-sub)", fontWeight:600}}>
-              <div style={{width:28,height:28,borderRadius:8,background:"#F1F5F9",display:"flex",alignItems:"center",justifyContent:"center"}}>👥</div>
-              <span style={{color:"var(--text-main)"}}>{s.groupName||"Grup Atanmamış"}</span>
-            </div>
-            
-            <div style={{display:"flex", alignItems:"center", gap:8, fontSize:13, color:"var(--text-sub)", fontWeight:600}}>
-              <div style={{width:28,height:28,borderRadius:8,background:s.hasTransport?"#EDE9FE":"#F1F5F9",color:s.hasTransport?"#6D28D9":"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>🚌</div>
-              {s.hasTransport ? <span style={{color:"#6D28D9", fontWeight:800}}>Servis Kullanıyor</span> : "Servis Yok"}
-            </div>
-
-            <div style={{display:"flex", alignItems:"center", gap:8, fontSize:13, color:"var(--text-sub)", fontWeight:600}}>
-              <div style={{width:28,height:28,borderRadius:8,background:"rgba(59, 130, 246, 0.1)",color:"var(--accent)",display:"flex",alignItems:"center",justifyContent:"center"}}>🔄</div>
-              Kalan Seans: <strong style={{color:"var(--accent)", fontSize:14}}>{calcRemainingSessions(s)} / {s.totalSessions || 0}</strong>
-            </div>
-
-            {/* Yatay Tarih Kapsülü */}
-            <div style={{background:"#F8FAFC", border:`1px solid #E2E8F0`, borderRadius:8, padding:"8px 12px", display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:4}}>
-              <div style={{fontSize:11, fontWeight:800, color:"var(--text-sub)"}}>BŞL: <span style={{color:"var(--text-main)", marginLeft:4}}>{fmtDate(s.courseStart)}</span></div>
-              <div style={{width:1, height:14, background:"#CBD5E1"}}></div>
-              <div style={{fontSize:11, fontWeight:800, color:"var(--text-sub)"}}>BİT: <span style={{color:"var(--text-main)", marginLeft:4}}>{fmtDate(s.courseEnd)}</span></div>
-            </div>
-            
-            <div style={{marginTop:4}}>
-              {debt > 0 ? <div style={{background:"#FEF2F2", border:`1px solid #FCA5A5`, color:"#DC2626", padding:"8px 12px", borderRadius:8, fontWeight:800, fontSize:12, textAlign:"center"}}>⚠️ {debt.toLocaleString("tr-TR")} ₺ BORÇ KALDI</div>
-                       : <div style={{background:"#ECFDF5", border:`1px solid #6EE7B7`, color:"#059669", padding:"8px 12px", borderRadius:8, fontWeight:800, fontSize:12, textAlign:"center"}}>✓ ÖDEME TAMAMLANDI</div>}
-            </div>
+          <div>
+            <div style={{fontSize:13,color:"var(--accent)",fontWeight:800}}>{calcRemainingSessions(s)} / {s.totalSessions || 0} Seans Kaldı</div>
+            <div style={{fontSize:11,color:"var(--text-sub)",fontWeight:600,marginTop:4}}>{fmtDate(s.courseStart)} - {fmtDate(s.courseEnd)}</div>
           </div>
-          
+          <div>
+            {s.hasTransport ? <div>
+              <div style={{fontSize:13,color:"#6D28D9",fontWeight:800}}>🚌 Servis Aktif</div>
+              <div style={{fontSize:11,color:"var(--text-sub)",fontWeight:600,marginTop:4}}>{s.driverName||"Şoför Yok"}</div>
+            </div> : <div style={{fontSize:13,color:"var(--text-sub)",fontWeight:600}}>Servis Yok</div>}
+          </div>
+          <div>
+            {debt > 0 ? <span style={{background:"#FEF2F2", color:"#DC2626", padding:"6px 10px", borderRadius:8, fontWeight:800, fontSize:12, display:"inline-block"}}>⚠️ {debt.toLocaleString("tr-TR")} ₺ BORÇ</span>
+                     : <span style={{background:"#ECFDF5", color:"#059669", padding:"6px 10px", borderRadius:8, fontWeight:800, fontSize:12, display:"inline-block"}}>✓ ÖDENDİ</span>}
+          </div>
+          <div style={{display:"flex", gap:8, justifyContent:"flex-end"}}>
+            <Btn variant="secondary" sm onClick={()=>setDetailId(s.id)}>Detay</Btn>
+            <Btn variant="danger" sm onClick={()=>{if(confirm(`${s.name} kaydını silmek istediğinize emin misiniz?`))DB.set("students",safeStudents.filter(x=>x.id!==s.id));}}>Sil</Btn>
+          </div>
         </div>
       })}
     </div>
-    <Modal show={showAdd} onClose={()=>setShowAdd(false)} title="Öğrenci Kaydı Oluştur"><StudentForm initial={{}} onSave={save} onCancel={()=>setShowAdd(false)} stockItems={stockItems} students={safeStudents}/></Modal>
+
+    <Modal show={showAdd} onClose={()=>setShowAdd(false)} title="Öğrenci Kaydı Oluştur"><StudentForm initial={{}} onSave={save} onCancel={()=>setShowAdd(false)} stockItems={stockItems} students={safeStudents} routes={routes}/></Modal>
+    <Modal show={showRoutes} onClose={()=>setShowRoutes(false)} title="Servis Rotalarını Yönet"><RoutesManager routes={routes} setRoutes={setRoutes} onClose={()=>setShowRoutes(false)}/></Modal>
   </div>
 }
 
-function StudentDetail({student,onBack,students,stockItems}){
+function StudentDetail({student,onBack,students,stockItems,routes}){
   const [tab,setTab]=useState(0); const [editing,setEditing]=useState(false); const [payForm,setPayForm]=useState({amount:"",date:TODAY,note:""}); const [showPay,setShowPay]=useState(false);
   const safePays = safeArr(student.payments); const safeEqs = safeArr(student.equipment); const safeDays = safeArr(student.weekDays);
   
@@ -650,7 +740,7 @@ function StudentDetail({student,onBack,students,stockItems}){
   function addPay(){ if(!payForm.amount)return; const n=safeArr(students).map(s=>s.id===student.id?{...s,payments:[...safeArr(s.payments),{id:Date.now(),...payForm,amount:Number(payForm.amount)}]}:s); DB.set("students",n); setPayForm({amount:"",date:TODAY,note:""}); setShowPay(false); }
   function delPay(pid){const n=safeArr(students).map(s=>s.id===student.id?{...s,payments:safeArr(s.payments).filter(p=>p.id!==pid)}:s);DB.set("students",n);}
 
-  if(editing)return<div style={{padding:20,maxWidth:600,margin:"0 auto"}}><div style={{display:"flex",alignItems:"center",gap:12,marginBottom:24}}><button onClick={()=>setEditing(false)} style={{background:"var(--card-bg)",border:`1px solid #E2E8F0`,color:"var(--text-sub)",width:40,height:40,borderRadius:12,cursor:"pointer",fontWeight:900,fontSize:16}}>←</button><span style={{fontWeight:900,fontSize:20,color:"var(--text-main)",letterSpacing:-0.5}}>Düzenle: {student.name}</span></div><Card><StudentForm initial={student} onSave={save} onCancel={()=>setEditing(false)} stockItems={stockItems} students={students}/></Card></div>;
+  if(editing)return<div style={{padding:20,maxWidth:600,margin:"0 auto"}}><div style={{display:"flex",alignItems:"center",gap:12,marginBottom:24}}><button onClick={()=>setEditing(false)} style={{background:"var(--card-bg)",border:`1px solid #E2E8F0`,color:"var(--text-sub)",width:40,height:40,borderRadius:12,cursor:"pointer",fontWeight:900,fontSize:16}}>←</button><span style={{fontWeight:900,fontSize:20,color:"var(--text-main)",letterSpacing:-0.5}}>Düzenle: {student.name}</span></div><Card><StudentForm initial={student} onSave={save} onCancel={()=>setEditing(false)} stockItems={stockItems} students={students} routes={routes}/></Card></div>;
   
   const paid=totalPaid(student),monthly=monthlyTotal(student),balance=paid-monthly; const st=courseStatus(student);
 
@@ -664,12 +754,15 @@ function StudentDetail({student,onBack,students,stockItems}){
     
     {tab===0&&<div>
       <Card><Row label="Öğrenci Adı Soyadı" val={student.name}/><Row label="Doğum Tarihi" val={`${fmtDate(student.dob)} (${age(student.dob)})`}/><Row label="Veli Adı Soyadı" val={student.guardianName||"—"}/><Row label="Veli Telefonu" val={student.guardianPhone1||"—"} href={student.guardianPhone1?`tel:${student.guardianPhone1}`:undefined}/><Row label="Özel Notlar" val={student.notes||"—"}/></Card>
+      
       {student.guardianPhone1 && (
-        <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:16}}>
-          <Btn style={{background:"#16A34A", color:"#fff", border:"none"}} onClick={()=>{const phone=student.guardianPhone1.replace(/\D/g,""); window.open(`https://wa.me/${phone.startsWith('0')?'90'+phone.slice(1):'90'+phone}?text=${encodeURIComponent(`SAYIN VELİMİZ, ${student.name} İSİMLİ ÖĞRENCİMİZİN ÖDEMESİ HAKKINDA HATIRLATMA YAPMAK İSTERİZ. İYİ GÜNLER DİLERİZ.`)}`, "_blank")}}>💬 Ödeme Hatırlat</Btn>
-          <Btn style={{background:"#16A34A", color:"#fff", border:"none"}} onClick={()=>{const phone=student.guardianPhone1.replace(/\D/g,""); window.open(`https://wa.me/${phone.startsWith('0')?'90'+phone.slice(1):'90'+phone}?text=${encodeURIComponent(`SAYIN VELİMİZ, ${student.name} İSİMLİ ÖĞRENCİMİZ BUGÜNKÜ ANTRENMANA KATILMAMIŞTIR. BİLGİNİZE SUNARIZ.`)}`, "_blank")}}>💬 Devamsızlık Bildir</Btn>
+        <div style={{display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10, marginBottom:16}}>
+          <Btn sm style={{background:C.whatsapp, color:"#fff", border:"none"}} onClick={()=>openWA(student.guardianPhone1, `SAYIN VELİMİZ, ${student.name} İSİMLİ ÖĞRENCİMİZİN ÖDEMESİ HAKKINDA HATIRLATMA YAPMAK İSTERİZ. İYİ GÜNLER DİLERİZ.`)}>💬 Ödeme Bildir</Btn>
+          <Btn sm style={{background:C.whatsapp, color:"#fff", border:"none"}} onClick={()=>openWA(student.guardianPhone1, `SAYIN VELİMİZ, ${student.name} İSİMLİ ÖĞRENCİMİZ BUGÜNKÜ ANTRENMANA KATILMAMIŞTIR. BİLGİNİZE SUNARIZ.`)}>💬 Devamsızlık Bildir</Btn>
+          {student.driverName && <Btn sm style={{background:C.whatsapp, color:"#fff", border:"none"}} onClick={()=>openWA(student.guardianPhone1, `SAYIN VELİMİZ, ${student.name} İSİMLİ ÖĞRENCİMİZİN SERVİS ŞOFÖRÜ BİLGİLERİ AŞAĞIDADIR:\nŞOFÖR ADI: ${student.driverName}\nTELEFON: ${student.driverPhone}\nİYİ GÜNLER DİLERİZ.`)}>💬 Şoför Bilgisi İlet</Btn>}
         </div>
       )}
+      
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}><StatCard label="Mevcut Katılım" value={`${attendanceCount(student)} Gün`} col="#059669"/><StatCard label="Aylık Bakiye Durumu" value={`${balance>=0?"+":""}${balance.toLocaleString("tr-TR")} ₺`} col={balance>=0?"#059669":"#DC2626"}/></div>
       <Btn variant="secondary" full onClick={()=>setEditing(true)}>Tüm Bilgileri Düzenle</Btn>
     </div>}
@@ -683,7 +776,7 @@ function StudentDetail({student,onBack,students,stockItems}){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   GRUP BAZLI YOKLAMA VE GEÇMİŞ LOGLARI (YENİ SİSTEM)
+   GRUP BAZLI YOKLAMA (EKSİKSİZ)
 ═══════════════════════════════════════════════════════════════ */
 function AttendancePage({students}){
   const [tab, setTab] = useState(0);
@@ -758,13 +851,14 @@ function AttendancePage({students}){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   WHATSAPP DAVET PANELİ (ÇOKLU GRUP DAVETİ)
+   WHATSAPP DAVET PANELİ (GRUP FİLTRESİ VE TERS SIRALAMA)
 ═══════════════════════════════════════════════════════════════ */
 function WhatsAppPage({students, waLinks}) {
   const safeLinks = safeArr(waLinks);
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
   const [search, setSearch] = useState("");
+  const [groupFilter, setGroupFilter] = useState("ALL");
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [showInviteModal, setShowInviteModal] = useState(false);
 
@@ -781,13 +875,22 @@ function WhatsAppPage({students, waLinks}) {
   }
 
   function completeInvite(linkUrl) {
-    const msg = `SAYIN VELİMİZ,\n${selectedStudent.name} İSİMLİ ÖĞRENCİMİZİN DUYURU VE ANTRENMAN TAKİBİ İÇİN KULÜBÜMÜZÜN RESMİ WHATSAPP GRUBUNA AŞAĞIDAKİ LİNKTEN KATILABİLİRSİNİZ:\n\n${linkUrl}`;
-    openWA(selectedStudent.guardianPhone1, msg);
+    if(!selectedStudent.guardianPhone1) return;
+    const phone = selectedStudent.guardianPhone1.replace(/\D/g,"");
+    const msg = `SAYIN VELİMİZ,\n${selectedStudent.name} İSİMLİ ÖĞRENCİMİZİN ANTRENMAN VE DUYURU TAKİBİ İÇİN KULÜBÜMÜZÜN RESMİ WHATSAPP GRUBUNA AŞAĞIDAKİ LİNKTEN KATILABİLİRSİNİZ:\n\n${linkUrl}`;
+    window.open(`https://wa.me/${phone.startsWith('0')?'90'+phone.slice(1):'90'+phone}?text=${encodeURIComponent(msg)}`, "_blank");
     setShowInviteModal(false);
   }
 
   const activeStudents = safeArr(students).filter(s => courseStatus(s) === "active" && s.guardianPhone1);
-  const filteredStudents = activeStudents.filter(s => s.name && s.name.toLowerCase().includes(search.toLowerCase()));
+  const allGroups = Array.from(new Set(activeStudents.map(s=>s.groupName).filter(Boolean)));
+  
+  // ARAMA, FİLTRE VE TERS SIRALAMA (YENİLER EN ÜSTTE)
+  const filteredStudents = activeStudents.filter(s => {
+    const matchName = s.name && s.name.toLowerCase().includes(search.toLowerCase());
+    const matchGroup = groupFilter === "ALL" || s.groupName === groupFilter;
+    return matchName && matchGroup;
+  }).sort((a, b) => b.id - a.id);
 
   return <div style={{padding:20, maxWidth:800, margin:"0 auto"}}>
     <SectionTitle>WhatsApp Web Merkezi</SectionTitle>
@@ -807,9 +910,14 @@ function WhatsAppPage({students, waLinks}) {
     </Card>
 
     <SectionTitle>Öğrenci Davet Takip Paneli</SectionTitle>
-    <div style={{marginBottom:16}}>
-      <input className="modern-inp" placeholder="Veliye göndermek için listeden öğrenci arayın..." value={search} onChange={e=>setSearch(e.target.value)}/>
+    <div style={{display:"flex", gap:12, marginBottom:16}}>
+      <input className="modern-inp" style={{flex:2}} placeholder="Listeden öğrenci arayın..." value={search} onChange={e=>setSearch(e.target.value)}/>
+      <select className="modern-inp" style={{flex:1, cursor:"pointer"}} value={groupFilter} onChange={e=>setGroupFilter(e.target.value)}>
+        <option value="ALL">Tüm Gruplar</option>
+        {allGroups.map(g=><option key={g} value={g}>{g}</option>)}
+      </select>
     </div>
+    
     <Card>
       {filteredStudents.length === 0 ? <div style={{textAlign:"center",padding:"20px 0",color:"var(--text-sub)",fontSize:14,fontWeight:600}}>Kayıtlı aktif öğrenci bulunamadı.</div> :
         filteredStudents.map(s=><div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid #F1F5F9`}}>
@@ -1075,9 +1183,7 @@ function App(){
   const [students,setStudents]=useState([]); const [staff,setStaff]=useState([]); const [stockItems,setStockItems]=useState([]); const [movements,setMovements]=useState([]); const [expenses,setExpenses]=useState([]);
   const [clubName,setClubName]=useState("AquaClub Pro"); const [navItems,setNavItems]=useState(NAV_ITEMS); const [appUsers, setAppUsers]=useState([]); const [oldPinCode, setOldPinCode]=useState("0309"); const [waLinks,setWaLinks]=useState([]);
   const [logoUrl,setLogoUrl]=useState(""); const [activeTab,setActiveTab]=useState("dashboard"); const [sidebarOpen,setSidebarOpen]=useState(false);
-  const [themeColor,setThemeColor]=useState("#F8FAFC"); const [sidebarColor,setSidebarColor]=useState("#FFFFFF"); const [cardColor,setCardColor]=useState("#FFFFFF"); const [textColor,setTextColor]=useState("#0F172A");
-
-  useEffect(() => { document.documentElement.style.setProperty('--bg-color', themeColor); document.documentElement.style.setProperty('--sidebar-bg', sidebarColor); document.documentElement.style.setProperty('--card-bg', cardColor); document.documentElement.style.setProperty('--text-main', textColor); }, [themeColor, sidebarColor, cardColor, textColor]);
+  const [routes, setRoutes] = useState([]); // YENİ ROTALAR STATE
 
   useEffect(() => {
     if(!db) { setIsDbLoaded(true); return; }
@@ -1090,6 +1196,7 @@ function App(){
         if (d.movements) setMovements(safeArr(d.movements));
         if (d.expenses) setExpenses(safeArr(d.expenses));
         if (d.waLinks) setWaLinks(safeArr(d.waLinks));
+        if (d.routes) setRoutes(safeArr(d.routes));
         if (d.clubName) setClubName(d.clubName);
         if (d.pinCode) setOldPinCode(d.pinCode); 
         let loadedUsers = safeArr(d.appUsers);
@@ -1128,7 +1235,7 @@ function App(){
       </div>
       <div style={{flex:1, overflowY:"auto"}}>
         {activeTab==="dashboard"&&<Dashboard students={students} expenses={expenses}/>}
-        {activeTab==="students"&&<StudentsPage students={students} stockItems={stockItems}/>}
+        {activeTab==="students"&&<StudentsPage students={students} stockItems={stockItems} routes={routes} setRoutes={setRoutes}/>}
         {activeTab==="attendance"&&<AttendancePage students={students}/>}
         {activeTab==="payments"&&<PaymentsPage students={students}/>}
         {activeTab==="expenses"&&<ExpensesPage expenses={expenses}/>}

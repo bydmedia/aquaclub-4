@@ -82,6 +82,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.4)}
 }
 </style>
 
+<!-- Firebase Kütüphaneleri -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
@@ -354,7 +355,7 @@ function Modal({show,onClose,title,children}){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   4. EKRAN BİLEŞENLERİ (GİRİŞ EKRANI)
+   4. EKRAN BİLEŞENLERİ
 ═══════════════════════════════════════════════════════════════ */
 function LoginScreen({ onSuccess, appUsers, adminPin }) {
   const [user, setUser] = useState("");
@@ -435,7 +436,7 @@ function RoutesManager({routes, setRoutes, onClose}) {
           <div>
             <div style={{fontWeight:800,fontSize:15,color:"var(--text-main)"}}>📍 {r.routeName}</div>
             <div style={{fontSize:12,color:"var(--text-sub)",fontWeight:600,marginTop:4}}>Şoför: {r.driverName} ({r.driverPhone})</div>
-            <div style={{fontSize:11,color:"var(--accent)",fontWeight:700,marginTop:4}}>Mahalleler: {r.neighborhoods}</div>
+            <div style={{fontSize:11,color:"var(--accent)",fontWeight:700,marginTop:4, wordBreak:"break-word", whiteSpace:"normal", lineHeight:1.4}}>Mahalleler: {r.neighborhoods}</div>
           </div>
           <div style={{display:"flex",gap:6}}>
             <Btn sm variant="secondary" onClick={()=>{setF(r);}}>Düzenle</Btn>
@@ -579,11 +580,16 @@ function StudentForm({initial,onSave,onCancel,stockItems,students,routes}){
             <div style={{fontSize:11, fontWeight:800, color:"var(--text-sub)", textTransform:"uppercase", marginBottom:12}}>Manuel Rota Seç</div>
             {safeRoutes.length === 0 ? <div style={{fontSize:12, color:"var(--text-sub)"}}>Rota bulunmuyor.</div> : 
               <div style={{display:"flex", flexDirection:"column", gap:10}}>
-                {safeRoutes.map(r=><button key={r.id} type="button" onClick={()=>{u("driverName", r.driverName); u("driverPhone", r.driverPhone);}} style={{padding:"12px", background:"#fff", border:"1px solid #CBD5E1", borderRadius:8, cursor:"pointer", textAlign:"left", transition:"all 0.2s", boxShadow:"0 2px 4px rgba(0,0,0,0.02)"}}>
-                  <div style={{fontSize:13, fontWeight:800, color:"var(--text-main)"}}>{r.routeName}</div>
-                  <div style={{fontSize:11, color:"var(--text-sub)", marginTop:6, lineHeight:1.4}}>{r.neighborhoods || "Mahalle girilmedi."}</div>
-                  <div style={{fontSize:11, color:"var(--accent)", marginTop:6, fontWeight:700}}>{r.driverName}</div>
-                </button>)}
+                {safeRoutes.map(r=>{
+                  const isSelected = f.driverName === r.driverName && f.driverPhone === r.driverPhone;
+                  return <button key={r.id} type="button" onClick={()=>{u("driverName", r.driverName); u("driverPhone", r.driverPhone);}} 
+                    style={{padding:"12px", background:isSelected ? "var(--accentGlow)" : "#fff", border:isSelected ? "2px solid var(--accent)" : "1px solid #CBD5E1", borderRadius:10, cursor:"pointer", textAlign:"left", transition:"all 0.2s", boxShadow:isSelected ? "0 4px 12px rgba(59, 130, 246, 0.15)" : "0 2px 4px rgba(0,0,0,0.02)", position:"relative", display:"flex", flexDirection:"column"}}>
+                    {isSelected && <div style={{position:"absolute", top:10, right:10, fontSize:16}}>✅</div>}
+                    <div style={{fontSize:13, fontWeight:800, color:isSelected?"var(--accent)":"var(--text-main)", paddingRight:20}}>{r.routeName}</div>
+                    <div style={{fontSize:11, color:"var(--text-sub)", marginTop:6, lineHeight:1.4, wordBreak:"break-word", whiteSpace:"normal"}}>{r.neighborhoods || "Mahalle girilmedi."}</div>
+                    <div style={{fontSize:11, color:isSelected?"var(--accent)":"var(--text-main)", marginTop:8, fontWeight:800, background:isSelected?"#fff":"#F1F5F9", padding:"4px 8px", borderRadius:6, alignSelf:"flex-start"}}>{r.driverName}</div>
+                  </button>
+                })}
               </div>
             }
           </div>
@@ -623,7 +629,7 @@ function StudentForm({initial,onSave,onCancel,stockItems,students,routes}){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   5. ANA LİSTELER (ÖĞRENCİ SAYFASI VE DETAYLARI)
+   ÖĞRENCİ LİSTESİ (ÇIKTI VE YENİ GÖRÜNÜM)
 ═══════════════════════════════════════════════════════════════ */
 function StudentsPage({students, stockItems, routes, setRoutes}){
   const [search,setSearch]=useState(""); 
@@ -691,9 +697,9 @@ function StudentsPage({students, stockItems, routes, setRoutes}){
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
       <div style={{fontSize:20,fontWeight:900,color:"var(--text-main)",letterSpacing:-0.5}}>Öğrenci Rehberi ({filtered.length})</div>
       <div style={{display:"flex", gap:10, flexWrap:"wrap"}}>
-        <Btn variant="success" onClick={()=>{setExpType("STUDENT"); setExpFilter("ALL"); setShowExport(true);}}>📊 Excel Çıktısı Al</Btn>
-        <Btn variant="secondary" onClick={()=>setShowRoutes(true)}>📍 Rotalama Yap</Btn>
-        <Btn onClick={()=>setShowAdd(true)}>+ Yeni Kayıt Ekle</Btn>
+        <button onClick={()=>{setExpType("STUDENT"); setExpFilter("ALL"); setShowExport(true);}} style={{display:"flex",alignItems:"center",gap:6,background:"#ECFDF5",border:"1px solid #10B981",color:"#059669",padding:"10px 16px",borderRadius:10,fontWeight:800,fontSize:13,cursor:"pointer",transition:"all 0.2s",boxShadow:"0 2px 4px rgba(0,0,0,0.02)"}}>📊 Excel Çıktısı Al</button>
+        <button onClick={()=>setShowRoutes(true)} style={{display:"flex",alignItems:"center",gap:6,background:"#EFF6FF",border:"1px solid #3B82F6",color:"#2563EB",padding:"10px 16px",borderRadius:10,fontWeight:800,fontSize:13,cursor:"pointer",transition:"all 0.2s",boxShadow:"0 2px 4px rgba(0,0,0,0.02)"}}>📍 Rotalama Yap</button>
+        <button onClick={()=>setShowAdd(true)} style={{display:"flex",alignItems:"center",gap:6,background:"var(--accent)",border:"none",color:"#fff",padding:"10px 16px",borderRadius:10,fontWeight:800,fontSize:13,cursor:"pointer",transition:"all 0.2s",boxShadow:"0 4px 12px rgba(59, 130, 246, 0.3)"}}>+ Yeni Kayıt Ekle</button>
       </div>
     </div>
     
@@ -982,120 +988,9 @@ function WhatsAppPage({students, waLinks}) {
   </div>
 }
 
-function PaymentsPage({students}){
-  const all=safeArr(students).flatMap(s=>safeArr(s.payments).map(p=>({...p,studentName:s.name}))).sort((a,b)=>new Date(b.date)-new Date(a.date));
-  const total=all.reduce((t,p)=>t+Number(p.amount),0); const thisMonth=all.filter(p=>p.date&&p.date.startsWith(TODAY.slice(0,7))).reduce((t,p)=>t+Number(p.amount),0);
-  const unpaid = safeArr(students).filter(s => courseStatus(s) === "active" && totalPaid(s) < monthlyTotal(s));
-  return<div style={{padding:20, maxWidth:800, margin:"0 auto"}}>
-    <SectionTitle action={<Btn sm variant="ghost" onClick={()=>exportCSV("Odemeler", ["Ogrenci", "Tutar", "Tarih"], all.map(p => [p.studentName, p.amount, p.date]))}>Excel İndir</Btn>}>Muhasebe & Ödemeler</SectionTitle>
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}><StatCard label="Tüm Zamanlar Tahsilat" value={`${total.toLocaleString("tr-TR")} ₺`} col="#059669" span2/><StatCard label="Bu Ayki Ciro" value={`${thisMonth.toLocaleString("tr-TR")} ₺`}/><StatCard label="Eksik Ödeme" value={unpaid.length} col="#DC2626"/></div>
-    <Card>{all.length===0?<div style={{textAlign:"center",padding:"30px 0",color:"var(--text-sub)",fontWeight:700}}>Ödeme kaydı bulunamadı.</div>:all.map((p,i)=><div key={i} style={{display:"flex",justifyContent:"space-between",padding:"12px 0",borderBottom:"1px solid #F1F5F9"}}><div><div style={{fontWeight:800,fontSize:14}}>{p.studentName}</div><div style={{fontSize:11,color:"var(--text-sub)",fontWeight:600,marginTop:2}}>{fmtDate(p.date)} {p.note?`- ${p.note}`:''}</div></div><div style={{fontWeight:900,color:"#059669",fontSize:15}}>+{Number(p.amount).toLocaleString("tr-TR")} ₺</div></div>)}</Card>
-  </div>
-}
-
-function ExpensesPage({expenses}){
-  const [show,setShow]=useState(false); const [f,setF]=useState(EMPTY_EXPENSE); const u=(k,v)=>setF(p=>({...p,[k]:v}));
-  const valid=safeArr(expenses).sort((a,b)=>new Date(b.date)-new Date(a.date));
-  const total=valid.reduce((t,e)=>t+Number(e.amount),0);
-  function save(){ if(!f.title.trim()) return; const n = f.id ? valid.map(e=>e.id===f.id?{...f}:e) : [...valid,{...f,id:Date.now()}]; DB.set("expenses",n); setShow(false); setF(EMPTY_EXPENSE); }
-  return<div style={{padding:20, maxWidth:800, margin:"0 auto"}}><SectionTitle action={<Btn sm onClick={()=>{setF(EMPTY_EXPENSE);setShow(true);}}>+ Gider Ekle</Btn>}>Kurum Giderleri ({total.toLocaleString("tr-TR")} ₺)</SectionTitle>
-    {valid.length===0?<Card style={{textAlign:"center",padding:"40px 0",color:"var(--text-sub)",fontWeight:700,fontSize:15}}>Gider kaydı bulunamadı.</Card>:valid.map(e=><Card key={e.id} style={{padding:"16px"}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-        <div><div style={{fontWeight:900,fontSize:16,color:"var(--text-main)"}}>{e.title}</div><div style={{fontSize:12,color:"var(--text-sub)",marginTop:4,fontWeight:600}}>{fmtDate(e.date)}</div></div>
-        <div style={{fontWeight:900,color:"#DC2626",fontSize:18}}>-{Number(e.amount).toLocaleString("tr-TR")} ₺</div>
-      </div>
-      <div style={{display:"flex",gap:10,marginTop:16}}><Btn sm variant="secondary" onClick={()=>{setF(e);setShow(true);}}>Düzenle</Btn><Btn sm variant="danger" onClick={()=>{if(confirm('Gider kaydı tamamen silinsin mi?')) DB.set("expenses", valid.filter(x=>x.id!==e.id));}}>Sil</Btn></div>
-    </Card>)}
-    <Modal show={show} onClose={()=>setShow(false)} title={f.id?"Gider Düzenle":"Yeni Gider Ekle"}><Inp label="Açıklama (Ne alındı?)" value={f.title} onChange={v=>u("title",v.toLocaleUpperCase("tr-TR"))} autoFocus/><Inp label="Tarih" value={f.date} onChange={v=>u("date",v)} type="date"/><Inp label="Tutar (₺)" value={f.amount} onChange={v=>u("amount",v)} type="number"/><Btn full onClick={save} style={{marginTop:16}}>Gideri Kaydet</Btn></Modal>
-  </div>
-}
-
-function InventoryPage({items}){
-  const validItems = safeArr(items); const [show,setShow]=useState(false); const [f,setF]=useState(EMPTY_ITEM); const u=(k,v)=>setF(p=>({...p,[k]:v}));
-  function save(){ if(!f.name.trim()) return; const n = f.id ? validItems.map(i=>i.id===f.id?{...f}:i) : [...validItems,{...f,id:Date.now()}]; DB.set("stock",n); setShow(false); setF(EMPTY_ITEM); }
-  return<div style={{padding:20, maxWidth:800, margin:"0 auto"}}><SectionTitle action={<Btn sm onClick={()=>{setF(EMPTY_ITEM);setShow(true);}}>+ Yeni Ürün</Btn>}>Depo & Envanter</SectionTitle>
-    {validItems.length===0 ? <Card style={{textAlign:"center",padding:"40px 0",color:"var(--text-sub)",fontWeight:700,fontSize:15}}>Envanterde ürün bulunmuyor.</Card> :
-      <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(300px, 1fr))", gap:16}}>
-      {validItems.map(item=>(item && item.id) && <Card key={item.id} style={{padding:"16px", margin:0}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-          <div><div style={{fontWeight:900,fontSize:16,color:"var(--text-main)"}}>{item.name}</div><div style={{fontSize:11,color:"var(--text-sub)",marginTop:4,fontWeight:800,textTransform:"uppercase"}}>{item.category || "Genel"}</div></div>
-          <div style={{fontWeight:900,color:"#059669",fontSize:16}}>{Number(item.price||0).toLocaleString("tr-TR")} ₺</div>
-        </div>
-        <div style={{background:"#F8FAFC", borderRadius:10, padding:"10px 14px", marginTop:16, display:"flex", justifyContent:"space-between", alignItems:"center"}}>
-          <div style={{fontSize:13, fontWeight:800, color:"var(--text-sub)"}}>Stok Miktarı</div>
-          <div style={{display:"flex",gap:14,alignItems:"center"}}><button type="button" onClick={()=>{DB.set("stock",validItems.map(i=>i.id===item.id?{...i,stock:Math.max(0,Number(i.stock||0)-1)}:i));}} style={{width:32,height:32,borderRadius:8,background:"#fff",border:`1px solid #E2E8F0`,cursor:"pointer",fontWeight:900,color:"#DC2626",boxShadow:"0 2px 4px rgba(0,0,0,0.02)"}}>-</button><span style={{fontWeight:900,fontSize:18,color:"var(--text-main)"}}>{item.stock||0}</span><button type="button" onClick={()=>{DB.set("stock",validItems.map(i=>i.id===item.id?{...i,stock:Math.max(0,Number(i.stock||0)+1)}:i));}} style={{width:32,height:32,borderRadius:8,background:"#fff",border:`1px solid #E2E8F0`,cursor:"pointer",fontWeight:900,color:"#059669",boxShadow:"0 2px 4px rgba(0,0,0,0.02)"}}>+</button></div>
-        </div>
-        <div style={{display:"flex",gap:10,marginTop:16}}><Btn sm variant="secondary" style={{flex:1}} onClick={()=>{setF(item);setShow(true);}}>Düzenle</Btn><Btn sm variant="danger" onClick={()=>DB.set("stock", validItems.filter(i=>i.id!==item.id))}>Kaldır</Btn></div>
-      </Card>)}
-      </div>
-    }
-    <Modal show={show} onClose={()=>setShow(false)} title="Ürün İşlemi">
-      <Inp label="Ürün Adı *" value={f.name} onChange={v=>u("name",v.toLocaleUpperCase("tr-TR"))} autoFocus/>
-      <Sel label="Kategori" value={f.category} onChange={v=>u("category",v)} options={STOCK_CATS.map(c=>({value:c,label:c}))}/>
-      <div style={{display:"flex",gap:12}}><div style={{flex:1}}><Inp label="Satış Fiyatı (₺)" value={f.price} onChange={v=>u("price",v)} type="number"/></div><div style={{flex:1}}><Inp label="Mevcut Stok" value={f.stock} onChange={v=>u("stock",v)} type="number"/></div></div>
-      <Btn full onClick={save} style={{marginTop:16}}>Kaydet</Btn>
-    </Modal>
-  </div>
-}
-
-function StaffPage({staff}){
-  const validStaff = safeArr(staff); const [tab, setTab] = useState(0); const [showAdd, setShowAdd] = useState(false); const [f, setF] = useState(EMPTY_STAFF);
-  const [selectedMonth, setSelectedMonth] = useState(TODAY.slice(0,7)); const [activeStaffId, setActiveStaffId] = useState(null);
-  const u=(k,v)=>setF(p=>({...p,[k]:v}));
-
-  function save(){
-    if(!f.name.trim()) return;
-    const n = f.id ? validStaff.map(s=>s.id===f.id?{...s,...f}:s) : [...validStaff,{...f,id:Date.now(),attendance:{},dailyWage:Number(f.dailyWage||0)}];
-    DB.set("staff",n); setShowAdd(false); setF(EMPTY_STAFF);
-  }
-  const daysInMonth = new Date(Number(selectedMonth.split("-")[0]), Number(selectedMonth.split("-")[1]), 0).getDate();
-  const daysArray = Array.from({length: daysInMonth}, (_, i) => i + 1);
-
-  return<div style={{padding:20, maxWidth:800, margin:"0 auto"}}>
-    <TabBar tabs={["Personel Listesi","Yoklama & Maaş Hakediş"]} active={tab} onChange={setTab}/>
-    {tab===0&&<div>
-      <SectionTitle action={<Btn sm onClick={()=>{setF(EMPTY_STAFF);setShowAdd(true);}}>+ Personel Ekle</Btn>}>Kurum Çalışanları</SectionTitle>
-      {validStaff.length===0?<Card style={{textAlign:"center",padding:"40px 0",color:"var(--text-sub)",fontWeight:700,fontSize:15}}>Kayıtlı çalışan bulunmuyor.</Card>:
-      <div style={{display:"grid", gap:12}}>
-        {validStaff.map(s=><Card key={s.id} style={{margin:0, padding:"16px"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}><div><div style={{fontWeight:900,fontSize:16,color:"var(--text-main)"}}>{s.name}</div><div style={{fontSize:12,color:"var(--text-sub)",fontWeight:700,marginTop:4}}>{Number(s.dailyWage||0).toLocaleString("tr-TR")} ₺ Günlük Yevmiye</div></div><Btn sm variant="danger" onClick={()=>{if(confirm('Personel kaydı silinsin mi?')) DB.set("staff", validStaff.filter(x=>x.id!==s.id))}}>Sil</Btn></div></Card>)}
-      </div>}
-    </div>}
-    {tab===1&&<div>
-      <Inp label="Takip Ayı Seçimi" type="month" value={selectedMonth} onChange={setSelectedMonth}/>
-      <div style={{display:"grid", gap:12}}>
-      {validStaff.map(s=>{
-        const daysCount = Object.keys(s.attendance||{}).filter(k=>k.startsWith(selectedMonth)&&s.attendance[k]).length;
-        const isExp = activeStaffId === s.id;
-        return <Card key={s.id} style={{margin:0, padding:isExp?"20px":"16px"}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer"} } onClick={()=>setActiveStaffId(isExp?null:s.id)}>
-            <div><div style={{fontWeight:900,fontSize:16,color:"var(--text-main)"}}>{s.name}</div><div style={{fontSize:13,color:"#059669",fontWeight:800,marginTop:4}}>{daysCount} Gün Mesai • Toplam Hakediş: {(daysCount*Number(s.dailyWage||0)).toLocaleString("tr-TR")} ₺</div></div>
-            <Btn sm variant="secondary">{isExp?"Kapat ▲":"Puantaj Gir ▼"}</Btn>
-          </div>
-          {isExp && <div style={{marginTop:20, paddingTop:20, borderTop:`1px solid #E2E8F0`}}>
-            <Inp label="Günlük Yevmiye (₺) (Anlık Güncelleme)" type="number" value={s.dailyWage} onChange={(v)=>DB.set("staff", validStaff.map(x=>x.id===s.id?{...x,dailyWage:Number(v)}:x))}/>
-            <div style={{fontSize:11,fontWeight:800,color:"var(--text-sub)",marginBottom:12,textTransform:"uppercase",marginTop:16}}>Çalışılan Günleri İşaretleyin</div>
-            <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(44px, 1fr))", gap:8}}>
-              {daysArray.map(d=>{
-                const key = `${selectedMonth}-${String(d).padStart(2,'0')}`; const isP = !!s.attendance?.[key];
-                return <button key={d} type="button" onClick={()=>{
-                  const att={...(s.attendance||{})}; if(isP) delete att[key]; else att[key]=true;
-                  DB.set("staff", validStaff.map(x=>x.id===s.id?{...x,attendance:att}:x));
-                }} style={{padding:"12px 0", borderRadius:10, border:`2px solid ${isP?"#059669":"#E2E8F0"}`, background:isP?"#ECFDF5":"#fff", color:isP?"#059669":"var(--text-sub)", fontWeight:800, cursor:"pointer", transition:"all 0.2s"}}>{d}</button>
-              })}
-            </div>
-          </div>}
-        </Card>
-      })}
-      </div>
-    </div>}
-    <Modal show={showAdd} onClose={()=>setShowAdd(false)} title="Personel Kaydı">
-      <Inp label="Ad Soyad *" value={f.name} onChange={v=>u("name",v.toLocaleUpperCase("tr-TR"))} autoFocus/>
-      <Inp label="Sabit Günlük Yevmiyesi (₺) *" value={f.dailyWage} onChange={v=>u("dailyWage",v)} type="number"/>
-      <Btn full onClick={save} style={{marginTop:16}}>Çalışanı Kaydet</Btn>
-    </Modal>
-  </div>
-}
-
+/* ═══════════════════════════════════════════════════════════════
+   GENEL BAKIŞ (KUSURSUZ YENİ DASHBOARD)
+═══════════════════════════════════════════════════════════════ */
 function Dashboard({students,expenses}){
   const safeStudents = safeArr(students); const safeExpenses = safeArr(expenses); const active=safeStudents.filter(s=>courseStatus(s)==="active");
   const totalRev=safeStudents.reduce((t,s)=>t+totalPaid(s),0); const totalExp=safeExpenses.reduce((t,e)=>t+Number(e.amount||0),0); const netProfit = totalRev - totalExp;
@@ -1129,20 +1024,47 @@ function Dashboard({students,expenses}){
     <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(320px, 1fr))", gap:20, alignItems:"start"}}>
       <Card style={{padding:"20px", margin:0}}>
         <div style={{fontSize:14, fontWeight:900, marginBottom:16, color:"var(--text-main)", textTransform:"uppercase", letterSpacing:-0.3}}>Son Kayıt Olanlar</div>
-        <div className="data-row data-header"><div>Ad Soyad</div><div>Kayıt Trh.</div><div className="data-col-right">Grup</div></div>
-        {recentRegistrations.length===0?<div style={{padding:"16px 0",fontSize:13,color:"var(--text-sub)",textAlign:"center",fontWeight:600}}>Kayıt yok.</div>:recentRegistrations.map(s => <div className="data-row" key={s.id}><div className="data-col">{s.name}</div><div className="data-col data-col-sub">{fmtDate(s.courseStart)}</div><div className="data-col data-col-right" style={{color:"var(--accent)"}}>{s.groupName || "-"}</div></div>)}
+        <div style={{display:"flex", flexDirection:"column", gap:8}}>
+          {recentRegistrations.length===0?<div style={{textAlign:"center", color:"var(--text-sub)", fontSize:13, padding:"10px 0"}}>Kayıt yok.</div>:recentRegistrations.map(s => (
+            <div key={s.id} style={{display:"flex", justifyContent:"space-between", alignItems:"center", padding:"12px 16px", background:"#F1F5F9", borderRadius:10}}>
+              <div>
+                <div style={{fontWeight:800, fontSize:14, color:"var(--text-main)"}}>{s.name}</div>
+                <div style={{fontSize:11, color:"var(--text-sub)", marginTop:4, fontWeight:600}}>{fmtDate(s.courseStart)}</div>
+              </div>
+              <div style={{fontSize:12, fontWeight:800, color:"var(--accent)", background:"#fff", padding:"4px 8px", borderRadius:6, border:"1px solid #E2E8F0"}}>{s.groupName || "Grup Yok"}</div>
+            </div>
+          ))}
+        </div>
       </Card>
 
       <Card style={{padding:"20px", margin:0}}>
         <div style={{fontSize:14, fontWeight:900, marginBottom:16, color:"var(--text-main)", textTransform:"uppercase", letterSpacing:-0.3}}>Son Ödemeler</div>
-        <div className="data-row data-header"><div>Ad Soyad</div><div>Tarih</div><div className="data-col-right">Tutar</div></div>
-        {recentPay.length===0?<div style={{padding:"16px 0",fontSize:13,color:"var(--text-sub)",textAlign:"center",fontWeight:600}}>Tahsilat yok.</div>:recentPay.map((p, i) => <div className="data-row" key={i}><div className="data-col">{p.studentName}</div><div className="data-col data-col-sub">{fmtDate(p.date)}</div><div className="data-col data-col-right" style={{color:"#059669"}}>+{Number(p.amount).toLocaleString("tr-TR")} ₺</div></div>)}
+        <div style={{display:"flex", flexDirection:"column", gap:8}}>
+          {recentPay.length===0?<div style={{textAlign:"center", color:"var(--text-sub)", fontSize:13, padding:"10px 0"}}>Tahsilat yok.</div>:recentPay.map((p, i) => (
+            <div key={i} style={{display:"flex", justifyContent:"space-between", alignItems:"center", padding:"12px 16px", background:"#F1F5F9", borderRadius:10}}>
+              <div>
+                <div style={{fontWeight:800, fontSize:14, color:"var(--text-main)"}}>{p.studentName}</div>
+                <div style={{fontSize:11, color:"var(--text-sub)", marginTop:4, fontWeight:600}}>{fmtDate(p.date)}</div>
+              </div>
+              <div style={{fontSize:14, fontWeight:900, color:"#059669"}}>+{Number(p.amount).toLocaleString("tr-TR")} ₺</div>
+            </div>
+          ))}
+        </div>
       </Card>
 
       <Card style={{padding:"20px", margin:0, border:`1px solid #FCD34D`}}>
         <div style={{fontSize:14, fontWeight:900, marginBottom:16, color:"#D97706", textTransform:"uppercase", letterSpacing:-0.3}}>Kayıt Bitişi Yaklaşanlar</div>
-        <div className="data-row data-header"><div>Ad Soyad</div><div>Bitiş Trh.</div><div className="data-col-right">Kalan</div></div>
-        {endingSoon.length===0?<div style={{padding:"16px 0",fontSize:13,color:"var(--text-sub)",textAlign:"center",fontWeight:600}}>Yaklaşan kayıt yok.</div>:endingSoon.map(s => <div className="data-row" key={s.id}><div className="data-col">{s.name}</div><div className="data-col data-col-sub">{fmtDate(s.courseEnd)}</div><div className="data-col data-col-right" style={{color:"#D97706"}}>{daysLeft(s)} Gün</div></div>)}
+        <div style={{display:"flex", flexDirection:"column", gap:8}}>
+          {endingSoon.length===0?<div style={{textAlign:"center", color:"var(--text-sub)", fontSize:13, padding:"10px 0"}}>Yaklaşan kayıt yok.</div>:endingSoon.map(s => (
+            <div key={s.id} style={{display:"flex", justifyContent:"space-between", alignItems:"center", padding:"12px 16px", background:"#FEF2F2", borderRadius:10}}>
+              <div>
+                <div style={{fontWeight:800, fontSize:14, color:"#B91C1C"}}>{s.name}</div>
+                <div style={{fontSize:11, color:"#DC2626", marginTop:4, fontWeight:600}}>Bitiş: {fmtDate(s.courseEnd)}</div>
+              </div>
+              <div style={{fontSize:13, fontWeight:900, color:"#DC2626"}}>{daysLeft(s)} Gün</div>
+            </div>
+          ))}
+        </div>
       </Card>
     </div>
   </div>
@@ -1218,7 +1140,7 @@ function SettingsPage({navItems, clubName, logoUrl, appUsers}){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   APP ROOT (TAMAMLANMIŞ VE GÜVENLİ)
+   APP ROOT
 ═══════════════════════════════════════════════════════════════ */
 function App(){
   const [currentUser, setCurrentUser] = useState(() => { try { return JSON.parse(sessionStorage.getItem("aqua_user")); } catch { return null; } });

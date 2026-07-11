@@ -9,20 +9,26 @@
 <link rel="manifest" href="manifest.json"/>
 <title>AquaClub Pro</title>
 <style>
-/* 🌟 KURUMSAL SAAS CSS MİMARİSİ 🌟 */
+/* 🌟 KURUMSAL YENİ NESİL SAAS TASARIMI 🌟 */
 :root {
-  --bg-color: #F3F4F6; 
-  --sidebar-bg: #FFFFFF;
+  --bg-color: #F3F4F6; /* Soft kurumsal arka plan */
+  --sidebar-bg: #0F172A; /* Koyu, prestijli lacivert/siyah */
+  --sidebar-hover: #1E293B;
+  --sidebar-text: #F9FAFB;
+  --sidebar-text-sub: #9CA3AF;
+  
   --card-bg: #FFFFFF;
   --text-main: #111827;
   --text-sub: #4B5563;
-  --accent: #1E3A8A; /* Kurumsal Lacivert */
-  --accent-hover: #1E40AF;
+  --border: #E5E7EB;
+  
+  --accent: #2563EB; /* Güçlü Mavi */
+  --accent-hover: #1D4ED8;
   --accent-light: #EFF6FF;
-  --border: #D1D5DB;
-  --success: #065F46;
+  
+  --success: #059669;
   --success-bg: #D1FAE5;
-  --danger: #991B1B;
+  --danger: #DC2626;
   --danger-bg: #FEE2E2;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -32,38 +38,38 @@ body{
   overscroll-behavior:none;color:var(--text-main);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased;
 }
 #root{height:100%}
-input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.4)}
-::-webkit-scrollbar{width:6px;height:6px}
+input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.5)}
+::-webkit-scrollbar{width:8px;height:8px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:#9CA3AF;border-radius:10px}
+::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:10px}
 
 /* KURUMSAL FORM ELEMANLARI */
 .corp-inp {
-  width: 100%; padding: 10px 14px; background-color: #FFFFFF; border: 1px solid var(--border);
-  border-radius: 6px; color: var(--text-main); font-size: 13px; font-weight: 500;
+  width: 100%; padding: 12px 14px; background-color: #F9FAFB; border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text-main); font-size: 14px; font-weight: 500;
   transition: all 0.2s; outline: none; font-family: inherit;
 }
-.corp-inp:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(30,58,138,0.1); }
+.corp-inp:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); background-color:#fff;}
 .corp-inp::placeholder { color: #9CA3AF; }
-.corp-inp:disabled { background-color: #F9FAFB; cursor: not-allowed; }
+.corp-inp:disabled { background-color: #F3F4F6; cursor: not-allowed; }
 
 .corp-btn {
-  padding: 10px 16px; border-radius: 6px; border: 1px solid transparent; cursor: pointer; font-weight: 600;
+  padding: 12px 18px; border-radius: 8px; border: 1px solid transparent; cursor: pointer; font-weight: 600;
   font-size: 13px; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; outline: none;
 }
-.corp-btn:active { transform: scale(0.98); }
-.corp-btn-primary { background: var(--accent); color: #fff; }
-.corp-btn-primary:hover { background: var(--accent-hover); }
-.corp-btn-secondary { background: #FFFFFF; border-color: var(--border); color: var(--text-main); }
-.corp-btn-secondary:hover { background: #F3F4F6; }
+.corp-btn:active { transform: scale(0.97); }
+.corp-btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 4px rgba(37,99,235,0.2); }
+.corp-btn-primary:hover { background: var(--accent-hover); box-shadow: 0 4px 6px rgba(37,99,235,0.3); }
+.corp-btn-secondary { background: #FFFFFF; border-color: var(--border); color: var(--text-main); box-shadow: 0 1px 2px rgba(0,0,0,0.05);}
+.corp-btn-secondary:hover { background: #F9FAFB; border-color:#D1D5DB; }
 .corp-btn-danger { background: var(--danger-bg); border-color: #FCA5A5; color: var(--danger); }
 .corp-btn-danger:hover { background: #FCA5A5; }
 .corp-btn-success { background: var(--success-bg); border-color: #6EE7B7; color: var(--success); }
 .corp-btn-success:hover { background: #A7F3D0; }
 
 .corp-card {
-  background: var(--card-bg); border-radius: 8px; padding: 20px; margin-bottom: 16px;
-  border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  background: var(--card-bg); border-radius: 12px; padding: 24px; margin-bottom: 20px;
+  border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
 }
 
 .spinner {border: 4px solid rgba(0,0,0,0.05); border-left-color: var(--accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 16px;}
@@ -74,7 +80,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.4)}
   padding: 16px 20px; background: #fff; border: 1px solid var(--border); border-radius: 8px; 
   margin-bottom: 8px; transition: all 0.2s;
 }
-.list-row:hover { border-color: #9CA3AF; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.list-row:hover { border-color: #9CA3AF; box-shadow: 0 4px 6px rgba(0,0,0,0.04); }
 .list-header {
   display: grid; grid-template-columns: 2.5fr 1.5fr 1.5fr 1.5fr 1fr; gap: 16px; align-items: center; 
   padding: 12px 20px; background: #F9FAFB; border: 1px solid var(--border); border-radius: 8px; 
@@ -118,18 +124,18 @@ const EMPTY_S={
 
 const NAV_ITEMS=[
   {id:"dashboard",label:"Genel Bakış",icon:"dashboard"},
-  {id:"students",label:"Öğrenciler",icon:"students"},
-  {id:"attendance",label:"Yoklama",icon:"attendance"},
-  {id:"payments",label:"Ödemeler",icon:"payments"},
-  {id:"expenses",label:"Giderler",icon:"expenses"},
+  {id:"students",label:"Öğrenci Rehberi",icon:"students"},
+  {id:"attendance",label:"Yoklama Yönetimi",icon:"attendance"},
+  {id:"payments",label:"Tahsilat & Ödemeler",icon:"payments"},
+  {id:"expenses",label:"Kurum Giderleri",icon:"expenses"},
   {id:"staff",label:"Personel & Puantaj",icon:"staff"},
-  {id:"inventory",label:"Envanter",icon:"inventory"},
-  {id:"whatsapp",label:"WhatsApp Davet",icon:"whatsapp"},
-  {id:"settings",label:"Ayarlar",icon:"settings"},
+  {id:"inventory",label:"Depo & Envanter",icon:"inventory"},
+  {id:"whatsapp",label:"WhatsApp Merkezi",icon:"whatsapp"},
+  {id:"settings",label:"Sistem Ayarları",icon:"settings"},
 ];
 
 /* ═══════════════════════════════════════════════════════════════
-   2. FIREBASE & UTILS (BEYAZ EKRAN ZIRHLARI)
+   2. FIREBASE & UTILS (BEYAZ EKRAN ZIRHLARI KORUNUYOR)
 ═══════════════════════════════════════════════════════════════ */
 const firebaseConfig = {
   apiKey: "AIzaSyA6d55XjKFlj4-eZPCYrfTl1451f-IKdq0",
@@ -169,7 +175,6 @@ function fmtDate(d){
   } catch(e) { return d; }
 }
 
-// BEYAZ EKRAN ÇÖKME SEBEBİ (SORT) İÇİN KUSURSUZ GÜVENLİK
 function sortDateDesc(a, b) {
   const da = new Date(a.date || 0).getTime();
   const db = new Date(b.date || 0).getTime();
@@ -256,7 +261,7 @@ function exportCSV(filename, headers, rows) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   3. UI BİLEŞENLERİ (EMOJİLER SİLİNDİ, SVG İKONLAR EKLENDİ)
+   3. UI BİLEŞENLERİ (KURUMSAL SVG İKONLAR)
 ═══════════════════════════════════════════════════════════════ */
 function Icon({name,size=18,color="currentColor",style={}}){
   const icons = {
@@ -276,7 +281,7 @@ function Icon({name,size=18,color="currentColor",style={}}){
     expenses: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
     staff: "M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197",
     inventory: "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4",
-    whatsapp: "M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.482-1.46-1.656-1.758-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z M12 22C6.477 22 2 17.523 2 12c0-1.76.452-3.414 1.25-4.832L2 2l5.344 1.156C8.683 2.43 10.297 2 12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10z",
+    whatsapp: "M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.482-1.46-1.656-1.758-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z",
     settings: "M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"
   };
   const path = icons[name] || icons.dashboard;
@@ -286,7 +291,6 @@ function Icon({name,size=18,color="currentColor",style={}}){
   </svg>
 }
 
-// BEYAZ EKRANLARI YAKALAYIP SAYFAYI ÇÖKMESİNİ ENGELLEYEN HATA ZIRHI
 class ErrorBoundary extends React.Component {
   constructor(props) { super(props); this.state = { hasError: false, error: null }; }
   static getDerivedStateFromError(error) { return { hasError: true, error }; }
@@ -352,7 +356,7 @@ function SectionTitle({children,action}){
 }
 
 function Row({label,val,href,col}){
-  return<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:`1px solid #F3F4F6`}}>
+  return<div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:`1px solid var(--border)`}}>
     <span style={{fontSize:13,color:"var(--text-sub)",flexShrink:0,marginRight:12,fontWeight:500}}>{label}</span>
     {href?<a href={href} style={{fontSize:13,color:"var(--accent)",textDecoration:"none",fontWeight:600}}>{val}</a>
          :<span style={{fontSize:13,fontWeight:600,color:col||"var(--text-main)",textAlign:"right"}}>{val}</span>}
@@ -380,7 +384,6 @@ function DayPicker({value=[],onChange}){
   </div>
 }
 
-/* WIDGET MODAL - ÇARPIYLA KAPANIR, YÜKSEKLİK SABİT */
 function Modal({show,onClose,title,children}){
   if(!show)return null;
   return<div style={{position:"fixed",top:0,left:0,right:0,bottom:0,backgroundColor:"rgba(17, 24, 39, 0.7)",backdropFilter:"blur(4px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:9999,padding:16}}>
@@ -876,13 +879,19 @@ function AttendancePage({students}){
   const [date, setDate] = useState(TODAY);
   const [selectedGroup, setSelectedGroup] = useState("");
   const [logDate, setLogDate] = useState(TODAY);
+  const [logGroup, setLogGroup] = useState("ALL");
 
   const safeStudents = safeArr(students);
   const allGroups = Array.from(new Set(safeStudents.map(s=>s.groupName).filter(Boolean)));
 
   const activeInGroup = safeStudents.filter(s => courseStatus(s) === "active" && s.groupName === selectedGroup);
   const presentCount = activeInGroup.filter(s => (s.attendance||{})[date]).length;
-  const presentOnLogDate = safeStudents.filter(s => (s.attendance||{})[logDate]);
+  
+  const presentOnLogDate = safeStudents.filter(s => {
+    const isPresent = (s.attendance||{})[logDate];
+    const matchGroup = logGroup === "ALL" || s.groupName === logGroup;
+    return isPresent && matchGroup;
+  });
 
   return <div style={{padding:20, maxWidth:800, margin:"0 auto"}}>
     <TabBar tabs={["Grup Bazlı Yoklama", "Geçmiş Kayıtlar (Log)"]} active={tab} onChange={setTab}/>
@@ -925,9 +934,14 @@ function AttendancePage({students}){
     {tab === 1 && <div>
       <SectionTitle>Geçmiş Yoklama Logları</SectionTitle>
       <Card>
-        <Inp label="İncelenecek Tarih" type="date" value={logDate} onChange={setLogDate}/>
+        <div style={{display:"flex", gap:12, marginBottom:16}}>
+          <Inp label="İncelenecek Tarih" type="date" value={logDate} onChange={setLogDate} half/>
+          <div style={{flex:1}}>
+            <Sel label="Grup Filtresi" value={logGroup} onChange={setLogGroup} options={[{value:"ALL", label:"Tüm Gruplar"}, ...allGroups.map(g=>({value:g, label:g}))]}/>
+          </div>
+        </div>
         <div style={{marginTop:20}}>
-          <div style={{fontSize:13, fontWeight:700, color:"var(--text-main)", marginBottom:12, borderBottom:"1px solid var(--border)", paddingBottom:8}}>Bu Tarihte Derse Katılan Tüm Öğrenciler ({presentOnLogDate.length})</div>
+          <div style={{fontSize:13, fontWeight:700, color:"var(--text-main)", marginBottom:12, borderBottom:"1px solid var(--border)", paddingBottom:8}}>Bu Tarihte Derse Katılan Öğrenciler ({presentOnLogDate.length})</div>
           {presentOnLogDate.length === 0 ? <div style={{textAlign:"center", padding:"30px", color:"var(--text-sub)", fontWeight:500}}>Bu tarihte derse katılan öğrenci kaydı bulunamadı.</div> : 
             presentOnLogDate.map(s => <div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid #F3F4F6`}}>
               <div>
@@ -944,7 +958,7 @@ function AttendancePage({students}){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   WHATSAPP DAVET PANELİ 
+   WHATSAPP DAVET PANELİ (ÇOKLU GRUP DAVETİ)
 ═══════════════════════════════════════════════════════════════ */
 function WhatsAppPage({students, waLinks}) {
   const safeLinks = safeArr(waLinks);
@@ -1145,9 +1159,6 @@ function StaffPage({staff}){
   </div>
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   GENEL BAKIŞ (KUSURSUZ YENİ DASHBOARD)
-═══════════════════════════════════════════════════════════════ */
 function Dashboard({students,expenses}){
   const safeStudents = safeArr(students); const safeExpenses = safeArr(expenses); const active=safeStudents.filter(s=>courseStatus(s)==="active");
   const totalRev=safeStudents.reduce((t,s)=>t+totalPaid(s),0); const totalExp=safeExpenses.reduce((t,e)=>t+Number(e.amount||0),0); const netProfit = totalRev - totalExp;
@@ -1227,8 +1238,8 @@ function Dashboard({students,expenses}){
   </div>
 }
 
-function SettingsPage({navItems, clubName, logoUrl, appUsers}){
-  const [tab, setTab] = useState(0); const [nameVal, setNameVal] = useState(clubName); const [logoVal, setLogoVal] = useState(logoUrl);
+function SettingsPage({navItems, clubName, appUsers}){
+  const [tab, setTab] = useState(0); const [nameVal, setNameVal] = useState(clubName); 
   const [showUserModal, setShowUserModal] = useState(false); const [uForm, setUForm] = useState({ id:null, username:"", password:"", role:"staff", allowedTabs:[] });
   
   function toggleMenuAccess(menuId) {
@@ -1255,7 +1266,7 @@ function SettingsPage({navItems, clubName, logoUrl, appUsers}){
   return<div style={{padding:20, maxWidth:800, margin:"0 auto"}}>
     <TabBar tabs={["Genel Kurum Ayarları", "Personel Hesap Yetkileri"]} active={tab} onChange={setTab}/>
     {tab === 0 && (
-      <div><Card style={{padding:"24px"}}><Inp label="Kulüp/Kurum Adı" value={nameVal} onChange={setNameVal}/><Inp label="Logo URL (İsteğe Bağlı)" value={logoVal} onChange={setLogoVal}/></Card><Btn full onClick={()=>{DB.set("clubName",nameVal); DB.set("logoUrl",logoVal); alert("Kurum bilgileri başarıyla kaydedildi.");}}>Sisteme Kaydet</Btn></div>
+      <div><Card style={{padding:"24px"}}><Inp label="Kulüp/Kurum Adı" value={nameVal} onChange={setNameVal}/></Card><Btn full onClick={()=>{DB.set("clubName",nameVal); alert("Kurum bilgileri başarıyla kaydedildi.");}}>Sisteme Kaydet</Btn></div>
     )}
     {tab===1&&<div>
       <SectionTitle action={<Btn sm onClick={()=>{setUForm({id:null,username:"",password:"",role:"staff",allowedTabs:["dashboard","students","attendance"]});setShowUserModal(true);}}>+ Yeni Personel Hesabı Aç</Btn>}>Sisteme Giriş İzinleri</SectionTitle>
@@ -1282,7 +1293,7 @@ function SettingsPage({navItems, clubName, logoUrl, appUsers}){
             <div style={{fontSize:11, fontWeight:700, marginBottom:12, color:"var(--text-main)", textTransform:"uppercase"}}>Çalışanın Görebileceği Menüler</div>
             <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:10}}>
               {navItems.map(nav => nav.id !== "settings" && (
-                <label key={nav.id} style={{display:"flex", alignItems:"center", gap:8, padding:"10px", background:"var(--bg-color)", borderRadius:6, cursor:"pointer", border:`1px solid ${(uForm.allowedTabs||[]).includes(nav.id)?"var(--accent)":"var(--border)"}`, transition:"all 0.2s"}}>
+                <label key={nav.id} style={{display:"flex", alignItems:"center", gap:8, padding:"12px", background:"var(--bg-color)", borderRadius:6, cursor:"pointer", border:`1px solid ${(uForm.allowedTabs||[]).includes(nav.id)?"var(--accent)":"var(--border)"}`, transition:"all 0.2s"}}>
                   <input type="checkbox" checked={(uForm.allowedTabs||[]).includes(nav.id)} onChange={() => toggleMenuAccess(nav.id)} style={{width:16,height:16,accentColor:"var(--accent)"}}/>
                   <span style={{fontSize:13, fontWeight:600, color:"var(--text-main)"}}>{nav.label}</span>
                 </label>
@@ -1297,7 +1308,7 @@ function SettingsPage({navItems, clubName, logoUrl, appUsers}){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   APP ROOT (GÜVENLİK ZIRHLI)
+   APP ROOT (TAM GÜVENLİ)
 ═══════════════════════════════════════════════════════════════ */
 function App(){
   const [currentUser, setCurrentUser] = useState(() => { try { return JSON.parse(sessionStorage.getItem("aqua_user")); } catch { return null; } });
@@ -1338,17 +1349,17 @@ function App(){
   const visibleNav = NAV_ITEMS.filter(n => currentUser.role === "admin" || (currentUser.allowedTabs || []).includes(n.id));
 
   return<div style={{display:"flex",height:"100vh",overflow:"hidden",background:"var(--bg-color)"}}>
-    <div className="sidebar-desktop" style={{width:240, background:"var(--sidebar-bg)", borderRight:`1px solid var(--border)`, display:"flex", flexDirection:"column", boxShadow:"1px 0 3px rgba(0,0,0,0.05)", zIndex:100}}>
-      <div style={{padding:"24px 20px 20px", borderBottom:`1px solid var(--border)`, display:"flex", alignItems:"center", gap:12}}>
-        <div style={{width:36,height:36,borderRadius:8,background:`var(--accent)`,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
-          <span style={{color:"white", fontWeight:800, fontSize:15}}>AC</span>
+    <div className="sidebar-desktop" style={{width:260, background:"var(--sidebar-bg)", borderRight:`1px solid var(--border)`, display:"flex", flexDirection:"column", boxShadow:"1px 0 3px rgba(0,0,0,0.05)", zIndex:100}}>
+      <div style={{padding:"28px 20px 20px", borderBottom:`1px solid var(--border)`, display:"flex", alignItems:"center", gap:14}}>
+        <div style={{width:40,height:40,borderRadius:8,background:`linear-gradient(135deg,var(--accent),#1D4ED8)`,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",boxShadow:"0 4px 12px rgba(37, 99, 235, 0.3)"}}>
+          <span style={{color:"white", fontWeight:900, fontSize:16}}>AC</span>
         </div>
-        <div><div style={{fontSize:15,fontWeight:800,color:"var(--text-main)",letterSpacing:-0.3}}>{clubName}</div><div style={{fontSize:11,color:"var(--text-sub)",fontWeight:700,textTransform:"uppercase",marginTop:2}}>{currentUser.username}</div></div>
+        <div><div style={{fontSize:16,fontWeight:800,color:"var(--text-main)",letterSpacing:-0.5}}>{clubName}</div><div style={{fontSize:11,color:"var(--text-sub)",fontWeight:700,textTransform:"uppercase",marginTop:4}}>{currentUser.username}</div></div>
       </div>
-      <div style={{flex:1, overflowY:"auto", padding:"16px 12px"}}>
-        {visibleNav.map(item=><button key={item.id} type="button" onClick={()=>setActiveTab(item.id)} style={{display:"flex",alignItems:"center",gap:12,width:"100%", padding:"12px 14px", marginBottom:4, background:activeTab===item.id?"var(--accent-light)":"transparent", border:"none", borderRadius:6, color:activeTab===item.id?"var(--accent)":"var(--text-sub)", cursor:"pointer", textAlign:"left", fontSize:13, fontWeight:activeTab===item.id?700:500, transition:"all 0.2s"}}><Icon name={item.icon} size={16}/> {item.label}</button>)}
+      <div style={{flex:1, overflowY:"auto", padding:"20px 14px"}}>
+        {visibleNav.map(item=><button key={item.id} type="button" onClick={()=>setActiveTab(item.id)} style={{display:"flex",alignItems:"center",gap:14,width:"100%", padding:"14px 16px", marginBottom:4, background:activeTab===item.id?"rgba(37, 99, 235, 0.08)":"transparent", border:"none", borderRadius:8, color:activeTab===item.id?"var(--accent)":"var(--text-sub)", cursor:"pointer", textAlign:"left", fontSize:13, fontWeight:activeTab===item.id?700:600, transition:"all 0.2s"}}><Icon name={item.icon} size={18}/> {item.label}</button>)}
       </div>
-      <div style={{padding:"16px"}}><button type="button" onClick={()=>{sessionStorage.removeItem("aqua_user"); window.location.reload();}} style={{width:"100%", padding:"12px", background:"var(--danger-bg)", border:"none", borderRadius:6, color:"var(--danger)", fontWeight:700, cursor:"pointer", transition:"all 0.2s", fontSize:13}}>Güvenli Çıkış Yap</button></div>
+      <div style={{padding:"20px"}}><button type="button" onClick={()=>{sessionStorage.removeItem("aqua_user"); window.location.reload();}} style={{width:"100%", padding:"14px", background:"rgba(220, 38, 38, 0.08)", border:"none", borderRadius:8, color:"var(--danger)", fontWeight:700, cursor:"pointer", transition:"all 0.2s"}}>Güvenli Çıkış Yap</button></div>
     </div>
     
     <div style={{flex:1, display:"flex", flexDirection:"column", overflow:"hidden", position:"relative"}}>

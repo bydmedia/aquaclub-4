@@ -5,31 +5,33 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="theme-color" content="#F3F4F6"/>
+<meta name="theme-color" content="#0B1120"/>
 <link rel="manifest" href="manifest.json"/>
 <title>AquaClub Pro</title>
 <style>
-/* 🌟 KURUMSAL YENİ NESİL SAAS TASARIMI 🌟 */
+/* 🌟 PREMIUM DARK MODE (KARANLIK TEMA) SAAS MİMARİSİ 🌟 */
 :root {
-  --bg-color: #F3F4F6; /* Soft kurumsal arka plan */
-  --sidebar-bg: #0F172A; /* Koyu, prestijli lacivert/siyah */
-  --sidebar-hover: #1E293B;
-  --sidebar-text: #F9FAFB;
-  --sidebar-text-sub: #9CA3AF;
+  --bg-color: #0B1120;         /* En arka plan - Koyu gece mavisi/siyah */
+  --sidebar-bg: #111827;       /* Yan menü - Koyu arduvaz */
+  --card-bg: #1F2937;          /* Kartlar - Bir tık açık arduvaz */
   
-  --card-bg: #FFFFFF;
-  --text-main: #111827;
-  --text-sub: #4B5563;
-  --border: #E5E7EB;
+  --text-main: #F9FAFB;        /* Ana yazılar - Kar beyazı */
+  --text-sub: #9CA3AF;         /* Alt yazılar - Açık gri */
   
-  --accent: #2563EB; /* Güçlü Mavi */
-  --accent-hover: #1D4ED8;
-  --accent-light: #EFF6FF;
+  --accent: #3B82F6;           /* Ana Vurgu Rengi - Parlak Mavi */
+  --accent-hover: #60A5FA;     
+  --accent-light: rgba(59, 130, 246, 0.15); 
   
-  --success: #059669;
-  --success-bg: #D1FAE5;
-  --danger: #DC2626;
-  --danger-bg: #FEE2E2;
+  --border: #374151;           /* Çizgiler - Koyu gri */
+  
+  --success: #10B981;          /* Başarılı - Zümrüt Yeşili */
+  --success-bg: rgba(16, 185, 129, 0.15);
+  
+  --danger: #EF4444;           /* Hata/Sil - Kırmızı */
+  --danger-bg: rgba(239, 68, 68, 0.15);
+
+  --warning: #F59E0B;          /* Uyarı - Turuncu */
+  --warning-bg: rgba(245, 158, 11, 0.15);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;background:var(--bg-color);transition:background 0.3s ease;}
@@ -38,52 +40,58 @@ body{
   overscroll-behavior:none;color:var(--text-main);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased;
 }
 #root{height:100%}
-input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.5)}
-::-webkit-scrollbar{width:8px;height:8px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:10px}
 
-/* KURUMSAL FORM ELEMANLARI */
+/* Karanlık temada takvimin daha iyi görünmesi için invert */
+input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.8)}
+
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#4B5563;border-radius:10px}
+
+/* KURUMSAL FORM ELEMANLARI (DARK MODE) */
 .corp-inp {
-  width: 100%; padding: 12px 14px; background-color: #F9FAFB; border: 1px solid var(--border);
-  border-radius: 8px; color: var(--text-main); font-size: 14px; font-weight: 500;
+  width: 100%; padding: 10px 14px; background-color: var(--bg-color); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text-main); font-size: 13px; font-weight: 500;
   transition: all 0.2s; outline: none; font-family: inherit;
 }
-.corp-inp:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); background-color:#fff;}
-.corp-inp::placeholder { color: #9CA3AF; }
-.corp-inp:disabled { background-color: #F3F4F6; cursor: not-allowed; }
+.corp-inp:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-light); }
+.corp-inp::placeholder { color: #6B7280; }
+.corp-inp:disabled { background-color: #111827; cursor: not-allowed; opacity: 0.7; }
+
+/* Karanlık Mod Select Seçenekleri */
+select.corp-inp option { background-color: var(--card-bg); color: var(--text-main); }
 
 .corp-btn {
-  padding: 12px 18px; border-radius: 8px; border: 1px solid transparent; cursor: pointer; font-weight: 600;
+  padding: 10px 16px; border-radius: 6px; border: 1px solid transparent; cursor: pointer; font-weight: 600;
   font-size: 13px; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; outline: none;
 }
-.corp-btn:active { transform: scale(0.97); }
-.corp-btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 4px rgba(37,99,235,0.2); }
-.corp-btn-primary:hover { background: var(--accent-hover); box-shadow: 0 4px 6px rgba(37,99,235,0.3); }
-.corp-btn-secondary { background: #FFFFFF; border-color: var(--border); color: var(--text-main); box-shadow: 0 1px 2px rgba(0,0,0,0.05);}
-.corp-btn-secondary:hover { background: #F9FAFB; border-color:#D1D5DB; }
-.corp-btn-danger { background: var(--danger-bg); border-color: #FCA5A5; color: var(--danger); }
-.corp-btn-danger:hover { background: #FCA5A5; }
-.corp-btn-success { background: var(--success-bg); border-color: #6EE7B7; color: var(--success); }
-.corp-btn-success:hover { background: #A7F3D0; }
+.corp-btn:active { transform: scale(0.98); }
+.corp-btn-primary { background: var(--accent); color: #fff; }
+.corp-btn-primary:hover { background: var(--accent-hover); }
+.corp-btn-secondary { background: var(--bg-color); border-color: var(--border); color: var(--text-main); }
+.corp-btn-secondary:hover { background: #111827; }
+.corp-btn-danger { background: var(--danger-bg); border-color: rgba(239, 68, 68, 0.3); color: var(--danger); }
+.corp-btn-danger:hover { background: rgba(239, 68, 68, 0.25); }
+.corp-btn-success { background: var(--success-bg); border-color: rgba(16, 185, 129, 0.3); color: var(--success); }
+.corp-btn-success:hover { background: rgba(16, 185, 129, 0.25); }
 
 .corp-card {
-  background: var(--card-bg); border-radius: 12px; padding: 24px; margin-bottom: 20px;
-  border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+  background: var(--card-bg); border-radius: 8px; padding: 20px; margin-bottom: 16px;
+  border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
 }
 
-.spinner {border: 4px solid rgba(0,0,0,0.05); border-left-color: var(--accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 16px;}
+.spinner {border: 4px solid rgba(255,255,255,0.05); border-left-color: var(--accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 16px;}
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
 .list-row {
   display: grid; grid-template-columns: 2.5fr 1.5fr 1.5fr 1.5fr 1fr; gap: 16px; align-items: center; 
-  padding: 16px 20px; background: #fff; border: 1px solid var(--border); border-radius: 8px; 
+  padding: 16px 20px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; 
   margin-bottom: 8px; transition: all 0.2s;
 }
-.list-row:hover { border-color: #9CA3AF; box-shadow: 0 4px 6px rgba(0,0,0,0.04); }
+.list-row:hover { border-color: var(--text-sub); background: #111827; }
 .list-header {
   display: grid; grid-template-columns: 2.5fr 1.5fr 1.5fr 1.5fr 1fr; gap: 16px; align-items: center; 
-  padding: 12px 20px; background: #F9FAFB; border: 1px solid var(--border); border-radius: 8px; 
+  padding: 12px 20px; background: var(--sidebar-bg); border: 1px solid var(--border); border-radius: 8px; 
   font-weight: 700; color: var(--text-sub); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;
 }
 @media (max-width: 900px) {
@@ -135,7 +143,7 @@ const NAV_ITEMS=[
 ];
 
 /* ═══════════════════════════════════════════════════════════════
-   2. FIREBASE & UTILS (BEYAZ EKRAN ZIRHLARI KORUNUYOR)
+   2. FIREBASE & UTILS
 ═══════════════════════════════════════════════════════════════ */
 const firebaseConfig = {
   apiKey: "AIzaSyA6d55XjKFlj4-eZPCYrfTl1451f-IKdq0",
@@ -261,7 +269,7 @@ function exportCSV(filename, headers, rows) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   3. UI BİLEŞENLERİ (KURUMSAL SVG İKONLAR)
+   3. UI BİLEŞENLERİ
 ═══════════════════════════════════════════════════════════════ */
 function Icon({name,size=18,color="currentColor",style={}}){
   const icons = {
@@ -297,7 +305,7 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return <div style={{padding:"40px", textAlign:"center"}}>
-        <div style={{display:"inline-block", background:"var(--danger-bg)", color:"var(--danger)", padding:"20px 30px", border:"1px solid #FCA5A5", borderRadius:"8px"}}>
+        <div style={{display:"inline-block", background:"var(--danger-bg)", color:"var(--danger)", padding:"20px 30px", border:"1px solid var(--danger)", borderRadius:"8px"}}>
           <h3 style={{margin:"0 0 10px 0"}}>Modül Yüklenirken Bir Hata Oluştu</h3>
           <p style={{margin:0, fontSize:"13px"}}>{this.state.error?.toString()}</p>
           <button onClick={()=>this.setState({hasError:false})} style={{marginTop:"15px", padding:"8px 16px", background:"var(--danger)", color:"#fff", border:"none", borderRadius:"4px", cursor:"pointer", fontWeight:"bold"}}>Tekrar Dene</button>
@@ -343,7 +351,7 @@ function Card({children,style={}}){
 }
 
 function Badge({label,color}){
-  const map={active:["var(--success)","AKTİF"],upcoming:["#D97706","BAŞLAMADI"],ended:["var(--danger)","BİTTİ"],unknown:["var(--text-sub)","BELİRSİZ"]};
+  const map={active:["var(--success)","AKTİF"],upcoming:["var(--warning)","BAŞLAMADI"],ended:["var(--danger)","BİTTİ"],unknown:["var(--text-sub)","BELİRSİZ"]};
   const [col,txt]=map[label]||[color||"var(--text-sub)",label];
   return<span style={{fontSize:10,fontWeight:700,padding:"4px 8px",borderRadius:6,background:col+"15",color:col,letterSpacing:0.5, border:`1px solid ${col}40`}}>{txt}</span>
 }
@@ -364,7 +372,7 @@ function Row({label,val,href,col}){
 }
 
 function StatCard({label,value,col,span2}){
-  return<div style={{background:"#fff",border:`1px solid var(--border)`,borderRadius:8,padding:20,gridColumn:span2?"span 2":"span 1",boxShadow:"0 1px 2px rgba(0,0,0,0.05)"}}>
+  return<div style={{background:"var(--card-bg)",border:`1px solid var(--border)`,borderRadius:8,padding:20,gridColumn:span2?"span 2":"span 1",boxShadow:"0 1px 2px rgba(0,0,0,0.05)"}}>
     <div style={{fontSize:24,fontWeight:700,color:col||"var(--text-main)",marginBottom:4,letterSpacing:-0.5}}>{value}</div>
     <div style={{fontSize:11,color:"var(--text-sub)",fontWeight:600,textTransform:"uppercase",letterSpacing:0.5}}>{label}</div>
   </div>
@@ -380,14 +388,14 @@ function DayPicker({value=[],onChange}){
   const safeVal = safeArr(value).map(Number);
   return<div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:16}}>
     {DAYS_TR.map((d,i)=>{const on=safeVal.includes(i);return<button key={i} type="button" onClick={()=>onChange(on?safeVal.filter(x=>x!==i):[...safeVal,i].sort())}
-      style={{width:40,height:40,borderRadius:6,border:`1px solid ${on?"var(--accent)":"var(--border)"}`,background:on?"var(--accent-light)":"#fff",color:on?"var(--accent)":"var(--text-sub)",cursor:"pointer",fontSize:13,fontWeight:600,fontFamily:"inherit",transition:"all 0.2s"}}>{d}</button>})}
+      style={{width:40,height:40,borderRadius:6,border:`1px solid ${on?"var(--accent)":"var(--border)"}`,background:on?"var(--accent-light)":"var(--card-bg)",color:on?"var(--accent)":"var(--text-sub)",cursor:"pointer",fontSize:13,fontWeight:600,fontFamily:"inherit",transition:"all 0.2s"}}>{d}</button>})}
   </div>
 }
 
 function Modal({show,onClose,title,children}){
   if(!show)return null;
-  return<div style={{position:"fixed",top:0,left:0,right:0,bottom:0,backgroundColor:"rgba(17, 24, 39, 0.7)",backdropFilter:"blur(4px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:9999,padding:16}}>
-    <div style={{background:"#fff",borderRadius:8,padding:"24px",width:"100%",maxWidth:600,height:"650px",minHeight:"650px",display:"flex",flexDirection:"column",boxShadow:"0 20px 25px -5px rgba(0,0,0,0.1)"}}>
+  return<div style={{position:"fixed",top:0,left:0,right:0,bottom:0,backgroundColor:"rgba(17, 24, 39, 0.8)",backdropFilter:"blur(4px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:9999,padding:16}}>
+    <div style={{background:"var(--card-bg)",border:"1px solid var(--border)",borderRadius:8,padding:"24px",width:"100%",maxWidth:600,height:"650px",minHeight:"650px",display:"flex",flexDirection:"column",boxShadow:"0 20px 25px -5px rgba(0,0,0,0.3)"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20,flexShrink:0,borderBottom:`1px solid var(--border)`,paddingBottom:12}}>
         <div style={{fontSize:16,fontWeight:700,color:"var(--text-main)",letterSpacing:-0.3}}>{title}</div>
         <button type="button" onClick={onClose} style={{background:"var(--bg-color)",border:`1px solid var(--border)`,color:"var(--text-sub)",width:32,height:32,borderRadius:6,cursor:"pointer",fontSize:18,fontWeight:600,display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
@@ -419,7 +427,7 @@ function LoginScreen({ onSuccess, appUsers, adminPin }) {
   return (
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100vh",background:"var(--bg-color)",padding:20}}>
       <div style={{fontSize:36, fontWeight:700, color:"var(--accent)", marginBottom:30, letterSpacing:-1}}>AquaClub Pro</div>
-      <form onSubmit={handleLogin} style={{background:"#fff",padding:"40px 30px",borderRadius:8,border:`1px solid ${err?"var(--danger)":"var(--border)"}`,textAlign:"center",boxShadow:"0 4px 6px -1px rgba(0,0,0,0.05)",width:"100%",maxWidth:340, transition:"all 0.3s"}}>
+      <form onSubmit={handleLogin} style={{background:"var(--card-bg)",padding:"40px 30px",borderRadius:8,border:`1px solid ${err?"var(--danger)":"var(--border)"}`,textAlign:"center",boxShadow:"0 4px 6px -1px rgba(0,0,0,0.1)",width:"100%",maxWidth:340, transition:"all 0.3s"}}>
         <div style={{fontSize:16,fontWeight:600,marginBottom:24,color:"var(--text-main)"}}>Kurumsal Giriş</div>
         <Inp value={user} onChange={setUser} placeholder="Kullanıcı Adı" autoFocus style={{textAlign:"center", fontSize:14}}/>
         <Inp value={pass} onChange={setPass} type="password" placeholder="Şifre" style={{textAlign:"center", fontSize:14, letterSpacing:4}}/>
@@ -442,7 +450,7 @@ function EqPicker({stockItems,current,onAdd,onRemove}){
     </div>
     {safeArr(current).map(e=><div key={e.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 14px",background:"var(--bg-color)",borderRadius:6,border:"1px solid var(--border)",marginBottom:8}}>
       <div><div style={{fontSize:13,fontWeight:600,color:"var(--text-main)"}}>{e.name}</div><div style={{fontSize:11,color:"var(--text-sub)"}}>{fmtDate(e.addedDate)}</div></div>
-      <div style={{display:"flex",alignItems:"center",gap:16}}><span style={{color:"#D97706",fontWeight:700,fontSize:14}}>{Number(e.price).toLocaleString("tr-TR")} ₺</span><button type="button" onClick={()=>onRemove(e.id)} style={{background:"var(--danger-bg)",border:"1px solid #FCA5A5",color:"var(--danger)",cursor:"pointer",fontSize:12,width:26,height:26,borderRadius:4,fontWeight:700}}>X</button></div>
+      <div style={{display:"flex",alignItems:"center",gap:16}}><span style={{color:"var(--warning)",fontWeight:700,fontSize:14}}>{Number(e.price).toLocaleString("tr-TR")} ₺</span><button type="button" onClick={()=>onRemove(e.id)} style={{background:"var(--danger-bg)",border:"1px solid rgba(239,68,68,0.3)",color:"var(--danger)",cursor:"pointer",fontSize:12,width:26,height:26,borderRadius:4,fontWeight:700}}>X</button></div>
     </div>)}
   </div>
 }
@@ -626,11 +634,11 @@ function StudentForm({initial,onSave,onCancel,stockItems,students,routes}){
                 {safeRoutes.map(r=>{
                   const isSelected = f.driverName === r.driverName && f.driverPhone === r.driverPhone;
                   return <button key={r.id} type="button" onClick={()=>{u("driverName", r.driverName); u("driverPhone", r.driverPhone);}} 
-                    style={{padding:"12px", background:isSelected ? "var(--accent-light)" : "#fff", border:isSelected ? "1px solid var(--accent)" : "1px solid var(--border)", borderRadius:6, cursor:"pointer", textAlign:"left", transition:"all 0.2s", position:"relative", display:"flex", flexDirection:"column"}}>
+                    style={{padding:"12px", background:isSelected ? "var(--accent-light)" : "var(--card-bg)", border:isSelected ? "1px solid var(--accent)" : "1px solid var(--border)", borderRadius:6, cursor:"pointer", textAlign:"left", transition:"all 0.2s", position:"relative", display:"flex", flexDirection:"column"}}>
                     {isSelected && <div style={{position:"absolute", top:10, right:10, color:"var(--accent)"}}><Icon name="check" size={16}/></div>}
                     <div style={{fontSize:12, fontWeight:700, color:isSelected?"var(--accent)":"var(--text-main)", paddingRight:20}}>{r.routeName}</div>
                     <div style={{fontSize:11, color:"var(--text-sub)", marginTop:4, lineHeight:1.4, wordBreak:"break-word", whiteSpace:"normal"}}>{r.neighborhoods || "Mahalle girilmedi."}</div>
-                    <div style={{fontSize:11, color:isSelected?"var(--accent)":"var(--text-main)", marginTop:6, fontWeight:600, background:isSelected?"#fff":"var(--bg-color)", padding:"4px 6px", borderRadius:4, alignSelf:"flex-start"}}>{r.driverName}</div>
+                    <div style={{fontSize:11, color:isSelected?"var(--accent)":"var(--text-main)", marginTop:6, fontWeight:600, background:isSelected?"var(--bg-color)":"var(--bg-color)", padding:"4px 6px", borderRadius:4, alignSelf:"flex-start"}}>{r.driverName}</div>
                   </button>
                 })}
               </div>
@@ -740,8 +748,8 @@ function StudentsPage({students, stockItems, routes, setRoutes}){
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
       <div style={{fontSize:20,fontWeight:700,color:"var(--text-main)",letterSpacing:-0.5}}>Öğrenci Rehberi ({filtered.length})</div>
       <div style={{display:"flex", gap:10, flexWrap:"wrap"}}>
-        <button onClick={()=>{setExpType("STUDENT"); setExpFilter("ALL"); setShowExport(true);}} style={{display:"flex",alignItems:"center",gap:6,background:"var(--success-bg)",border:"1px solid #6EE7B7",color:"var(--success)",padding:"8px 14px",borderRadius:6,fontWeight:600,fontSize:13,cursor:"pointer",transition:"all 0.2s"}}><Icon name="chart" size={16}/> Excel Çıktısı Al</button>
-        <button onClick={()=>setShowRoutes(true)} style={{display:"flex",alignItems:"center",gap:6,background:"#FFFFFF",border:"1px solid var(--border)",color:"var(--accent)",padding:"8px 14px",borderRadius:6,fontWeight:600,fontSize:13,cursor:"pointer",transition:"all 0.2s"}}><Icon name="mapPin" size={16}/> Rotalama Yap</button>
+        <button onClick={()=>{setExpType("STUDENT"); setExpFilter("ALL"); setShowExport(true);}} style={{display:"flex",alignItems:"center",gap:6,background:"var(--success-bg)",border:"1px solid var(--success)",color:"var(--success)",padding:"8px 14px",borderRadius:6,fontWeight:600,fontSize:13,cursor:"pointer",transition:"all 0.2s"}}><Icon name="chart" size={16}/> Excel Çıktısı</button>
+        <button onClick={()=>setShowRoutes(true)} style={{display:"flex",alignItems:"center",gap:6,background:"var(--card-bg)",border:"1px solid var(--border)",color:"var(--text-main)",padding:"8px 14px",borderRadius:6,fontWeight:600,fontSize:13,cursor:"pointer",transition:"all 0.2s"}}><Icon name="mapPin" size={16}/> Rotalama Yap</button>
         <button onClick={()=>setShowAdd(true)} style={{display:"flex",alignItems:"center",gap:6,background:"var(--accent)",border:"none",color:"#fff",padding:"8px 14px",borderRadius:6,fontWeight:600,fontSize:13,cursor:"pointer",transition:"all 0.2s"}}>+ Yeni Kayıt Ekle</button>
       </div>
     </div>
@@ -788,8 +796,8 @@ function StudentsPage({students, stockItems, routes, setRoutes}){
             </div> : <div style={{fontSize:12,color:"var(--text-sub)",fontWeight:500}}>Servis Yok</div>}
           </div>
           <div>
-            {debt > 0 ? <span style={{border:`1px solid #FCA5A5`, color:"var(--danger)", padding:"4px 8px", borderRadius:4, fontWeight:600, fontSize:11, display:"inline-block"}}>⚠️ {debt.toLocaleString("tr-TR")} ₺ BORÇ</span>
-                     : <span style={{border:`1px solid #6EE7B7`, color:"var(--success)", padding:"4px 8px", borderRadius:4, fontWeight:600, fontSize:11, display:"inline-block"}}><Icon name="check" size={10} style={{marginRight:2, verticalAlign:"middle"}}/> ÖDENDİ</span>}
+            {debt > 0 ? <span style={{border:`1px solid var(--danger)`, color:"var(--danger)", padding:"4px 8px", borderRadius:4, fontWeight:600, fontSize:11, display:"inline-block"}}>⚠️ {debt.toLocaleString("tr-TR")} ₺ BORÇ</span>
+                     : <span style={{border:`1px solid var(--success)`, color:"var(--success)", padding:"4px 8px", borderRadius:4, fontWeight:600, fontSize:11, display:"inline-block"}}><Icon name="check" size={10} style={{marginRight:2, verticalAlign:"middle"}}/> ÖDENDİ</span>}
           </div>
           <div style={{display:"flex", gap:8, justifyContent:"flex-end"}}>
             <Btn variant="secondary" sm onClick={()=>setDetailId(s.id)}>Detay</Btn>
@@ -853,9 +861,9 @@ function StudentDetail({student,onBack,students,stockItems,routes}){
       
       {student.guardianPhone1 && (
         <div style={{display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10, marginBottom:16}}>
-          <Btn sm style={{background:"#10B981", color:"#fff", border:"none"}} onClick={()=>openWA(student.guardianPhone1, `SAYIN VELİMİZ, ${student.name} İSİMLİ ÖĞRENCİMİZİN ÖDEMESİ HAKKINDA HATIRLATMA YAPMAK İSTERİZ. İYİ GÜNLER DİLERİZ.`)}><Icon name="chat" size={14}/> Ödeme Bildir</Btn>
-          <Btn sm style={{background:"#10B981", color:"#fff", border:"none"}} onClick={()=>openWA(student.guardianPhone1, `SAYIN VELİMİZ, ${student.name} İSİMLİ ÖĞRENCİMİZ BUGÜNKÜ ANTRENMANA KATILMAMIŞTIR. BİLGİNİZE SUNARIZ.`)}><Icon name="chat" size={14}/> Devamsızlık Bildir</Btn>
-          {student.driverName && <Btn sm style={{background:"#10B981", color:"#fff", border:"none"}} onClick={()=>openWA(student.guardianPhone1, `SAYIN VELİMİZ, ${student.name} İSİMLİ ÖĞRENCİMİZİN SERVİS ŞOFÖRÜ BİLGİLERİ AŞAĞIDADIR:\nŞOFÖR ADI: ${student.driverName}\nTELEFON: ${student.driverPhone}\nİYİ GÜNLER DİLERİZ.`)}><Icon name="bus" size={14}/> Şoför Bilgisi İlet</Btn>}
+          <Btn sm style={{background:"var(--success)", color:"#fff", border:"none"}} onClick={()=>openWA(student.guardianPhone1, `SAYIN VELİMİZ, ${student.name} İSİMLİ ÖĞRENCİMİZİN ÖDEMESİ HAKKINDA HATIRLATMA YAPMAK İSTERİZ. İYİ GÜNLER DİLERİZ.`)}><Icon name="chat" size={14}/> Ödeme Bildir</Btn>
+          <Btn sm style={{background:"var(--success)", color:"#fff", border:"none"}} onClick={()=>openWA(student.guardianPhone1, `SAYIN VELİMİZ, ${student.name} İSİMLİ ÖĞRENCİMİZ BUGÜNKÜ ANTRENMANA KATILMAMIŞTIR. BİLGİNİZE SUNARIZ.`)}><Icon name="chat" size={14}/> Devamsızlık Bildir</Btn>
+          {student.driverName && <Btn sm style={{background:"var(--success)", color:"#fff", border:"none"}} onClick={()=>openWA(student.guardianPhone1, `SAYIN VELİMİZ, ${student.name} İSİMLİ ÖĞRENCİMİZİN SERVİS ŞOFÖRÜ BİLGİLERİ AŞAĞIDADIR:\nŞOFÖR ADI: ${student.driverName}\nTELEFON: ${student.driverPhone}\nİYİ GÜNLER DİLERİZ.`)}><Icon name="bus" size={14}/> Şoför Bilgisi İlet</Btn>}
         </div>
       )}
       
@@ -865,7 +873,7 @@ function StudentDetail({student,onBack,students,stockItems,routes}){
     {tab===1&&<div><Card><Row label="Yüzme Seviyesi" val={swimLevelLabel(student.swimLevel)}/><Row label="Kayıtlı Olduğu Grup" val={student.groupName||"—"}/><Row label="Antrenman Günleri" val={safeDays.map(d=>DAYS_TR[d]).join(", ")||"—"}/><Row label="Kayıt Başlangıç Tarihi" val={fmtDate(student.courseStart)}/><Row label="Planlanan Bitiş Tarihi" val={fmtDate(student.courseEnd)}/><Row label="Tarih Bazlı Kalan Seans" val={`${calcRemainingSessions(student)} / ${student.totalSessions||0}`} col="var(--accent)"/></Card></div>}
     {tab===2&&<div>{student.hasTransport?<Card><Row label="Öğrenci Adresi" val={student.address||"—"}/><Row label="Aylık Servis Ücreti" val={`${student.transportFee} ₺`}/><Row label="Şoför Adı Soyadı" val={student.driverName}/><Row label="Şoför Telefonu" val={student.driverPhone}/></Card>:<div style={{textAlign:"center",padding:"40px 0",color:"var(--text-sub)",fontWeight:500,fontSize:14}}>Servis Kullanmıyor</div>}</div>}
     {tab===3&&<div>{safeEqs.length===0?<div style={{textAlign:"center",padding:"40px 0",color:"var(--text-sub)",fontWeight:500,fontSize:14}}>Ekipman Yok</div>:<Card>{safeEqs.map(e=><Row key={e.id} label={e.name} val={`${e.price} ₺`}/>)}</Card>}</div>}
-    {tab===4&&<div><SectionTitle action={<Btn sm onClick={()=>setShowPay(true)}>+ Yeni Tahsilat Ekle</Btn>}>Ödeme Geçmişi</SectionTitle><Card>{safePays.length===0?<div style={{textAlign:"center",padding:"30px 0",color:"var(--text-sub)",fontWeight:500}}>Ödeme kaydı bulunmuyor.</div>:safePays.sort(sortDateDesc).map(p=><div key={p.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"14px 0",borderBottom:`1px solid #F3F4F6`}}><div><div style={{fontWeight:700,color:"var(--text-main)",fontSize:13}}>{fmtDate(p.date)}</div><div style={{fontSize:11,color:"var(--text-sub)",marginTop:4,fontWeight:500}}>{p.note||"Not yok"}</div></div><div style={{display:"flex",alignItems:"center",gap:16}}><span style={{color:"var(--success)",fontWeight:700,fontSize:14}}>+{Number(p.amount).toLocaleString("tr-TR")} ₺</span><button type="button" onClick={()=>delPay(p.id)} style={{background:"var(--danger-bg)",color:"var(--danger)",border:"none",borderRadius:6,width:26,height:26,cursor:"pointer",fontWeight:700}}>X</button></div></div>)}</Card>
+    {tab===4&&<div><SectionTitle action={<Btn sm onClick={()=>setShowPay(true)}>+ Yeni Tahsilat Ekle</Btn>}>Ödeme Geçmişi</SectionTitle><Card>{safePays.length===0?<div style={{textAlign:"center",padding:"30px 0",color:"var(--text-sub)",fontWeight:500}}>Ödeme kaydı bulunmuyor.</div>:safePays.sort(sortDateDesc).map(p=><div key={p.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"14px 0",borderBottom:`1px solid var(--bg-color)`}}><div><div style={{fontWeight:700,color:"var(--text-main)",fontSize:13}}>{fmtDate(p.date)}</div><div style={{fontSize:11,color:"var(--text-sub)",marginTop:4,fontWeight:500}}>{p.note||"Not yok"}</div></div><div style={{display:"flex",alignItems:"center",gap:16}}><span style={{color:"var(--success)",fontWeight:700,fontSize:14}}>+{Number(p.amount).toLocaleString("tr-TR")} ₺</span><button type="button" onClick={()=>delPay(p.id)} style={{background:"var(--danger-bg)",color:"var(--danger)",border:"none",borderRadius:6,width:26,height:26,cursor:"pointer",fontWeight:700}}>X</button></div></div>)}</Card>
       <Modal show={showPay} onClose={()=>setShowPay(false)} title="Tahsilat Ekle"><Inp label="Alınan Tutar (₺) *" value={payForm.amount} onChange={v=>setPayForm(p=>({...p,amount:v}))} type="number"/><Inp label="İşlem Tarihi" value={payForm.date} onChange={v=>setPayForm(p=>({...p,date:v}))} type="date"/><Inp label="Açıklama / Not" value={payForm.note} onChange={v=>setPayForm(p=>({...p,note:v.toLocaleUpperCase("tr-TR")}))}/><div style={{display:"flex",gap:12,marginTop:24}}><Btn variant="secondary" onClick={()=>setShowPay(false)} style={{flex:1}}>İptal</Btn><Btn onClick={addPay} style={{flex:2}}>Ödemeyi Kaydet</Btn></div></Modal>
     </div>}
   </div>
@@ -913,7 +921,7 @@ function AttendancePage({students}){
                 <span style={{fontWeight:600, color:"var(--success)", fontSize:13}}>Katılanlar: {presentCount}</span>
               </div>
               {activeInGroup.length === 0 ? <div style={{textAlign:"center", padding:"20px", color:"var(--text-sub)", fontWeight:500}}>Bu grupta aktif öğrenci bulunmuyor.</div> : 
-                activeInGroup.map(s => <div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid #F3F4F6`}}>
+                activeInGroup.map(s => <div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid var(--bg-color)`}}>
                   <div style={{fontWeight:600,fontSize:14,color:"var(--text-main)"}}>{s.name}</div>
                   <Toggle checked={!!(s.attendance||{})[date]} onChange={(v)=>{
                     const n=safeStudents.map(st=>{
@@ -943,7 +951,7 @@ function AttendancePage({students}){
         <div style={{marginTop:20}}>
           <div style={{fontSize:13, fontWeight:700, color:"var(--text-main)", marginBottom:12, borderBottom:"1px solid var(--border)", paddingBottom:8}}>Bu Tarihte Derse Katılan Öğrenciler ({presentOnLogDate.length})</div>
           {presentOnLogDate.length === 0 ? <div style={{textAlign:"center", padding:"30px", color:"var(--text-sub)", fontWeight:500}}>Bu tarihte derse katılan öğrenci kaydı bulunamadı.</div> : 
-            presentOnLogDate.map(s => <div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid #F3F4F6`}}>
+            presentOnLogDate.map(s => <div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid var(--bg-color)`}}>
               <div>
                 <div style={{fontWeight:600, fontSize:14, color:"var(--text-main)"}}>{s.name}</div>
                 <div style={{fontSize:11, fontWeight:500, color:"var(--text-sub)", marginTop:2}}>{s.groupName || "Grup Yok"}</div>
@@ -958,7 +966,7 @@ function AttendancePage({students}){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   WHATSAPP DAVET PANELİ (ÇOKLU GRUP DAVETİ)
+   WHATSAPP DAVET PANELİ 
 ═══════════════════════════════════════════════════════════════ */
 function WhatsAppPage({students, waLinks}) {
   const safeLinks = safeArr(waLinks);
@@ -1000,7 +1008,7 @@ function WhatsAppPage({students, waLinks}) {
 
   return <div style={{padding:20, maxWidth:800, margin:"0 auto"}}>
     <SectionTitle>WhatsApp Web Merkezi</SectionTitle>
-    <Card style={{marginBottom:24}}><Btn full style={{background:"#10B981", color:"#fff", border:"none"}} onClick={()=>window.open("https://web.whatsapp.com", "_blank")}><Icon name="chat" size={16}/> WhatsApp Web Sekmesini Aç</Btn></Card>
+    <Card style={{marginBottom:24}}><Btn full style={{background:"var(--success)", color:"#fff", border:"none", padding:"14px", fontSize:15}} onClick={()=>window.open("https://web.whatsapp.com", "_blank")}><Icon name="chat" size={16}/> WhatsApp Web Sekmesini Aç</Btn></Card>
     
     <SectionTitle>İsimli Grup Davet Bağlantıları</SectionTitle>
     <Card style={{marginBottom:24}}>
@@ -1026,9 +1034,9 @@ function WhatsAppPage({students, waLinks}) {
     
     <Card>
       {filteredStudents.length === 0 ? <div style={{textAlign:"center",padding:"20px 0",color:"var(--text-sub)",fontSize:13,fontWeight:500}}>Kayıtlı aktif öğrenci bulunamadı.</div> :
-        filteredStudents.map(s=><div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid #F3F4F6`}}>
+        filteredStudents.map(s=><div key={s.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid var(--bg-color)`}}>
           <div><div style={{fontWeight:600,fontSize:14,color:"var(--text-main)"}}>{s.name}</div><div style={{fontSize:11,color:"var(--text-sub)",marginTop:4,fontWeight:500}}>GRUP: {s.groupName||"Belirtilmemiş"}</div></div>
-          <Btn sm style={{background:"var(--success-bg)",color:"var(--success)",border:"1px solid #A7F3D0"}} onClick={()=>triggerInvite(s)}>Davet Gönder</Btn>
+          <Btn sm style={{background:"var(--success-bg)",color:"var(--success)",border:"1px solid var(--success-bg)"}} onClick={()=>triggerInvite(s)}>Davet Gönder</Btn>
         </div>)
       }
     </Card>
@@ -1036,7 +1044,7 @@ function WhatsAppPage({students, waLinks}) {
     <Modal show={showInviteModal} onClose={()=>setShowInviteModal(false)} title="Hangi Grubu Gönderelim?">
       <div style={{fontSize:13,color:"var(--text-main)",marginBottom:20,lineHeight:1.5,fontWeight:500}}><strong>{selectedStudent?.name}</strong> isimli öğrencinin velisine aşağıdaki davet bağlantılarından hangisini göndermek istersiniz?</div>
       <div style={{display:"flex", flexDirection:"column", gap:10}}>
-        {safeLinks.map(l=><button key={l.id} type="button" onClick={()=>completeInvite(l.url)} style={{width:"100%",padding:14,borderRadius:8,background:"#fff",border:`1px solid var(--border)`,color:"var(--accent)",fontWeight:700,fontSize:14,textAlign:"left",cursor:"pointer",transition:"all 0.2s",boxShadow:"0 1px 2px rgba(0,0,0,0.05)"}}>{l.name}</button>)}
+        {safeLinks.map(l=><button key={l.id} type="button" onClick={()=>completeInvite(l.url)} style={{width:"100%",padding:14,borderRadius:8,background:"var(--bg-color)",border:`1px solid var(--border)`,color:"var(--accent)",fontWeight:700,fontSize:14,textAlign:"left",cursor:"pointer",transition:"all 0.2s"}}>{l.name}</button>)}
       </div>
     </Modal>
   </div>
@@ -1052,7 +1060,7 @@ function PaymentsPage({students}){
   return<div style={{padding:20, maxWidth:800, margin:"0 auto"}}>
     <SectionTitle action={<Btn sm variant="success" onClick={()=>exportCSV("Odemeler", ["Ogrenci", "Tutar", "Tarih"], all.map(p => [p.studentName, p.amount, p.date]))}><Icon name="chart" size={14}/> Excel İndir</Btn>}>Muhasebe & Ödemeler</SectionTitle>
     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:20}}><StatCard label="Tüm Zamanlar Tahsilat" value={`${total.toLocaleString("tr-TR")} ₺`} col="var(--success)" span2/><StatCard label="Bu Ayki Ciro" value={`${thisMonth.toLocaleString("tr-TR")} ₺`}/><StatCard label="Eksik Ödeme" value={unpaid.length} col="var(--danger)"/></div>
-    <Card>{all.length===0?<div style={{textAlign:"center",padding:"30px 0",color:"var(--text-sub)",fontWeight:500}}>Ödeme kaydı bulunamadı.</div>:all.map((p,i)=><div key={i} style={{display:"flex",justifyContent:"space-between",padding:"12px 0",borderBottom:"1px solid #F3F4F6"}}><div><div style={{fontWeight:600,fontSize:13}}>{p.studentName}</div><div style={{fontSize:11,color:"var(--text-sub)",fontWeight:500,marginTop:2}}>{fmtDate(p.date)} {p.note?`- ${p.note}`:''}</div></div><div style={{fontWeight:700,color:"var(--success)",fontSize:14}}>+{Number(p.amount).toLocaleString("tr-TR")} ₺</div></div>)}</Card>
+    <Card>{all.length===0?<div style={{textAlign:"center",padding:"30px 0",color:"var(--text-sub)",fontWeight:500}}>Ödeme kaydı bulunamadı.</div>:all.map((p,i)=><div key={i} style={{display:"flex",justifyContent:"space-between",padding:"12px 0",borderBottom:"1px solid var(--bg-color)"}}><div><div style={{fontWeight:600,fontSize:13}}>{p.studentName}</div><div style={{fontSize:11,color:"var(--text-sub)",fontWeight:500,marginTop:2}}>{fmtDate(p.date)} {p.note?`- ${p.note}`:''}</div></div><div style={{fontWeight:700,color:"var(--success)",fontSize:14}}>+{Number(p.amount).toLocaleString("tr-TR")} ₺</div></div>)}</Card>
   </div>
 }
 
@@ -1086,7 +1094,7 @@ function InventoryPage({items}){
         </div>
         <div style={{background:"var(--bg-color)", borderRadius:6, padding:"10px 14px", marginTop:16, display:"flex", justifyContent:"space-between", alignItems:"center", border:"1px solid var(--border)"}}>
           <div style={{fontSize:12, fontWeight:600, color:"var(--text-sub)"}}>Stok Miktarı</div>
-          <div style={{display:"flex",gap:14,alignItems:"center"}}><button type="button" onClick={()=>{DB.set("stock",validItems.map(i=>i.id===item.id?{...i,stock:Math.max(0,Number(i.stock||0)-1)}:i));}} style={{width:28,height:28,borderRadius:4,background:"#fff",border:`1px solid var(--border)`,cursor:"pointer",fontWeight:700,color:"var(--danger)",boxShadow:"0 1px 2px rgba(0,0,0,0.05)"}}>-</button><span style={{fontWeight:700,fontSize:16,color:"var(--text-main)"}}>{item.stock||0}</span><button type="button" onClick={()=>{DB.set("stock",validItems.map(i=>i.id===item.id?{...i,stock:Math.max(0,Number(i.stock||0)+1)}:i));}} style={{width:28,height:28,borderRadius:4,background:"#fff",border:`1px solid var(--border)`,cursor:"pointer",fontWeight:700,color:"var(--success)",boxShadow:"0 1px 2px rgba(0,0,0,0.05)"}}>+</button></div>
+          <div style={{display:"flex",gap:14,alignItems:"center"}}><button type="button" onClick={()=>{DB.set("stock",validItems.map(i=>i.id===item.id?{...i,stock:Math.max(0,Number(i.stock||0)-1)}:i));}} style={{width:28,height:28,borderRadius:4,background:"var(--card-bg)",border:`1px solid var(--border)`,cursor:"pointer",fontWeight:700,color:"var(--danger)"}}>-</button><span style={{fontWeight:700,fontSize:16,color:"var(--text-main)"}}>{item.stock||0}</span><button type="button" onClick={()=>{DB.set("stock",validItems.map(i=>i.id===item.id?{...i,stock:Math.max(0,Number(i.stock||0)+1)}:i));}} style={{width:28,height:28,borderRadius:4,background:"var(--card-bg)",border:`1px solid var(--border)`,cursor:"pointer",fontWeight:700,color:"var(--success)"}}>+</button></div>
         </div>
         <div style={{display:"flex",gap:10,marginTop:16}}><Btn sm variant="secondary" style={{flex:1}} onClick={()=>{setF(item);setShow(true);}}>Düzenle</Btn><Btn sm variant="danger" onClick={()=>DB.set("stock", validItems.filter(i=>i.id!==item.id))}>Kaldır</Btn></div>
       </Card>)}
@@ -1143,7 +1151,7 @@ function StaffPage({staff}){
                 return <button key={d} type="button" onClick={()=>{
                   const att={...(s.attendance||{})}; if(isP) delete att[key]; else att[key]=true;
                   DB.set("staff", validStaff.map(x=>x.id===s.id?{...x,attendance:att}:x));
-                }} style={{padding:"10px 0", borderRadius:6, border:`1px solid ${isP?"var(--success)":"var(--border)"}`, background:isP?"var(--success-bg)":"#fff", color:isP?"var(--success)":"var(--text-sub)", fontWeight:700, cursor:"pointer", transition:"all 0.2s"}}>{d}</button>
+                }} style={{padding:"10px 0", borderRadius:6, border:`1px solid ${isP?"var(--success)":"var(--border)"}`, background:isP?"var(--success-bg)":"var(--bg-color)", color:isP?"var(--success)":"var(--text-main)", fontWeight:700, cursor:"pointer", transition:"all 0.2s"}}>{d}</button>
               })}
             </div>
           </div>}
@@ -1199,7 +1207,7 @@ function Dashboard({students,expenses}){
                 <div style={{fontWeight:700, fontSize:13, color:"var(--text-main)"}}>{s.name}</div>
                 <div style={{fontSize:11, color:"var(--text-sub)", marginTop:4, fontWeight:500}}>{fmtDate(s.courseStart)}</div>
               </div>
-              <div style={{fontSize:11, fontWeight:700, color:"var(--accent)", background:"#fff", padding:"4px 8px", borderRadius:4, border:"1px solid var(--border)"}}>{s.groupName || "Grup Yok"}</div>
+              <div style={{fontSize:11, fontWeight:700, color:"var(--accent)", background:"var(--card-bg)", padding:"4px 8px", borderRadius:4, border:"1px solid var(--border)"}}>{s.groupName || "Grup Yok"}</div>
             </div>
           ))}
         </div>
@@ -1220,16 +1228,16 @@ function Dashboard({students,expenses}){
         </div>
       </Card>
 
-      <Card style={{padding:"20px", margin:0, borderLeft:`4px solid #D97706`}}>
-        <div style={{fontSize:13, fontWeight:700, marginBottom:16, color:"#D97706", textTransform:"uppercase", letterSpacing:0.5}}>Kayıt Bitişi Yaklaşanlar</div>
+      <Card style={{padding:"20px", margin:0, borderLeft:`4px solid var(--warning)`}}>
+        <div style={{fontSize:13, fontWeight:700, marginBottom:16, color:"var(--warning)", textTransform:"uppercase", letterSpacing:0.5}}>Kayıt Bitişi Yaklaşanlar</div>
         <div style={{display:"flex", flexDirection:"column", gap:8}}>
           {endingSoon.length===0?<div style={{textAlign:"center", color:"var(--text-sub)", fontSize:12, padding:"10px 0"}}>Yaklaşan kayıt yok.</div>:endingSoon.map(s => (
-            <div key={s.id} style={{display:"flex", justifyContent:"space-between", alignItems:"center", padding:"12px 14px", background:"#FEF3C7", borderRadius:6, border:"1px solid #FCD34D"}}>
+            <div key={s.id} style={{display:"flex", justifyContent:"space-between", alignItems:"center", padding:"12px 14px", background:"var(--warning-bg)", borderRadius:6, border:"1px solid rgba(245,158,11,0.3)"}}>
               <div>
-                <div style={{fontWeight:700, fontSize:13, color:"#92400E"}}>{s.name}</div>
-                <div style={{fontSize:11, color:"#B45309", marginTop:4, fontWeight:500}}>Bitiş: {fmtDate(s.courseEnd)}</div>
+                <div style={{fontWeight:700, fontSize:13, color:"var(--text-main)"}}>{s.name}</div>
+                <div style={{fontSize:11, color:"var(--warning)", marginTop:4, fontWeight:500}}>Bitiş: {fmtDate(s.courseEnd)}</div>
               </div>
-              <div style={{fontSize:12, fontWeight:800, color:"#92400E", display:"flex", alignItems:"center", gap:4}}><Icon name="warning" size={14}/> {daysLeft(s)} Gün</div>
+              <div style={{fontSize:12, fontWeight:800, color:"var(--warning)", display:"flex", alignItems:"center", gap:4}}><Icon name="warning" size={14}/> {daysLeft(s)} Gün</div>
             </div>
           ))}
         </div>
@@ -1349,17 +1357,17 @@ function App(){
   const visibleNav = NAV_ITEMS.filter(n => currentUser.role === "admin" || (currentUser.allowedTabs || []).includes(n.id));
 
   return<div style={{display:"flex",height:"100vh",overflow:"hidden",background:"var(--bg-color)"}}>
-    <div className="sidebar-desktop" style={{width:260, background:"var(--sidebar-bg)", borderRight:`1px solid var(--border)`, display:"flex", flexDirection:"column", boxShadow:"1px 0 3px rgba(0,0,0,0.05)", zIndex:100}}>
-      <div style={{padding:"28px 20px 20px", borderBottom:`1px solid var(--border)`, display:"flex", alignItems:"center", gap:14}}>
-        <div style={{width:40,height:40,borderRadius:8,background:`linear-gradient(135deg,var(--accent),#1D4ED8)`,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",boxShadow:"0 4px 12px rgba(37, 99, 235, 0.3)"}}>
-          <span style={{color:"white", fontWeight:900, fontSize:16}}>AC</span>
+    <div className="sidebar-desktop" style={{width:240, background:"var(--sidebar-bg)", borderRight:`1px solid var(--border)`, display:"flex", flexDirection:"column", boxShadow:"1px 0 3px rgba(0,0,0,0.05)", zIndex:100}}>
+      <div style={{padding:"24px 20px 20px", borderBottom:`1px solid var(--border)`, display:"flex", alignItems:"center", gap:12}}>
+        <div style={{width:36,height:36,borderRadius:8,background:`var(--accent)`,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
+          <span style={{color:"white", fontWeight:800, fontSize:15}}>AC</span>
         </div>
-        <div><div style={{fontSize:16,fontWeight:800,color:"var(--text-main)",letterSpacing:-0.5}}>{clubName}</div><div style={{fontSize:11,color:"var(--text-sub)",fontWeight:700,textTransform:"uppercase",marginTop:4}}>{currentUser.username}</div></div>
+        <div><div style={{fontSize:15,fontWeight:800,color:"var(--text-main)",letterSpacing:-0.3}}>{clubName}</div><div style={{fontSize:11,color:"var(--text-sub)",fontWeight:700,textTransform:"uppercase",marginTop:2}}>{currentUser.username}</div></div>
       </div>
-      <div style={{flex:1, overflowY:"auto", padding:"20px 14px"}}>
-        {visibleNav.map(item=><button key={item.id} type="button" onClick={()=>setActiveTab(item.id)} style={{display:"flex",alignItems:"center",gap:14,width:"100%", padding:"14px 16px", marginBottom:4, background:activeTab===item.id?"rgba(37, 99, 235, 0.08)":"transparent", border:"none", borderRadius:8, color:activeTab===item.id?"var(--accent)":"var(--text-sub)", cursor:"pointer", textAlign:"left", fontSize:13, fontWeight:activeTab===item.id?700:600, transition:"all 0.2s"}}><Icon name={item.icon} size={18}/> {item.label}</button>)}
+      <div style={{flex:1, overflowY:"auto", padding:"16px 12px"}}>
+        {visibleNav.map(item=><button key={item.id} type="button" onClick={()=>setActiveTab(item.id)} style={{display:"flex",alignItems:"center",gap:12,width:"100%", padding:"12px 14px", marginBottom:4, background:activeTab===item.id?"var(--accent-light)":"transparent", border:"none", borderRadius:6, color:activeTab===item.id?"var(--accent)":"var(--text-sub)", cursor:"pointer", textAlign:"left", fontSize:13, fontWeight:activeTab===item.id?700:500, transition:"all 0.2s"}}><Icon name={item.icon} size={16}/> {item.label}</button>)}
       </div>
-      <div style={{padding:"20px"}}><button type="button" onClick={()=>{sessionStorage.removeItem("aqua_user"); window.location.reload();}} style={{width:"100%", padding:"14px", background:"rgba(220, 38, 38, 0.08)", border:"none", borderRadius:8, color:"var(--danger)", fontWeight:700, cursor:"pointer", transition:"all 0.2s"}}>Güvenli Çıkış Yap</button></div>
+      <div style={{padding:"16px"}}><button type="button" onClick={()=>{sessionStorage.removeItem("aqua_user"); window.location.reload();}} style={{width:"100%", padding:"12px", background:"var(--danger-bg)", border:"1px solid var(--border)", borderColor:"rgba(239, 68, 68, 0.3)", borderRadius:6, color:"var(--danger)", fontWeight:700, cursor:"pointer", transition:"all 0.2s", fontSize:13}}>Güvenli Çıkış Yap</button></div>
     </div>
     
     <div style={{flex:1, display:"flex", flexDirection:"column", overflow:"hidden", position:"relative"}}>
